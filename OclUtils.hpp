@@ -1,5 +1,5 @@
 
-#include <CL/opencl.h>
+#include <CL/cl.h>
 
 /******************************************
 * cl_nv_device_attribute_query extension *
