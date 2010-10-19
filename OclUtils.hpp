@@ -1,6 +1,40 @@
 
 #include <CL/opencl.h>
 
+/******************************************
+* cl_nv_device_attribute_query extension *
+******************************************/
+/* cl_nv_device_attribute_query extension - no extension #define since it has no functions */
+#ifndef CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV
+#define CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV       0x4000
+#endif
+
+#ifndef CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV
+#define CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV       0x4001
+#endif
+
+#ifndef CL_DEVICE_REGISTERS_PER_BLOCK_NV
+#define CL_DEVICE_REGISTERS_PER_BLOCK_NV            0x4002
+#endif
+
+#ifndef CL_DEVICE_WARP_SIZE_NV
+#define CL_DEVICE_WARP_SIZE_NV                      0x4003
+#endif
+
+#ifndef CL_DEVICE_GPU_OVERLAP_NV
+#define CL_DEVICE_GPU_OVERLAP_NV                    0x4004
+#endif
+
+#ifndef CL_DEVICE_KERNEL_EXEC_TIMEOUT_NV
+#define CL_DEVICE_KERNEL_EXEC_TIMEOUT_NV            0x4005
+#endif
+
+#ifndef CL_DEVICE_INTEGRATED_MEMORY_NV
+#define CL_DEVICE_INTEGRATED_MEMORY_NV              0x4006
+#endif
+
+
+
 char *read_opencl_kernel(const std::string filename, int *length);
 
 // Beginning of GPU Architecture definitions
