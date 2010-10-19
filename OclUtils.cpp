@@ -51,14 +51,14 @@ cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID)
     ciErrNum = clGetPlatformIDs (0, NULL, &num_platforms);
     if (ciErrNum != CL_SUCCESS)
     {
-        printf(" Error %i in clGetPlatformIDs Call !!!\n\n", ciErrNum);
+        printf(" Error %i in clGetPlatformIDs Call !!!\n", ciErrNum);
         return -1000;
     }
     else
     {
         if(num_platforms == 0)
         {
-            printf("No OpenCL platform found!\n\n");
+            printf("No OpenCL platform found!\n");
             return -2000;
         }
         else
@@ -66,7 +66,7 @@ cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID)
             // if there's a platform or more, make space for ID's
             if ((clPlatformIDs = (cl_platform_id*)malloc(num_platforms * sizeof(cl_platform_id))) == NULL)
             {
-                printf("Failed to allocate memory for cl_platform ID's!\n\n");
+                printf("Failed to allocate memory for cl_platform ID's!\n");
                 return -3000;
             }
 
@@ -88,7 +88,7 @@ cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID)
             // default to zeroeth platform if NVIDIA not found
             if(*clSelectedPlatformID == NULL)
             {
-                printf("WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!\n\n");
+                printf("WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!\n");
                 *clSelectedPlatformID = clPlatformIDs[0];
             }
 
@@ -258,7 +258,7 @@ void oclPrintDevInfo(cl_device_id device)
 
     // CL_DEVICE_IMAGE2D_MAX_WIDTH, CL_DEVICE_IMAGE2D_MAX_HEIGHT, CL_DEVICE_IMAGE3D_MAX_WIDTH, CL_DEVICE_IMAGE3D_MAX_HEIGHT, CL_DEVICE_IMAGE3D_MAX_DEPTH
     size_t szMaxDims[5];
-    printf("\n  CL_DEVICE_IMAGE <dim>");
+    printf("  CL_DEVICE_IMAGE <dim>");
     clGetDeviceInfo(device, CL_DEVICE_IMAGE2D_MAX_WIDTH, sizeof(size_t), &szMaxDims[0], NULL);
     printf("\t\t\t2D_MAX_WIDTH\t %u\n", szMaxDims[0]);
     clGetDeviceInfo(device, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &szMaxDims[1], NULL);
@@ -274,7 +274,7 @@ void oclPrintDevInfo(cl_device_id device)
     clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, sizeof(device_string), &device_string, NULL);
     if (device_string != 0)
     {
-        printf("\n  CL_DEVICE_EXTENSIONS:");
+        printf("  CL_DEVICE_EXTENSIONS:");
         std::string stdDevString;
         stdDevString = std::string(device_string);
         size_t szOldPos = 0;
@@ -295,7 +295,6 @@ void oclPrintDevInfo(cl_device_id device)
                 szSpacePos = stdDevString.find(' ', szOldPos);
             } while (szSpacePos == szOldPos);
         }
-        printf("\n");
     }
     else
     {
@@ -342,7 +341,7 @@ void oclPrintDevInfo(cl_device_id device)
     clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG, sizeof(cl_uint), &vec_width[3], NULL);
     clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT, sizeof(cl_uint), &vec_width[4], NULL);
     clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE, sizeof(cl_uint), &vec_width[5], NULL);
-    printf("CHAR %u, SHORT %u, INT %u, LONG %u, FLOAT %u, DOUBLE %u\n\n\n",
+    printf("CHAR %u, SHORT %u, INT %u, LONG %u, FLOAT %u, DOUBLE %u\n",
            vec_width[0], vec_width[1], vec_width[2], vec_width[3], vec_width[4], vec_width[5]);
 }
 
