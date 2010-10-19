@@ -5,6 +5,30 @@
 
 #include "OclUtils.hpp"
 
+// **************************************************************
+char *read_opencl_kernel(const std::string filename, int *length)
+{
+    FILE *f = fopen(filename.c_str(), "r");
+    void *buffer;
+
+    if (!f) {
+        //std_cout << "Unable to open " << filename << " for reading\n";
+        printf("Unable to open %s for reading\n");
+        abort();
+    }
+
+    fseek(f, 0, SEEK_END);
+    *length = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    buffer = malloc(*length+1);
+    *length = fread(buffer, 1, *length, f);
+    fclose(f);
+    ((char*)buffer)[*length] = '\0';
+
+    return (char*)buffer;
+}
+
 /**
  * Comes from oclUtils.{cpp,h} and shrUtils.{cpp,h} from Nvidia's CUDA SDK
  */

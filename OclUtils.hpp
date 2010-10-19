@@ -1,6 +1,8 @@
 
 #include <CL/opencl.h>
 
+char *read_opencl_kernel(const std::string filename, int *length);
+
 // Beginning of GPU Architecture definitions
 inline int ConvertSMVer2Cores(int major, int minor)
 {
