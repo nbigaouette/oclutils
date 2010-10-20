@@ -14,7 +14,7 @@ char *read_opencl_kernel(const std::string filename, int *length)
 
     if (!f) {
         //std_cout << "Unable to open " << filename << " for reading\n";
-        printf("Unable to open %s for reading\n", filename);
+        printf("Unable to open %s for reading\n", filename.c_str());
         abort();
     }
 
