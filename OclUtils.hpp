@@ -3,7 +3,7 @@
 
 #include <CL/cl.h>
 
-#define OpenCL_Test_Sussess(err, fct_name) \
+#define OpenCL_Test_Success(err, fct_name) \
     if ((err) != CL_SUCCESS) \
     { \
         std::cout << "ERROR calling " << fct_name << "() (" << __FILE__ << " line " << __LINE__ << "): " << oclErrorString(err) << "\n"; \
