@@ -42,6 +42,9 @@
 #define CL_DEVICE_INTEGRATED_MEMORY_NV              0x4006
 #endif
 
+// Defines for GPU Architecture types (using the SM version to determine the # of cores per SM
+static int nGpuArchCoresPerSM[] = { -1, 8, 32 };
+// end of GPU Architecture definitions
 
 
 char *read_opencl_kernel(const std::string filename, int *length);
@@ -104,6 +107,22 @@ extern "C" void oclPrintDevInfo(cl_device_id device);
 //////////////////////////////////////////////////////////////////////////////
 extern "C" void oclPrintDevName(cl_device_id device);
 
+
+// Defines and enum for use with logging functions
+// *********************************************************************
+#define DEFAULTLOGFILE "SdkConsoleLog.txt"
+#define MASTERLOGFILE "SdkMasterLog.csv"
+enum LOGMODES
+{
+    LOGCONSOLE = 1, // bit to signal "log to console"
+    //LOGFILE    = 2, // bit to signal "log to file"
+    //LOGBOTH    = 3, // convenience union of first 2 bits to signal "log to both"
+    //APPENDMODE = 4, // bit to set "file append" mode instead of "replace mode" on open
+    //MASTER     = 8, // bit to signal master .csv log output
+    ERRORMSG   = 16, // bit to signal "pre-pend Error"
+    //CLOSELOG   = 32  // bit to close log file, if open, after any requested file write
+};
+
 //////////////////////////////////////////////////////////////////////////////
 //! Get and return device capability
 //!
@@ -112,3 +131,29 @@ extern "C" void oclPrintDevName(cl_device_id device);
 //////////////////////////////////////////////////////////////////////////////
 extern "C" int oclGetDevCap(cl_device_id device);
 
+// *********************************************************************
+// Helper function to log standardized information to Console, to File or to both
+//! Examples: shrLogEx(LOGBOTH, 0, "Function A\n");
+//!         : shrLogEx(LOGBOTH | ERRORMSG, ciErrNum, STDERROR);
+//!
+//! Automatically opens file and stores handle if needed and not done yet
+//! Closes file and nulls handle on request
+//!
+//! @param 0 iLogMode: LOGCONSOLE, LOGFILE, LOGBOTH, APPENDMODE, MASTER, ERRORMSG, CLOSELOG.
+//!          LOGFILE and LOGBOTH may be | 'd  with APPENDMODE to select file append mode instead of overwrite mode
+//!          LOGFILE and LOGBOTH may be | 'd  with CLOSELOG to "write and close"
+//!          First 3 options may be | 'd  with MASTER to enable independent write to master data log file
+//!          First 3 options may be | 'd  with ERRORMSG to start line with standard error message
+//! @param 2 dValue:
+//!          Positive val = double value for time in secs to be formatted to 6 decimals.
+//!          Negative val is an error code and this give error preformatting.
+//! @param 3 cFormatString: String with formatting specifiers like printf or fprintf.
+//!          ALL printf flags, width, precision and type specifiers are supported with this exception:
+//!              Wide char type specifiers intended for wprintf (%S and %C) are NOT supported
+//!              Single byte char type specifiers (%s and %c) ARE supported
+//! @param 4... variable args: like printf or fprintf.  Must match format specifer type above.
+//! @return 0 if OK, negative value on error or if error occurs or was passed in.
+// *********************************************************************
+extern "C" int shrLogEx(int iLogMode, int iErrNum, const char* cFormatString, ...);
+
+extern "C" int shrLog(const char* cFormatString, ...);
