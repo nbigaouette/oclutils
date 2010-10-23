@@ -9,6 +9,10 @@
 
 #include "OclUtils.hpp"
 
+// Defines for GPU Architecture types (using the SM version to determine the # of cores per SM
+static int nGpuArchCoresPerSM[] = { -1, 8, 32 };
+// end of GPU Architecture definitions
+
 // **************************************************************
 char *read_opencl_kernel(const std::string filename, int *length)
 {

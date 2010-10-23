@@ -42,10 +42,6 @@
 #define CL_DEVICE_INTEGRATED_MEMORY_NV              0x4006
 #endif
 
-// Defines for GPU Architecture types (using the SM version to determine the # of cores per SM
-static int nGpuArchCoresPerSM[] = { -1, 8, 32 };
-// end of GPU Architecture definitions
-
 
 char *read_opencl_kernel(const std::string filename, int *length);
 
@@ -58,7 +54,7 @@ inline int ConvertSMVer2Cores(int major, int minor)
         int Cores;
     } sSMtoCores;
 
-    sSMtoCores nGpuArchCoresPerSM[] =
+    sSMtoCores ConvertSMVer2Cores_nGpuArchCoresPerSM[] =
     { { 0x10,  8 },
       { 0x11,  8 },
       { 0x12,  8 },
@@ -69,9 +65,9 @@ inline int ConvertSMVer2Cores(int major, int minor)
     };
 
     int index = 0;
-    while (nGpuArchCoresPerSM[index].SM != -1) {
-        if (nGpuArchCoresPerSM[index].SM == ((major << 4) + minor) ) {
-            return nGpuArchCoresPerSM[index].Cores;
+    while (ConvertSMVer2Cores_nGpuArchCoresPerSM[index].SM != -1) {
+        if (ConvertSMVer2Cores_nGpuArchCoresPerSM[index].SM == ((major << 4) + minor) ) {
+            return ConvertSMVer2Cores_nGpuArchCoresPerSM[index].Cores;
         }
         index++;
     }
