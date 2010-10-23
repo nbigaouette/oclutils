@@ -115,7 +115,7 @@ enum LOGMODES
     //LOGBOTH    = 3, // convenience union of first 2 bits to signal "log to both"
     //APPENDMODE = 4, // bit to set "file append" mode instead of "replace mode" on open
     //MASTER     = 8, // bit to signal master .csv log output
-    ERRORMSG   = 16, // bit to signal "pre-pend Error"
+    ERRORMSG   = 16 // bit to signal "pre-pend Error"
     //CLOSELOG   = 32  // bit to close log file, if open, after any requested file write
 };
 
