@@ -469,9 +469,7 @@ static int shrLogV(int iLogMode, int iErrNum, const char* cFormatString, va_list
     /*
     static FILE* pFileStream0 = NULL;
     static FILE* pFileStream1 = NULL;
-    */
     size_t szNumWritten = 0;
-    /*
     char cFileMode [3];
 
     // if the sample log file is closed and the call incudes a "write-to-file", open file for writing
@@ -610,12 +608,12 @@ static int shrLogV(int iLogMode, int iErrNum, const char* cFormatString, va_list
         // Check if the current character is not a formatting specifier ('%')
         if (*pStr != '%')
         {
+            /*
             // character is not '%', so print it verbatim to console and/or files as flagged
             if (iLogMode & LOGCONSOLE)
             {
                 szNumWritten = putc(*pStr, stdout);                                             // console
             }
-            /*
             if (iLogMode & LOGFILE)
             {
                 szNumWritten  = putc(*pStr, pFileStream0);                                      // sample log file
@@ -625,6 +623,7 @@ static int shrLogV(int iLogMode, int iErrNum, const char* cFormatString, va_list
                 }
             }
             */
+            std_cout << *pStr;
         }
         else
         {
