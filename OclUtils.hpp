@@ -14,6 +14,36 @@ if ((err) != CL_SUCCESS)                                            \
     abort();                                                        \
 }
 
+#define OpenCL_Release_Kernel(err, opencl_kernel)                   \
+{                                                                   \
+    if ((opencl_kernel)) err = clReleaseKernel((opencl_kernel));    \
+    OpenCL_Test_Success(err, "clReleaseKernel");                    \
+}
+
+#define OpenCL_Release_Program(err, opencl_program)                 \
+{                                                                   \
+    if ((opencl_program)) err = clReleaseProgram((opencl_program)); \
+    OpenCL_Test_Success(err, "clReleaseProgram");                   \
+}
+
+#define OpenCL_Release_CommandQueue(err, opencl_cqueue)             \
+{                                                                   \
+    if ((opencl_cqueue)) err = clReleaseCommandQueue((opencl_cqueue));\
+    OpenCL_Test_Success(err, "clReleaseCommandQueue");              \
+}
+
+#define OpenCL_Release_Memory(err, opencl_array)                    \
+{                                                                   \
+    if ((opencl_array)) err = clReleaseMemObject((opencl_array));   \
+    OpenCL_Test_Success(err, "clReleaseMemObject");                 \
+}
+
+#define OpenCL_Release_Context(err, opencl_context)                 \
+{                                                                   \
+    if ((opencl_context)) err = clReleaseContext((opencl_context)); \
+    OpenCL_Test_Success(err, "clReleaseContext");                   \
+}
+
 /******************************************
 * cl_nv_device_attribute_query extension *
 ******************************************/
