@@ -3,14 +3,16 @@
 
 #include <CL/cl.h>
 
+#include <StdCout.hpp>
+
 
 #define OpenCL_Test_Success(err, fct_name)                          \
 if ((err) != CL_SUCCESS)                                            \
 {                                                                   \
-    std::cout                                                       \
+    std_cout                                                        \
         << "ERROR calling " << fct_name << "() ("                   \
         << __FILE__ << " line " << __LINE__ << "): "                \
-        << oclErrorString(err) << "\n";                             \
+        << oclErrorString(err) << "\n" << std::flush;               \
     abort();                                                        \
 }
 

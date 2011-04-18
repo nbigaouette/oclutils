@@ -5,8 +5,6 @@
 #include <string.h> // strstr
 #include <cstdarg>  // va_arg, va_list, etc.
 
-#include <StdCout.hpp>
-
 #include "OclUtils.hpp"
 
 // Defines for GPU Architecture types (using the SM version to determine the # of cores per SM
