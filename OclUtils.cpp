@@ -86,7 +86,7 @@ void OpenCL_device::Set_Context()
         std_cout << "WARNING: Can't find an OpenCL device!\n" << std::flush;
         abort();
     }
-    OpenCL_Test_Success(err, "clCreateContext");
+    OpenCL_Test_Success(err, "OpenCL_device::Set_Context()");
 }
 
 // *****************************************************************************
