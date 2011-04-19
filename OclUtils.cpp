@@ -138,7 +138,9 @@ void OpenCL_device::Print()
 bool OpenCL_device::operator<(const OpenCL_device &b)
 {
     // Compare the maximum number of compute unit
-    return (this->max_compute_unit < b.max_compute_unit) ? true : false;
+    // NOTE: We want a sorted list where device with higher compute units
+    //       are located at the top (front). We thus invert the test here.
+    return (this->max_compute_unit > b.max_compute_unit) ? true : false;
 }
 
 
@@ -236,6 +238,9 @@ void OpenCL_devices_list::Initialize()
 
     // Sort the list. The order is defined by "OpenCL_device::operator<" (line 112)
     device_list.sort();
+
+    // Make sure the first in the list is the prefered one.
+    assert(Prefered_OpenCL_Device() == device_list.begin()->Get_Device());
 
     // Initialize context on preferred device's
     Prefered_OpenCL().Set_Context();
