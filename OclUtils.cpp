@@ -236,6 +236,8 @@ void OpenCL_devices_list::Initialize()
     // Sort the list. The order is defined by "OpenCL_device::operator<" (line 112)
     device_list.sort();
 
+    Print();
+
     // Initialize context on a device
     preferred_device = NULL;    // The preferred device is unknown for now.
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
@@ -257,7 +259,5 @@ void OpenCL_devices_list::Initialize()
         std_cout << "ERROR: Cannot set an OpenCL context on any of the available devices!\nExiting" << std::flush;
         abort();
     }
-
-    Print();
 }
 
