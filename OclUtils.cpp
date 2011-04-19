@@ -37,7 +37,7 @@ char *read_opencl_kernel(const std::string filename, int *length)
 // *****************************************************************************
 OpenCL_device::OpenCL_device()
 {
-    memset(name, 0, sizeof(name));
+    name                        = "";
     id                          = -1;
     device_is_gpu               = false;
     max_compute_unit            = 0;
@@ -63,14 +63,17 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
     device          = _device;
     device_is_gpu   = _device_is_gpu;
 
+    char tmp_name[4096];
+
     cl_int err;
-    err  = clGetDeviceInfo(device, CL_DEVICE_NAME,                      sizeof(name),     &name, NULL);
-    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS,         sizeof(cl_uint),  &max_compute_unit, NULL);
+    err  = clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS,         sizeof(cl_uint),  &max_compute_unit, NULL);
     err |= clGetDeviceInfo(device, CL_DEVICE_GLOBAL_MEM_SIZE,           sizeof(cl_ulong), &available_memory_global, NULL);
     err |= clGetDeviceInfo(device, CL_DEVICE_LOCAL_MEM_SIZE,            sizeof(cl_ulong), &available_memory_local,  NULL);
     err |= clGetDeviceInfo(device, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,  sizeof(cl_ulong), &available_memory_constant,  NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_NAME,                      sizeof(tmp_name), &tmp_name, NULL);
+    name = std::string(tmp_name);
 
-    OpenCL_Test_Success(err, "Init()");
+    OpenCL_Test_Success(err, "OpenCL_device::Set_Information()");
 }
 
 // *****************************************************************************

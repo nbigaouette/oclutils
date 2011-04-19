@@ -56,8 +56,8 @@ char *read_opencl_kernel(const std::string filename, int *length);
 // *****************************************************************************
 class OpenCL_device
 {
-    public:
-        char            name[1024];
+    private:
+        std::string     name;
         int             id;
         cl_device_id    device;
         cl_context      context;
