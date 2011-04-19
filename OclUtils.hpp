@@ -67,9 +67,13 @@ class OpenCL_device
         cl_ulong        available_memory_local;
         cl_ulong        available_memory_constant;
 
+    public:
         OpenCL_device();
-
         ~OpenCL_device();
+
+        std::string         Get_Name()      { return name;      }
+        cl_device_id    &   Get_Device()    { return device;    }
+        cl_context      &   Get_Context()   { return context;   }
 
         void Set_Information(const int _id, cl_device_id _device, const bool _device_is_gpu);
 
