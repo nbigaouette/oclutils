@@ -157,6 +157,7 @@ OpenCL_devices_list::~OpenCL_devices_list()
 {
 }
 
+// *****************************************************************************
 void OpenCL_devices_list::Print()
 {
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
