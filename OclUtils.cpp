@@ -234,7 +234,7 @@ void OpenCL_devices_list::Initialize()
 
     assert(it == device_list.end());
 
-    // Sort the list. Sorting is define as "OpenCL_device::operator<" (line 112)
+    // Sort the list. The order is defined by "OpenCL_device::operator<" (line 112)
     device_list.sort();
 
     // Initialize context on preferred device's
