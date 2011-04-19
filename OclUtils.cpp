@@ -79,8 +79,9 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
 // *****************************************************************************
 cl_int OpenCL_device::Set_Context()
 {
-    int err;
+    cl_int err;
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+    return err;
 }
 
 // *****************************************************************************
