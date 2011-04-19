@@ -78,7 +78,7 @@ class OpenCL_device
 
         void Set_Information(const int _id, cl_device_id _device, const bool _device_is_gpu);
 
-        void Set_Context();
+        cl_int Set_Context();
 
         void Print();
 
@@ -96,6 +96,8 @@ private:
     cl_uint                     nb_gpu;
     int                         err;
 
+    OpenCL_device               *preferred_device;
+
 public:
     OpenCL_devices_list();
     ~OpenCL_devices_list();
@@ -104,7 +106,7 @@ public:
 
     void Print();
 
-    inline OpenCL_device &  Prefered_OpenCL()                { return device_list.front(); }
+    inline OpenCL_device &  Prefered_OpenCL()                { return *preferred_device; }
     inline cl_device_id  &  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
     inline cl_context    &  Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
 

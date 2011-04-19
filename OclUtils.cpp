@@ -77,16 +77,10 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
 }
 
 // *****************************************************************************
-void OpenCL_device::Set_Context()
+cl_int OpenCL_device::Set_Context()
 {
     int err;
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
-    if (err == CL_DEVICE_NOT_FOUND)
-    {
-        std_cout << "WARNING: Can't find an OpenCL device!\n" << std::flush;
-        abort();
-    }
-    OpenCL_Test_Success(err, "OpenCL_device::Set_Context()");
 }
 
 // *****************************************************************************
@@ -150,6 +144,7 @@ OpenCL_devices_list::OpenCL_devices_list()
     nb_cpu  = 0;
     nb_gpu  = 0;
     err     = 0;
+    preferred_device = NULL;
 }
 
 // *****************************************************************************
@@ -240,11 +235,36 @@ void OpenCL_devices_list::Initialize()
     // Sort the list. The order is defined by "OpenCL_device::operator<" (line 112)
     device_list.sort();
 
+    // Store the preferred device
+    //preferred_device = &(device_list.front());
+
     // Make sure the first in the list is the prefered one.
-    assert(Prefered_OpenCL_Device() == device_list.begin()->Get_Device());
+    //assert(device_list.front() == device_list.begin()->Get_Device());
 
     // Initialize context on preferred device's
-    Prefered_OpenCL().Set_Context();
+    //Prefered_OpenCL().Set_Context();
+
+    preferred_device = NULL;
+    for (it = device_list.begin() ; it != device_list.end() ; ++it)
+    {
+        std_cout << "Trying to set an OpenCL context on " << it->Get_Name() << "...";
+        cl_int context_return = it->Set_Context();
+        if (context_return == CL_SUCCESS)
+        {
+            std_cout << " Success!\n";
+            preferred_device = &(*it);
+            break;
+        }
+        else
+        {
+            std_cout << " Failed.\n";
+        }
+    }
+    if (preferred_device == NULL)
+    {
+        std_cout << "ERROR: Cannot set an OpenCL context on any of the available devices!\nExiting" << std::flush;
+        abort();
+    }
 
     Print();
 }
