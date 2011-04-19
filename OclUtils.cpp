@@ -159,6 +159,15 @@ void OpenCL_devices_list::Print()
 {
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
         it->Print();
+
+    Print_N_Times("*", 109);
+    std_cout << "Order of preference for OpenCL devices:\n";
+    int i = 0;
+    for (it = device_list.begin() ; it != device_list.end() ; ++it)
+    {
+        std_cout << i++ << ".   " << it->Get_Name() << "\n";
+    }
+    Print_N_Times("*", 109);
 }
 
 // *****************************************************************************
