@@ -236,21 +236,12 @@ void OpenCL_devices_list::Initialize()
     // Sort the list. The order is defined by "OpenCL_device::operator<" (line 112)
     device_list.sort();
 
-    // Store the preferred device
-    //preferred_device = &(device_list.front());
-
-    // Make sure the first in the list is the prefered one.
-    //assert(device_list.front() == device_list.begin()->Get_Device());
-
-    // Initialize context on preferred device's
-    //Prefered_OpenCL().Set_Context();
-
-    preferred_device = NULL;
+    // Initialize context on a device
+    preferred_device = NULL;    // The preferred device is unknown for now.
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
     {
         std_cout << "Trying to set an OpenCL context on " << it->Get_Name() << "...";
-        cl_int context_return = it->Set_Context();
-        if (context_return == CL_SUCCESS)
+        if (it->Set_Context() == CL_SUCCESS)
         {
             std_cout << " Success!\n";
             preferred_device = &(*it);
@@ -258,7 +249,7 @@ void OpenCL_devices_list::Initialize()
         }
         else
         {
-            std_cout << " Failed.\n";
+            std_cout << " Failed. Maybe next one will work?\n";
         }
     }
     if (preferred_device == NULL)
