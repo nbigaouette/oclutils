@@ -103,7 +103,7 @@ public:
 
     void Print();
 
-    inline OpenCL_device &  Prefered_OpenCL()                { return device_list.front(); }
+    inline OpenCL_device &  Prefered_OpenCL()                { return device_list.back(); }
     inline cl_device_id  &  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
     inline cl_context    &  Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
 
