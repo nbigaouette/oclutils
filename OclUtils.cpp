@@ -22,7 +22,7 @@ char *read_opencl_kernel(const std::string filename, int *length)
     }
 
     fseek(f, 0, SEEK_END);
-    *length = ftell(f);
+    *length = int(ftell(f));
     fseek(f, 0, SEEK_SET);
 
     buffer = malloc(*length+1);
