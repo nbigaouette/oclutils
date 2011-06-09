@@ -3,6 +3,7 @@
 #include <stdlib.h> // abort()
 #include <string>   // std::string
 #include <cstdarg>  // va_arg, va_list, etc.
+#include <cmath>
 
 #include <Memory.hpp> // Print_N_Times()
 
@@ -31,8 +32,6 @@ char *read_opencl_kernel(const std::string filename, int *length)
 
     return (char*)buffer;
 }
-
-
 
 // *****************************************************************************
 OpenCL_device::OpenCL_device()
@@ -137,7 +136,6 @@ bool OpenCL_device::operator<(const OpenCL_device &b)
     //       are located at the top (front). We thus invert the test here.
     return (this->max_compute_unit > b.max_compute_unit) ? true : false;
 }
-
 
 // *****************************************************************************
 OpenCL_devices_list::OpenCL_devices_list()
@@ -261,3 +259,236 @@ void OpenCL_devices_list::Initialize()
     }
 }
 
+
+// *****************************************************************************
+
+OpenCL_Kernel::OpenCL_Kernel(std::string _filename, bool _use_mt, cl_context _context, cl_device_id _device_id):
+                           filename(_filename), use_mt(_use_mt), context(_context), device_id(_device_id)
+{
+}
+
+
+// *****************************************************************************
+OpenCL_Kernel::~OpenCL_Kernel()
+{
+    if (kernel)  clReleaseKernel(kernel);
+    if (program) clReleaseProgram(program);
+
+    delete[] global_work_size;
+    delete[] local_work_size;
+}
+
+
+// *****************************************************************************
+void OpenCL_Kernel::Build(std::string _kernel_name, std::string _compiler_options)
+{
+    compiler_options = _compiler_options;
+    kernel_name      = _kernel_name;
+
+    // **********************************************************
+    // Load and build the kernel
+    Load_Program_From_File();
+
+    // Create the kernel.
+    kernel = clCreateKernel(program, kernel_name.c_str(), &err);
+    OpenCL_Test_Success(err, "clCreateKernel");
+
+    // **********************************************************
+    // Get the maximum work group size
+    //err = clGetKernelWorkGroupInfo(kernel_md, list.Prefered_OpenCL_Device(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &maxWorkSize, NULL);
+    //std_cout << "Maximum kernel work group size: " << maxWorkSize << "\n";
+    //OpenCL_Test_Success(err, "clGetKernelWorkGroupInfo");
+}
+
+
+// *****************************************************************************
+void OpenCL_Kernel::Compute_Work_Size(int N)
+/**
+ * When this method is used the local work size is choosed by OpenCL.
+ * Thus, the global work size is set to N.
+ * Don't use this function if using MT.
+ */
+{
+    dimension = 1;
+
+    global_work_size = new size_t[dimension];
+    local_work_size = new size_t[dimension];
+
+    global_work_size[0] = N;
+    local_work_size = NULL;
+}
+
+
+// *****************************************************************************
+void OpenCL_Kernel::Compute_Work_Size(int N, int _p, int _q)
+/**
+ * Use this method for a kernel who benefits from MT.
+ */
+{
+    dimension = 2;
+
+    global_work_size = new size_t[dimension];
+    local_work_size = new size_t[dimension];
+
+    if(_p * _q > MAX_LOCAL_WORK_SIZE)
+    {
+        _p = MAX_LOCAL_WORK_SIZE / _q;
+    }
+    else if(_q == 1 && N < _p)
+    {
+        _p = N;
+    }
+
+    local_work_size[0] = _p;
+    local_work_size[1] = _q;
+
+    global_work_size[0] = Get_Multiple_Of_Work_Size(N, _p*_q);
+    global_work_size[1] = _q;
+
+    p = _p;
+    q = _q;
+
+    //std_cout << "Number of dimension of problem space: " << dimension << "\n";
+    //std_cout << "global_workGroupSize[" << 0 << "]: " << globalWorkSizes[id][0] << " \n";
+    //for(int d = 0 ; d < dimension ; d++)
+    //    "local_workGroupSize[" << d << "]: " << localWorkSizes[id][d] << "\n";
+}
+
+
+// *****************************************************************************
+cl_kernel OpenCL_Kernel::Get_Kernel() const
+{
+    return kernel;
+}
+
+
+// *****************************************************************************
+size_t *OpenCL_Kernel::Get_Global_Work_Size() const
+{
+    return global_work_size;
+}
+
+
+// *****************************************************************************
+size_t *OpenCL_Kernel::Get_Local_Work_Size() const
+{
+    return local_work_size;
+}
+
+
+// *****************************************************************************
+int OpenCL_Kernel::Get_Dimension() const
+{
+    return dimension;
+}
+
+
+// *****************************************************************************
+bool OpenCL_Kernel::Uses_MT() const
+{
+    return use_mt;
+}
+
+
+// *****************************************************************************
+void OpenCL_Kernel::Load_Program_From_File()
+{
+    // Program Setup
+    int pl;
+    size_t program_length;
+    std_cout << "Loading OpenCL program from \"" << filename << "\"...\n";
+
+    // Loads the contents of the file at the given path
+    char* cSourceCL = read_opencl_kernel(filename, &pl);
+    program_length = (size_t) pl;
+
+    // create the program
+    program = clCreateProgramWithSource(context, 1, (const char **) &cSourceCL, &program_length, &err);
+    OpenCL_Test_Success(err, "clCreateProgramWithSource");
+
+    Build_Executable();
+}
+
+
+// *****************************************************************************
+void OpenCL_Kernel::Build_Executable()
+/**
+ * Build the program executable
+ */
+{
+    std_cout << "Building the program..." << std::flush;
+
+#ifdef YDEBUG
+    // Include debugging symbols in kernel compilation
+#ifndef MACOSX
+    compiler_options += "-g ";
+#endif // #ifndef MACOSX
+#endif // #ifdef YDEBUG
+    // Verbose compilation? Does not do much... And it may break kernel compilation
+    // with invalid kernel name error.
+    //OpenCLCompilerOptions += "-cl-nv-verbose";
+
+    std_cout << "\nOpenCL Compiler Options: " << compiler_options.c_str() << "\n" << std::flush;
+
+    err = clBuildProgram(program, 0, NULL, compiler_options.c_str(), NULL, NULL);
+
+    char *build_log;
+    size_t ret_val_size;
+    err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
+    build_log = new char[ret_val_size+1];
+    err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
+    build_log[ret_val_size] = '\0';
+    OpenCL_Test_Success(err, "1. clGetProgramBuildInfo");
+    std_cout << "OpenCL kernels file compilation log: \n" << build_log << "\n";
+
+    if (err != CL_SUCCESS)
+    {
+        cl_build_status build_status;
+        err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
+        OpenCL_Test_Success(err, "0. clGetProgramBuildInfo");
+
+        //char *build_log;
+        //size_t ret_val_size;
+        err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
+        OpenCL_Test_Success(err, "1. clGetProgramBuildInfo");
+        //build_log = new char[ret_val_size+1];
+        err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
+        build_log[ret_val_size] = '\0';
+
+        OpenCL_Test_Success(err, "2. clGetProgramBuildInfo");
+        std_cout << "Build log: \n" << build_log << "\n";
+        std_cout << "Kernel did not built correctly. Exiting.\n";
+
+        std_cout << std::flush;
+        abort();
+    }
+
+    delete[] build_log;
+
+    std_cout << "done.\n";
+}
+
+
+
+// *****************************************************************************
+int OpenCL_Kernel::Get_Multiple_Of_Work_Size(int n, int _p)
+{
+    int multipleOfWorkSize = 0;
+
+    if (n < _p)
+    {
+        multipleOfWorkSize = n;
+    }
+    else if (n % _p == 0)
+    {
+        multipleOfWorkSize = n;
+    }
+    else
+    {
+        multipleOfWorkSize = _p*std::floor(n/_p) + _p;
+    }
+
+    return multipleOfWorkSize;
+}
+
+// ********** End of file ******************************************************
