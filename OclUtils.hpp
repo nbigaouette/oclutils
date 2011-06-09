@@ -147,17 +147,17 @@ class OpenCL_Kernel
 
     private:
 
+        std::string filename;
+        bool use_mt;
         cl_context context;
         cl_device_id device_id;
 
-        std::string filename;
         std::string compiler_options;
         std::string kernel_name;
 
         int dimension;
         int p;
         int q;
-        bool use_mt;
 
         cl_program program;
 
