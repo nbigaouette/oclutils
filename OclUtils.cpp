@@ -292,6 +292,19 @@ void OpenCL_devices_list::Initialize()
         {
             std_cout << " Success!\n";
             preferred_device = &(*it);
+
+            if(write_to_tmp)
+            {
+                std::ofstream file("/tmp/gpu_usage.txt", std::ios::out | std::ios::app);
+
+                if(file)
+                {
+                    file << "Device = " << preferred_device->Get_Id() << std::endl;
+
+                    file.close();
+                }
+            }
+
             break;
         }
         else
