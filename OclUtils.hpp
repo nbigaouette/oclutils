@@ -92,6 +92,8 @@ class OpenCL_device
         cl_int Set_Context();
 
         void Print();
+        bool Is_In_Use()    {return device_is_used;}
+        int Get_Id() const  {return id;}
 
         bool operator<(const OpenCL_device &b);
 };
