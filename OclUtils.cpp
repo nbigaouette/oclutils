@@ -144,6 +144,7 @@ OpenCL_devices_list::OpenCL_devices_list()
     nb_gpu  = 0;
     err     = 0;
     preferred_device = NULL;
+    write_to_tmp = true;
 }
 
 // *****************************************************************************
@@ -241,6 +242,41 @@ void OpenCL_devices_list::Initialize()
     }
 
     assert(it == device_list.end());
+
+    // When all devices are in use we ask the user if he would like
+    // his simulation to be forced.
+    if(is_all_devices_in_use == true)
+    {
+        bool correct_answer = false;
+
+        // Don't write to tmp. This would suppress lines created by other program running.
+        write_to_tmp = false;
+
+        while(!correct_answer)
+        {
+            // Ask the user if he still wants to execute the program.
+            std_cout << "It seem's that all devices are in use. Do you want to continue?\n";
+            std::string answer;
+            std::cin >> answer;
+
+            if(answer == "yes" || answer == "Y" || answer == "y")
+            {
+                correct_answer = true;
+                std_cout << "Proceeding... \n";
+            }
+            else if(answer == "no" || answer == "N" || answer == "n")
+            {
+                correct_answer = true;
+                std_cout << "Exiting... \n";
+                abort();
+            }
+            else
+            {
+                correct_answer = false;
+                std_cout << "You entered an invalid answer!\n";
+            }
+        }
+    }
 
     // Sort the list. The order is defined by "OpenCL_device::operator<" (line 112)
     device_list.sort();
