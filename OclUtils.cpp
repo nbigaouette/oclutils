@@ -202,6 +202,8 @@ void OpenCL_devices_list::Initialize()
 
     it = device_list.begin();
 
+    bool is_all_devices_in_use = true; // We want to know if all devices are in use.
+
     // Add CPUs to list
     if (nb_cpu >= 1)
     {
@@ -212,6 +214,11 @@ void OpenCL_devices_list::Initialize()
         for (unsigned int i = 0 ; i < nb_cpu ; ++i, ++it)
         {
             it->Set_Information(i, tmp_devices[i], false); // device_is_gpu == false
+
+            // When one device is not in use... One device is not in use!
+            if(!it->Is_In_Use())
+                is_all_devices_in_use = false;
+
         }
         delete[] tmp_devices;
     }
@@ -225,6 +232,10 @@ void OpenCL_devices_list::Initialize()
         for (unsigned int i = 0 ; i < nb_gpu ; ++i, ++it)
         {
             it->Set_Information(nb_cpu+i, tmp_devices[i], true); // device_is_gpu == true
+
+            // When one device is not in use... One device is not in use!
+            if(!it->Is_In_Use())
+                is_all_devices_in_use = false;
         }
         delete[] tmp_devices;
     }
