@@ -46,6 +46,8 @@ OpenCL_device::OpenCL_device()
 
     device  = NULL;
     context = NULL;
+
+    device_is_used = false;
 }
 
 // *****************************************************************************
@@ -61,6 +63,27 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
     id              = _id;
     device          = _device;
     device_is_gpu   = _device_is_gpu;
+
+    std::ifstream file("/tmp/gpu_usage.txt", std::ios::in);
+
+    if(file)
+    {
+        std::string line;
+
+        while(std::getline(file, line))
+        {
+            if(line.find("Device = " + id) != std::string::npos)
+            {
+                device_is_used = true;
+            }
+        }
+
+        file.close();
+    }
+    else
+    {
+        device_is_used = false;
+    }
 
     char tmp_name[4096];
 
