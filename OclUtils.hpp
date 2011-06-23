@@ -73,6 +73,7 @@ class OpenCL_device
         cl_context      context;
         cl_uint         max_compute_unit;
         bool            device_is_gpu;
+        bool            device_is_used;
         cl_ulong        available_memory_global;
         cl_ulong        available_memory_local;
         cl_ulong        available_memory_constant;
