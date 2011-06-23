@@ -107,6 +107,10 @@ private:
     cl_uint                     nb_gpu;
     int                         err;
 
+    // If the device usage is forced (when all devices are used) we dont want to
+    // write anything to /tmp.
+    bool                        write_to_tmp;
+
     OpenCL_device               *preferred_device;
 
 public:
