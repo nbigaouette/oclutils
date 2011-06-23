@@ -173,6 +173,38 @@ OpenCL_devices_list::OpenCL_devices_list()
 // *****************************************************************************
 OpenCL_devices_list::~OpenCL_devices_list()
 {
+    if(write_to_tmp)
+    {
+        std::string file_content; // Write the data from the file.
+
+        std::ifstream file_read("/tmp/gpu_usage.txt", std::ios::in);
+
+        if(file_read)
+        {
+            std::string line;
+
+            while(std::getline(file_read, line))
+            {
+                // Read every line except the one corresponding to the current device.
+                if(line.find("Device = " + preferred_device->Get_Id()) == std::string::npos)
+                {
+                    file_content += line + "\n"; // Add the lines to the string.
+                }
+            }
+
+            file_read.close();
+        }
+
+        // Write back the string to file (the current device being deleted).
+        std::ofstream file_write("/tmp/gpu_usage.txt", std::ios::out | std::ios::trunc);
+
+        if(file_write)
+        {
+            file_write << file_content;
+
+            file_write.close();
+        }
+    }
 }
 
 // *****************************************************************************
