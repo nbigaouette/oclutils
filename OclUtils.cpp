@@ -332,12 +332,12 @@ void OpenCL_devices_list::Initialize()
             std::string answer;
             std::cin >> answer;
 
-            if (answer == "yes" || answer == "Y" || answer == "y")
+            if (answer == "yes" || answer == "Y" || answer == "y" || answer == "oui" || answer == "O" || answer == "o")
             {
                 correct_answer = true;
                 std_cout << "Proceeding... \n";
             }
-            else if (answer == "no" || answer == "N" || answer == "n")
+            else if (answer == "no" || answer == "No" || answer == "N" || answer == "n" || answer == "non" || answer == "Non")
             {
                 correct_answer = true;
                 std_cout << "Exiting... \n";
