@@ -155,7 +155,7 @@ void OpenCL_device::Print()
 }
 
 // *****************************************************************************
-bool OpenCL_device::operator<(const OpenCL_device &b)
+bool OpenCL_device::operator<(const OpenCL_device &other)
 {
     // Start by checking if ones not in use. When this is the case give it priority.
     // Then compare the maximum number of compute unit
@@ -163,15 +163,15 @@ bool OpenCL_device::operator<(const OpenCL_device &b)
     //       are located at the top (front). We thus invert the test here.
     bool result = false;
 
-    if      (this->device_is_used == false && b.device_is_used == true)  // "this" wins (it is not in use).
+    if      (this->device_is_used == false && other.device_is_used == true)  // "this" wins (it is not in use).
         result = true;
-    else if (this->device_is_used == true  && b.device_is_used == false) // "b" wins (it is not in use).
+    else if (this->device_is_used == true  && other.device_is_used == false) // "other" wins (it is not in use).
         result = false;
     else // both are used or not used. Thus, we must compare the ammount of compute units.
     {
-        if (this->max_compute_unit > b.max_compute_unit) // "this" wins (having more compute units).
+        if (this->max_compute_unit > other.max_compute_unit) // "this" wins (having more compute units).
             result = true;
-        else                                             // "b" wins (having more or equal compute units).
+        else                                                 // "other" wins (having more or equal compute units).
             result = false;
     }
 
