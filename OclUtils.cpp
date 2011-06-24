@@ -118,6 +118,7 @@ void OpenCL_device::Print()
         << "Available OpenCL device:\n"
         << "    name: " << name << "\n"
         << "    id:   " << id << "\n"
+        << "    device_is_used " << (device_is_used ? "yes" : "no ") << "\n"
         << "    max_compute_unit: " << max_compute_unit << "\n"
         << "    device is GPU? " << (device_is_gpu ? "yes" : "no ") << "\n";
 
