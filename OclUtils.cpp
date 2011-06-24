@@ -10,6 +10,7 @@
 #include "OclUtils.hpp"
 
 const char TMP_FILE[] = "/tmp/gpu_usage.txt";
+const char string_base[] = "Device = ";
 
 
 // *****************************************************************************
@@ -75,7 +76,10 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
 
         while (std::getline(file, line))
         {
-            if (line.find("Device = " + id) != std::string::npos)
+            char string_to_find[512];
+            sprintf(string_to_find, "%s%d", string_base, id);
+
+            if (line.find(string_to_find) != std::string::npos)
             {
                 device_is_used = true;
             }
@@ -204,8 +208,11 @@ OpenCL_devices_list::~OpenCL_devices_list()
 
             while (std::getline(file_read, line))
             {
+                char string_to_find[512];
+                sprintf(string_to_find, "%s%d", string_base, preferred_device->Get_Id());
+
                 // Read every line except the one corresponding to the current device.
-                if (line.find("Device = " + preferred_device->Get_Id()) == std::string::npos)
+                if (line.find(string_to_find) == std::string::npos)
                 {
                     file_content += line + "\n"; // Add the lines to the string.
                 }
@@ -373,7 +380,7 @@ void OpenCL_devices_list::Initialize()
 
                 if (file)
                 {
-                    file << "Device = " << preferred_device->Get_Id() << std::endl;
+                    file << string_base << preferred_device->Get_Id() << std::endl;
 
                     file.close();
                 }
