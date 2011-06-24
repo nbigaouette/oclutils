@@ -168,7 +168,6 @@ bool OpenCL_device::operator<(const OpenCL_device &b)
         result = false;
     else // both are used or not used. Thus, we must compare the ammount of compute units.
     {
-        // (this->max_compute_unit > b.max_compute_unit) ? true : false;
         if(this->max_compute_unit > b.max_compute_unit) // this wins (having more compute units).
             result = true;
         else                                            // b wins (having more or equal compute units).
