@@ -9,6 +9,8 @@
 
 #include "OclUtils.hpp"
 
+#define TMP_FILE "/tmp/gpu_usage.txt"
+
 
 // *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length)
@@ -64,7 +66,7 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
     device          = _device;
     device_is_gpu   = _device_is_gpu;
 
-    std::ifstream file("/tmp/gpu_usage.txt", std::ios::in);
+    std::ifstream file(TMP_FILE, std::ios::in);
 
     if(file)
     {
@@ -193,7 +195,7 @@ OpenCL_devices_list::~OpenCL_devices_list()
     {
         std::string file_content; // Write the data from the file.
 
-        std::ifstream file_read("/tmp/gpu_usage.txt", std::ios::in);
+        std::ifstream file_read(TMP_FILE, std::ios::in);
 
         if(file_read)
         {
@@ -212,7 +214,7 @@ OpenCL_devices_list::~OpenCL_devices_list()
         }
 
         // Write back the string to file (the current device being deleted).
-        std::ofstream file_write("/tmp/gpu_usage.txt", std::ios::out | std::ios::trunc);
+        std::ofstream file_write(TMP_FILE, std::ios::out | std::ios::trunc);
 
         if(file_write)
         {
@@ -366,7 +368,7 @@ void OpenCL_devices_list::Initialize()
 
             if(write_to_tmp)
             {
-                std::ofstream file("/tmp/gpu_usage.txt", std::ios::out | std::ios::app);
+                std::ofstream file(TMP_FILE, std::ios::out | std::ios::app);
 
                 if(file)
                 {
