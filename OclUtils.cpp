@@ -328,7 +328,7 @@ void OpenCL_devices_list::Initialize()
         while (!correct_answer)
         {
             // Ask the user if he still wants to execute the program.
-            std_cout << "It seem's that all devices are in use. Do you want to continue?\n";
+            std_cout << "WARNING: It seem's that all OpenCL devices are in use. Do you want to continue? [y/n]\n";
             std::string answer;
             std::cin >> answer;
 
