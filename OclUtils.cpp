@@ -18,7 +18,8 @@ char *read_opencl_kernel(const std::string filename, int *length)
     FILE *f = fopen(filename.c_str(), "r");
     void *buffer;
 
-    if (!f) {
+    if (!f)
+    {
         std_cout << "Unable to open " << filename << " for reading\n";
         abort();
     }
@@ -68,13 +69,13 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
 
     std::ifstream file(TMP_FILE, std::ios::in);
 
-    if(file)
+    if (file)
     {
         std::string line;
 
-        while(std::getline(file, line))
+        while (std::getline(file, line))
         {
-            if(line.find("Device = " + id) != std::string::npos)
+            if (line.find("Device = " + id) != std::string::npos)
             {
                 device_is_used = true;
             }
@@ -162,15 +163,15 @@ bool OpenCL_device::operator<(const OpenCL_device &b)
     //       are located at the top (front). We thus invert the test here.
     bool result = false;
 
-    if(this->device_is_used == false && b.device_is_used == true) // this wins (it is not in use).
+    if      (this->device_is_used == false && b.device_is_used == true)  // "this" wins (it is not in use).
         result = true;
-    else if(this->device_is_used == true && b.device_is_used == false) // b wins (it is not in use).
+    else if (this->device_is_used == true  && b.device_is_used == false) // "b" wins (it is not in use).
         result = false;
     else // both are used or not used. Thus, we must compare the ammount of compute units.
     {
-        if(this->max_compute_unit > b.max_compute_unit) // this wins (having more compute units).
+        if (this->max_compute_unit > b.max_compute_unit) // "this" wins (having more compute units).
             result = true;
-        else                                            // b wins (having more or equal compute units).
+        else                                             // "b" wins (having more or equal compute units).
             result = false;
     }
 
@@ -190,20 +191,20 @@ OpenCL_devices_list::OpenCL_devices_list()
 // *****************************************************************************
 OpenCL_devices_list::~OpenCL_devices_list()
 {
-    if(write_to_tmp)
+    if (write_to_tmp)
     {
         std::string file_content; // Write the data from the file.
 
         std::ifstream file_read(TMP_FILE, std::ios::in);
 
-        if(file_read)
+        if (file_read)
         {
             std::string line;
 
-            while(std::getline(file_read, line))
+            while (std::getline(file_read, line))
             {
                 // Read every line except the one corresponding to the current device.
-                if(line.find("Device = " + preferred_device->Get_Id()) == std::string::npos)
+                if (line.find("Device = " + preferred_device->Get_Id()) == std::string::npos)
                 {
                     file_content += line + "\n"; // Add the lines to the string.
                 }
@@ -215,7 +216,7 @@ OpenCL_devices_list::~OpenCL_devices_list()
         // Write back the string to file (the current device being deleted).
         std::ofstream file_write(TMP_FILE, std::ios::out | std::ios::trunc);
 
-        if(file_write)
+        if (file_write)
         {
             file_write << file_content;
 
@@ -289,7 +290,7 @@ void OpenCL_devices_list::Initialize()
             it->Set_Information(i, tmp_devices[i], false); // device_is_gpu == false
 
             // When one device is not in use... One device is not in use!
-            if(!it->Is_In_Use())
+            if (!it->Is_In_Use())
                 is_all_devices_in_use = false;
 
         }
@@ -307,7 +308,7 @@ void OpenCL_devices_list::Initialize()
             it->Set_Information(nb_cpu+i, tmp_devices[i], true); // device_is_gpu == true
 
             // When one device is not in use... One device is not in use!
-            if(!it->Is_In_Use())
+            if (!it->Is_In_Use())
                 is_all_devices_in_use = false;
         }
         delete[] tmp_devices;
@@ -317,26 +318,26 @@ void OpenCL_devices_list::Initialize()
 
     // When all devices are in use we ask the user if he would like
     // his simulation to be forced.
-    if(is_all_devices_in_use == true)
+    if (is_all_devices_in_use == true)
     {
         bool correct_answer = false;
 
         // Don't write to tmp. This would suppress lines created by other program running.
         write_to_tmp = false;
 
-        while(!correct_answer)
+        while (!correct_answer)
         {
             // Ask the user if he still wants to execute the program.
             std_cout << "It seem's that all devices are in use. Do you want to continue?\n";
             std::string answer;
             std::cin >> answer;
 
-            if(answer == "yes" || answer == "Y" || answer == "y")
+            if (answer == "yes" || answer == "Y" || answer == "y")
             {
                 correct_answer = true;
                 std_cout << "Proceeding... \n";
             }
-            else if(answer == "no" || answer == "N" || answer == "n")
+            else if (answer == "no" || answer == "N" || answer == "n")
             {
                 correct_answer = true;
                 std_cout << "Exiting... \n";
@@ -365,11 +366,11 @@ void OpenCL_devices_list::Initialize()
             std_cout << " Success!\n";
             preferred_device = &(*it);
 
-            if(write_to_tmp)
+            if (write_to_tmp)
             {
                 std::ofstream file(TMP_FILE, std::ios::out | std::ios::app);
 
-                if(file)
+                if (file)
                 {
                     file << "Device = " << preferred_device->Get_Id() << std::endl;
 
@@ -462,11 +463,11 @@ void OpenCL_Kernel::Compute_Work_Size(int N, int _p, int _q)
     global_work_size = new size_t[dimension];
     local_work_size = new size_t[dimension];
 
-    if(_p * _q > MAX_LOCAL_WORK_SIZE)
+    if (_p * _q > MAX_LOCAL_WORK_SIZE)
     {
         _p = MAX_LOCAL_WORK_SIZE / _q;
     }
-    else if(_q == 1 && N < _p)
+    else if (_q == 1 && N < _p)
     {
         _p = N;
     }
