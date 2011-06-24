@@ -9,7 +9,7 @@
 
 #include "OclUtils.hpp"
 
-#define TMP_FILE "/tmp/gpu_usage.txt"
+const char TMP_FILE[] = "/tmp/gpu_usage.txt";
 
 
 // *****************************************************************************
