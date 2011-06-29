@@ -27,7 +27,12 @@ cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID)
     ciErrNum = clGetPlatformIDs (0, NULL, &num_platforms);
     if (ciErrNum != CL_SUCCESS)
     {
-        std_cout << " Error " << ciErrNum << " in clGetPlatformIDs Call !!!\n";
+        if (ciErrNum == CL_INVALID_VALUE)
+            std_cout << "CL_INVALID_VALUE error when calling clGetPlatformIDs() in NvidiaUtils.cpp line 27\n";
+        //else if (ciErrNum == CL_PLATFORM_NOT_FOUND_KHR)
+        //    std_cout << "CL_PLATFORM_NOT_FOUND_KHR error when calling clGetPlatformIDs() in NvidiaUtils.cpp line 27\n";
+        else
+            std_cout << " Error " << (int) ciErrNum << " in clGetPlatformIDs Call !!!\n";
         return -1000;
     }
     else
