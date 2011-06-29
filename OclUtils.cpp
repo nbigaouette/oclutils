@@ -402,14 +402,12 @@ void OpenCL_devices_list::Initialize()
     }
 }
 
-
 // *****************************************************************************
 
 OpenCL_Kernel::OpenCL_Kernel(std::string _filename, bool _use_mt, cl_context _context, cl_device_id _device_id):
                            filename(_filename), use_mt(_use_mt), context(_context), device_id(_device_id)
 {
 }
-
 
 // *****************************************************************************
 OpenCL_Kernel::~OpenCL_Kernel()
@@ -420,7 +418,6 @@ OpenCL_Kernel::~OpenCL_Kernel()
     delete[] global_work_size;
     delete[] local_work_size;
 }
-
 
 // *****************************************************************************
 void OpenCL_Kernel::Build(std::string _kernel_name, std::string _compiler_options)
@@ -443,7 +440,6 @@ void OpenCL_Kernel::Build(std::string _kernel_name, std::string _compiler_option
     //OpenCL_Test_Success(err, "clGetKernelWorkGroupInfo");
 }
 
-
 // *****************************************************************************
 void OpenCL_Kernel::Compute_Work_Size(int N)
 /**
@@ -460,7 +456,6 @@ void OpenCL_Kernel::Compute_Work_Size(int N)
     global_work_size[0] = N;
     local_work_size = NULL;
 }
-
 
 // *****************************************************************************
 void OpenCL_Kernel::Compute_Work_Size(int N, int _p, int _q)
@@ -497,13 +492,11 @@ void OpenCL_Kernel::Compute_Work_Size(int N, int _p, int _q)
     //    "local_workGroupSize[" << d << "]: " << localWorkSizes[id][d] << "\n";
 }
 
-
 // *****************************************************************************
 cl_kernel OpenCL_Kernel::Get_Kernel() const
 {
     return kernel;
 }
-
 
 // *****************************************************************************
 size_t *OpenCL_Kernel::Get_Global_Work_Size() const
@@ -511,13 +504,11 @@ size_t *OpenCL_Kernel::Get_Global_Work_Size() const
     return global_work_size;
 }
 
-
 // *****************************************************************************
 size_t *OpenCL_Kernel::Get_Local_Work_Size() const
 {
     return local_work_size;
 }
-
 
 // *****************************************************************************
 int OpenCL_Kernel::Get_Dimension() const
@@ -525,13 +516,11 @@ int OpenCL_Kernel::Get_Dimension() const
     return dimension;
 }
 
-
 // *****************************************************************************
 bool OpenCL_Kernel::Uses_MT() const
 {
     return use_mt;
 }
-
 
 // *****************************************************************************
 void OpenCL_Kernel::Load_Program_From_File()
@@ -551,7 +540,6 @@ void OpenCL_Kernel::Load_Program_From_File()
 
     Build_Executable();
 }
-
 
 // *****************************************************************************
 void OpenCL_Kernel::Build_Executable()
@@ -610,8 +598,6 @@ void OpenCL_Kernel::Build_Executable()
 
     std_cout << "done.\n";
 }
-
-
 
 // *****************************************************************************
 int OpenCL_Kernel::Get_Multiple_Of_Work_Size(int n, int _p)
