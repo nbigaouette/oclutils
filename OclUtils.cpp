@@ -557,7 +557,7 @@ void OpenCL_Kernel::Build_Executable()
 #endif // #ifdef YDEBUG
     // Verbose compilation? Does not do much... And it may break kernel compilation
     // with invalid kernel name error.
-    //OpenCLCompilerOptions += "-cl-nv-verbose";
+    //compiler_options += "-cl-nv-verbose";
 
     std_cout << "\nOpenCL Compiler Options: " << compiler_options.c_str() << "\n" << std::flush;
 
