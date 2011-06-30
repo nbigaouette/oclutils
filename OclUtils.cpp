@@ -244,7 +244,7 @@ void OpenCL_devices_list::Print()
     int i = 0;
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
     {
-        std_cout << i++ << ".   " << it->Get_Name() << "\n";
+        std_cout << i++ << ".   " << it->Get_Name() << " (id = " << it->Get_ID() << ")\n";
     }
     Print_N_Times("*", 109);
 }

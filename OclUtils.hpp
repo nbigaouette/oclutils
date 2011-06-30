@@ -84,6 +84,7 @@ class OpenCL_device
 
         std::string         Get_Name()      { return name;      }
         cl_uint             Get_Compute_Unit() { return max_compute_unit;      }
+        int                 Get_ID()        { return id;        }
         cl_device_id    &   Get_Device()    { return device;    }
         cl_context      &   Get_Context()   { return context;   }
 
