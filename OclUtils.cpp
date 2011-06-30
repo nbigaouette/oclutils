@@ -370,7 +370,7 @@ void OpenCL_devices_list::Initialize()
     preferred_device = NULL;    // The preferred device is unknown for now.
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
     {
-        std_cout << "Trying to set an OpenCL context on " << it->Get_Name() << "...";
+        std_cout << "Trying to set an OpenCL context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
         if (it->Set_Context() == CL_SUCCESS)
         {
             std_cout << " Success!\n";
