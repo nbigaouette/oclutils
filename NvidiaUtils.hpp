@@ -89,14 +89,6 @@ extern "C" cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID);
 extern "C" const char* oclErrorString(cl_int error);
 
 //////////////////////////////////////////////////////////////////////////////
-//! Print info about the device
-//!
-//! @param iLogMode       enum LOGBOTH, LOGCONSOLE, LOGFILE
-//! @param device         OpenCL id of the device
-//////////////////////////////////////////////////////////////////////////////
-extern "C" void oclPrintDevInfo(cl_device_id device);
-
-//////////////////////////////////////////////////////////////////////////////
 //! Print the device name
 //!
 //! @param device         OpenCL id of the device
