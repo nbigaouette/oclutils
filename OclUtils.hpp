@@ -73,16 +73,68 @@ char *read_opencl_kernel(const std::string filename, int *length);
 class OpenCL_device
 {
     private:
-        std::string     name;
         int             id;
         cl_device_id    device;
         cl_context      context;
-        cl_uint         max_compute_unit;
         bool            device_is_gpu;
         bool            device_is_used;
-        cl_ulong        available_memory_global;
-        cl_ulong        available_memory_local;
-        cl_ulong        available_memory_constant;
+
+        cl_uint                         address_bits;
+        cl_bool                         available;
+        cl_bool                         compiler_available;
+        cl_device_fp_config             double_fp_config;
+        cl_bool                         endian_little;
+        cl_bool                         error_correction_support;
+        cl_device_exec_capabilities     execution_capabilities;
+        cl_ulong                        global_mem_cache_size;
+        cl_device_mem_cache_type        global_mem_cache_type;
+        cl_uint                         global_mem_cacheline_size;
+        cl_ulong                        global_mem_size;
+        cl_device_fp_config             half_fp_config;
+        cl_bool                         image_support;
+        size_t                          image2d_max_height;
+        size_t                          image2d_max_width;
+        size_t                          image3d_max_depth;
+        size_t                          image3d_max_height;
+        size_t                          image3d_max_width;
+        cl_ulong                        local_mem_size;
+        cl_device_local_mem_type        local_mem_type;
+        cl_uint                         max_clock_frequency;
+        cl_uint                         max_compute_units;
+        cl_uint                         max_constant_args;
+        cl_ulong                        max_constant_buffer_size;
+        cl_ulong                        max_mem_alloc_size;
+        size_t                          max_parameter_size;
+        cl_uint                         max_read_image_args;
+        cl_uint                         max_samplers;
+        size_t                          max_work_group_size;
+        cl_uint                         max_work_item_dimensions;
+        size_t                          max_work_item_sizes[3];
+        cl_uint                         max_write_image_args;
+        cl_uint                         mem_base_addr_align;
+        cl_uint                         min_data_type_align_size;
+        cl_platform_id                  platform;
+        cl_uint                         preferred_vector_width_char;
+        cl_uint                         preferred_vector_width_short;
+        cl_uint                         preferred_vector_width_int;
+        cl_uint                         preferred_vector_width_long;
+        cl_uint                         preferred_vector_width_float;
+        cl_uint                         preferred_vector_width_double;
+        size_t                          profiling_timer_resolution;
+        cl_command_queue_properties     queue_properties;
+        cl_device_fp_config             single_fp_config;
+        cl_device_type                  type;
+        cl_uint                         vendor_id;
+
+        std::string                     extensions;
+        std::string                     name;
+        std::string                     profile;
+        std::string                     vendor;
+        std::string                     version;
+        std::string                     driver_version;
+        std::string                     type_string;
+        std::string                     queue_properties_string;
+        std::string                     single_fp_config_string;
 
     public:
         const OpenCL_platform *parent_platform;
@@ -92,7 +144,7 @@ class OpenCL_device
 
         const OpenCL_platform *   Get_Parent_Platform() { return parent_platform;    }
         std::string         Get_Name()      { return name;      }
-        cl_uint             Get_Compute_Unit() { return max_compute_unit;      }
+        cl_uint             Get_Compute_Units() { return max_compute_units;      }
         int                 Get_ID()        { return id;        }
         cl_device_id    &   Get_Device()    { return device;    }
         cl_context      &   Get_Context()   { return context;   }

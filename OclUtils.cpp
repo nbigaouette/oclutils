@@ -57,7 +57,7 @@ void OpenCL_platform::Print()
     ;
 
     std_cout
-        << "    Available devices on platform:\n";
+        << "    Available OpenCL devices on platform:\n";
     devices_list.Print();
 }
 
@@ -143,10 +143,7 @@ OpenCL_device::OpenCL_device()
     name                        = "";
     id                          = -1;
     device_is_gpu               = false;
-    max_compute_unit            = 0;
-    available_memory_global     = 0;
-    available_memory_local      = 0;
-    available_memory_constant   = 0;
+    max_compute_units           = 0;
 
     device  = NULL;
     context = NULL;
@@ -192,17 +189,110 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
         device_is_used = false;
     }
 
-    char tmp_name[4096];
+    char tmp_string[4096];
 
     cl_int err;
-    err  = clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS,         sizeof(cl_uint),  &max_compute_unit, NULL);
-    err |= clGetDeviceInfo(device, CL_DEVICE_GLOBAL_MEM_SIZE,           sizeof(cl_ulong), &available_memory_global, NULL);
-    err |= clGetDeviceInfo(device, CL_DEVICE_LOCAL_MEM_SIZE,            sizeof(cl_ulong), &available_memory_local,  NULL);
-    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,  sizeof(cl_ulong), &available_memory_constant,  NULL);
-    err |= clGetDeviceInfo(device, CL_DEVICE_NAME,                      sizeof(tmp_name), &tmp_name, NULL);
-    name = std::string(tmp_name);
+
+    // http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clGetDeviceInfo.html
+    err  = clGetDeviceInfo(device, CL_DEVICE_ADDRESS_BITS,                  sizeof(cl_uint),                        &address_bits,                  NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_AVAILABLE,                     sizeof(cl_bool),                        &available,                     NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_COMPILER_AVAILABLE,            sizeof(cl_bool),                        &compiler_available,            NULL);
+    //err |= clGetDeviceInfo(device, CL_DEVICE_DOUBLE_FP_CONFIG,              sizeof(cl_device_fp_config),            &double_fp_config,              NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_ENDIAN_LITTLE,                 sizeof(cl_bool),                        &endian_little,                 NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_ERROR_CORRECTION_SUPPORT,      sizeof(cl_bool),                        &error_correction_support,      NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_EXECUTION_CAPABILITIES,        sizeof(cl_device_exec_capabilities),    &execution_capabilities,        NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_GLOBAL_MEM_CACHE_SIZE,         sizeof(cl_ulong),                       &global_mem_cache_size,         NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_GLOBAL_MEM_CACHE_TYPE,         sizeof(cl_device_mem_cache_type),       &global_mem_cache_type,         NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE,     sizeof(cl_uint),                        &global_mem_cacheline_size,     NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_GLOBAL_MEM_SIZE,               sizeof(cl_ulong),                       &global_mem_size,               NULL);
+    //err |= clGetDeviceInfo(device, CL_DEVICE_HALF_FP_CONFIG,                sizeof(cl_device_fp_config),            &half_fp_config,                NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_IMAGE_SUPPORT,                 sizeof(cl_bool),                        &image_support,                 NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_IMAGE2D_MAX_HEIGHT,            sizeof(size_t),                         &image2d_max_height,            NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_IMAGE2D_MAX_WIDTH,             sizeof(size_t),                         &image2d_max_width,             NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_IMAGE3D_MAX_DEPTH,             sizeof(size_t),                         &image3d_max_depth,             NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_IMAGE3D_MAX_HEIGHT,            sizeof(size_t),                         &image3d_max_height,            NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_IMAGE3D_MAX_WIDTH,             sizeof(size_t),                         &image3d_max_width,             NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_LOCAL_MEM_SIZE,                sizeof(cl_ulong),                       &local_mem_size,                NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_LOCAL_MEM_TYPE,                sizeof(cl_device_local_mem_type),       &local_mem_type,                NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_CLOCK_FREQUENCY,           sizeof(cl_uint),                        &max_clock_frequency,           NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS,             sizeof(cl_uint),                        &max_compute_units,             NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_CONSTANT_ARGS,             sizeof(cl_uint),                        &max_constant_args,             NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,      sizeof(cl_ulong),                       &max_constant_buffer_size,      NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_MEM_ALLOC_SIZE,            sizeof(cl_ulong),                       &max_mem_alloc_size,            NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_PARAMETER_SIZE,            sizeof(size_t),                         &max_parameter_size,            NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_READ_IMAGE_ARGS,           sizeof(cl_uint),                        &max_read_image_args,           NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_SAMPLERS,                  sizeof(cl_uint),                        &max_samplers,                  NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_GROUP_SIZE,           sizeof(size_t),                         &max_work_group_size,           NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS,      sizeof(cl_uint),                        &max_work_item_dimensions,      NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_ITEM_SIZES,           sizeof(max_work_item_sizes),            &max_work_item_sizes,           NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MAX_WRITE_IMAGE_ARGS,          sizeof(cl_uint),                        &max_write_image_args,          NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MEM_BASE_ADDR_ALIGN,           sizeof(cl_uint),                        &mem_base_addr_align,           NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_MIN_DATA_TYPE_ALIGN_SIZE,      sizeof(cl_uint),                        &min_data_type_align_size,      NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_PLATFORM,                      sizeof(cl_platform_id),                 &platform,                      NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR,   sizeof(cl_uint),                        &preferred_vector_width_char,   NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT,  sizeof(cl_uint),                        &preferred_vector_width_short,  NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT,    sizeof(cl_uint),                        &preferred_vector_width_int,    NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG,   sizeof(cl_uint),                        &preferred_vector_width_long,   NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT,  sizeof(cl_uint),                        &preferred_vector_width_float,  NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE, sizeof(cl_uint),                        &preferred_vector_width_double, NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_PROFILING_TIMER_RESOLUTION,    sizeof(size_t),                         &profiling_timer_resolution,    NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_QUEUE_PROPERTIES,              sizeof(cl_command_queue_properties),    &queue_properties,              NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_SINGLE_FP_CONFIG,              sizeof(cl_device_fp_config),            &single_fp_config,              NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_TYPE,                          sizeof(cl_device_type),                 &type,                          NULL);
+    err |= clGetDeviceInfo(device, CL_DEVICE_VENDOR_ID,                     sizeof(cl_uint),                        &vendor_id,                     NULL);
+
+    err |= clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS,                    sizeof(tmp_string),                     &tmp_string,                    NULL);
+    extensions = std::string(tmp_string);
+    err |= clGetDeviceInfo(device, CL_DEVICE_NAME,                          sizeof(tmp_string),                     &tmp_string,                    NULL);
+    name = std::string(tmp_string);
+    err |= clGetDeviceInfo(device, CL_DEVICE_PROFILE,                       sizeof(tmp_string),                     &tmp_string,                    NULL);
+    profile = std::string(tmp_string);
+    err |= clGetDeviceInfo(device, CL_DEVICE_VENDOR,                        sizeof(tmp_string),                     &tmp_string,                    NULL);
+    vendor = std::string(tmp_string);
+    err |= clGetDeviceInfo(device, CL_DEVICE_VERSION,                       sizeof(tmp_string),                     &tmp_string,                    NULL);
+    version = std::string(tmp_string);
+    err |= clGetDeviceInfo(device, CL_DRIVER_VERSION,                       sizeof(tmp_string),                     &tmp_string,                    NULL);
+    driver_version = std::string(tmp_string);
 
     OpenCL_Test_Success(err, "OpenCL_device::Set_Information()");
+
+    if      (type == CL_DEVICE_TYPE_CPU)
+        type_string = "CL_DEVICE_TYPE_CPU";
+    else if (type == CL_DEVICE_TYPE_GPU)
+        type_string = "CL_DEVICE_TYPE_GPU";
+    else if (type == CL_DEVICE_TYPE_ACCELERATOR)
+        type_string = "CL_DEVICE_TYPE_ACCELERATOR";
+    else if (type == CL_DEVICE_TYPE_DEFAULT)
+        type_string = "CL_DEVICE_TYPE_DEFAULT";
+    else
+    {
+        std_cout << "ERROR: Unknown OpenCL type \"" << type << "\". Exiting.\n";
+        abort();
+    }
+
+    if      (queue_properties == CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE)
+        queue_properties_string = "CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE";
+    else if (queue_properties == CL_QUEUE_PROFILING_ENABLE)
+        queue_properties_string = "CL_QUEUE_PROFILING_ENABLE";
+    else
+    {
+        std_cout << "ERROR: Unknown OpenCL queue properties \"" << queue_properties << "\". Exiting.\n";
+        abort();
+    }
+
+    single_fp_config_string = "";
+    if      (single_fp_config & CL_FP_DENORM)
+        single_fp_config_string += "CL_FP_DENORM, ";
+    if (single_fp_config & CL_FP_INF_NAN)
+        single_fp_config_string += "CL_FP_INF_NAN, ";
+    if (single_fp_config & CL_FP_ROUND_TO_NEAREST)
+        single_fp_config_string += "CL_FP_ROUND_TO_NEAREST, ";
+    if (single_fp_config & CL_FP_ROUND_TO_ZERO)
+        single_fp_config_string += "CL_FP_ROUND_TO_ZERO, ";
+    if (single_fp_config & CL_FP_ROUND_TO_INF)
+        single_fp_config_string += "CL_FP_ROUND_TO_INF, ";
+    if (single_fp_config & CL_FP_FMA)
+        single_fp_config_string += "CL_FP_FMA, ";
 }
 
 // *****************************************************************************
@@ -216,48 +306,82 @@ cl_int OpenCL_device::Set_Context()
 // *****************************************************************************
 void OpenCL_device::Print()
 {
-    Print_N_Times("-", 109);
+    std_cout << "    "; Print_N_Times("-", 105);
 
     std_cout
-        << "Available OpenCL device:\n"
         << "    name: " << name << "\n"
-        << "    id:   " << id << "\n"
-        << "    parent platform:   " << (parent_platform != NULL ? parent_platform->name : "") << "\n"
-        << "    device_is_used " << (device_is_used ? "yes" : "no ") << "\n"
-        << "    max_compute_unit: " << max_compute_unit << "\n"
-        << "    device is GPU? " << (device_is_gpu ? "yes" : "no ") << "\n";
+        << "        id:                             " << id << "\n"
+        << "        parent platform:                " << (parent_platform != NULL ? parent_platform->name : "") << "\n"
+        << "        device_is_used:                 " << (device_is_used ? "yes" : "no ") << "\n"
+        << "        max_compute_unit:               " << max_compute_units << "\n"
+        << "        device is GPU?                  " << (device_is_gpu ? "yes" : "no ") << "\n"
 
+        << "        address_bits:                   " << address_bits << "\n"
+        << "        available:                      " << (available ? "yes" : "no") << "\n"
+        << "        compiler_available:             " << (compiler_available ? "yes" : "no") << "\n"
+        << "        double_fp_config:               " << double_fp_config << "\n"
+        << "        endian_little:                  " << (endian_little ? "yes" : "no") << "\n"
+        << "        error_correction_support:       " << (error_correction_support ? "yes" : "no") << "\n"
+        << "        execution_capabilities:         " << execution_capabilities << "\n"
+        << "        global_mem_cache_size:          " << Bytes_in_String(global_mem_cache_size) << "\n"
+        << "        global_mem_cache_type:          " << global_mem_cache_type << "\n"
+        << "        global_mem_cacheline_size:      " << Bytes_in_String(global_mem_cacheline_size) << "\n"
+        << "        global_mem_size:                " << Bytes_in_String(global_mem_size) << "\n"
+        << "        half_fp_config:                 " << half_fp_config << "\n"
+        << "        image_support:                  " << (image_support ? "yes" : "no") << "\n"
+        << "        image2d_max_height:             " << image2d_max_height << "\n"
+        << "        image2d_max_width:              " << image2d_max_width << "\n"
+        << "        image3d_max_depth:              " << image3d_max_depth << "\n"
+        << "        image3d_max_height:             " << image3d_max_height << "\n"
+        << "        image3d_max_width:              " << image3d_max_width << "\n"
+        << "        local_mem_size:                 " << Bytes_in_String(local_mem_size) << "\n"
+        << "        local_mem_type:                 " << local_mem_type << "\n"
+        << "        max_clock_frequency:            " << max_clock_frequency << " MHz\n"
+        << "        max_compute_units:              " << max_compute_units << "\n"
+        << "        max_constant_args:              " << max_constant_args << "\n"
+        << "        max_constant_buffer_size:       " << Bytes_in_String(max_constant_buffer_size) << "\n"
+        << "        max_mem_alloc_size:             " << Bytes_in_String(max_mem_alloc_size) << "\n"
+        << "        max_parameter_size:             " << Bytes_in_String(max_parameter_size) << "\n"
+        << "        max_read_image_args:            " << max_read_image_args << "\n"
+        << "        max_samplers:                   " << max_samplers << "\n"
+        << "        max_work_group_size:            " << Bytes_in_String(max_work_group_size) << "\n"
+        << "        max_work_item_dimensions:       " << max_work_item_dimensions << "\n"
+        << "        max_work_item_sizes:            " << "(" << max_work_item_sizes[0] << ", " << max_work_item_sizes[1] << ", " << max_work_item_sizes[2] << ")\n"
+        << "        max_write_image_args:           " << max_write_image_args << "\n"
+        << "        mem_base_addr_align:            " << mem_base_addr_align << "\n"
+        << "        min_data_type_align_size:       " << Bytes_in_String(min_data_type_align_size) << "\n"
+        << "        platform:                       " << platform << "\n"
+        << "        preferred_vector_width_char:    " << preferred_vector_width_char << "\n"
+        << "        preferred_vector_width_short:   " << preferred_vector_width_short << "\n"
+        << "        preferred_vector_width_int:     " << preferred_vector_width_int << "\n"
+        << "        preferred_vector_width_long:    " << preferred_vector_width_long << "\n"
+        << "        preferred_vector_width_float:   " << preferred_vector_width_float << "\n"
+        << "        preferred_vector_width_double:  " << preferred_vector_width_double << "\n"
+        << "        profiling_timer_resolution:     " << profiling_timer_resolution << " ns\n"
+        << "        queue_properties:               " << queue_properties_string << " (" << queue_properties << ")" << "\n"
+        << "        single_fp_config:               " << single_fp_config_string << " (" << single_fp_config << ")\n"
+        << "        type:                           " << type_string << " (" << type << ")" << "\n"
+        << "        vendor_id:                      " << vendor_id << "\n"
+        << "        extensions:                     " << extensions << "\n"
+        //<< "        name:                           " << name << "\n"
+        << "        profile:                        " << profile << "\n"
+        << "        vendor:                         " << vendor << "\n"
+        << "        version:                        " << version << "\n"
+        << "        driver_version:                 " << driver_version << "\n";
 
-    std_cout << "oclPrintDevInfo():\n";
-    oclPrintDevInfo(device);
     std_cout << "Device capability (only nvidia): " << oclGetDevCap(device) << "\n";
 
     // Avialable global memory on device
     std_cout.Format(0, 3, 'g');
-    std_cout
-        << "Available memory (global):   "
-        << available_memory_global << " bytes, "
-        << Bytes_to_KiBytes(available_memory_global) << " KiB, "
-        << Bytes_to_MiBytes(available_memory_global) << " MiB, "
-        << Bytes_to_GiBytes(available_memory_global) << " GiB\n";
+    std_cout << "Available memory (global):   " << Bytes_in_String(global_mem_size) << "\n";
 
     // Avialable local memory on device
     std_cout.Format(0, 3, 'g');
-    std_cout
-        << "Available memory (local):    "
-        << available_memory_local << " bytes, "
-        << Bytes_to_KiBytes(available_memory_local) << " KiB, "
-        << Bytes_to_MiBytes(available_memory_local) << " MiB, "
-        << Bytes_to_GiBytes(available_memory_local) << " GiB\n";
+    std_cout << "Available memory (local):    " << Bytes_in_String(local_mem_size) << "\n";
 
     // Avialable constant memory on device
     std_cout.Format(0, 3, 'g');
-    std_cout
-        << "Available memory (constant): "
-        << available_memory_constant << " bytes, "
-        << Bytes_to_KiBytes(available_memory_constant) << " KiB, "
-        << Bytes_to_MiBytes(available_memory_constant) << " MiB, "
-        << Bytes_to_GiBytes(available_memory_constant) << " GiB\n";
+    std_cout << "Available memory (constant): " << Bytes_in_String(max_constant_buffer_size) << "\n";
 }
 
 // *****************************************************************************
@@ -275,7 +399,7 @@ bool OpenCL_device::operator<(const OpenCL_device &other)
         result = false;
     else // both are used or not used. Thus, we must compare the ammount of compute units.
     {
-        if (this->max_compute_unit > other.max_compute_unit) // "this" wins (having more compute units).
+        if (this->max_compute_units > other.max_compute_units) // "this" wins (having more compute units).
             result = true;
         else                                                 // "other" wins (having more or equal compute units).
             result = false;
@@ -353,6 +477,7 @@ void OpenCL_devices_list::Print()
 // *****************************************************************************
 void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
 {
+    Print_N_Times("-", 109);
     std_cout << "OpenCL: Initialize OpenCL object and context\n" << std::flush;
 
     platform_id = _platform.id;
