@@ -50,12 +50,12 @@ void OpenCL_platform::Print()
 {
     std_cout
         << "    Platform information:\n"
+        << "        vendor:     " << vendor << "\n"
+        << "        name:       " << name << "\n"
+        << "        version:    " << version << "\n"
+        << "        extensions: " << extensions << "\n"
         << "        id:         " << id << "\n"
         << "        profile:    " << profile << "\n"
-        << "        version:    " << version << "\n"
-        << "        name:       " << name << "\n"
-        << "        vendor:     " << vendor << "\n"
-        << "        extensions: " << extensions << "\n"
     ;
 
     std_cout
