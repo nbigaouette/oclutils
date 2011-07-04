@@ -232,7 +232,6 @@ private:
 public:
     std::map<std::string,OpenCL_platform> platforms;
 
-    OpenCL_platforms_list();
 
     void Initialize();
     void Print();

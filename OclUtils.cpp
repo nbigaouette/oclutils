@@ -80,11 +80,6 @@ bool OpenCL_platform::operator<(const OpenCL_platform &other)
 }
 
 // *****************************************************************************
-OpenCL_platforms_list::OpenCL_platforms_list()
-{
-}
-
-// *****************************************************************************
 void OpenCL_platforms_list::Initialize()
 {
     int err;
