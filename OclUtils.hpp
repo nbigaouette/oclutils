@@ -72,6 +72,30 @@ class OpenCL_devices_list;
 class OpenCL_Kernel;
 
 // *****************************************************************************
+// Nvidia extensions. On non-nvidia, needs to define those.
+#ifndef CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV
+#define CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV       0x4000
+#endif
+#ifndef CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV
+#define CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV       0x4001
+#endif
+#ifndef CL_DEVICE_REGISTERS_PER_BLOCK_NV
+#define CL_DEVICE_REGISTERS_PER_BLOCK_NV            0x4002
+#endif
+#ifndef CL_DEVICE_WARP_SIZE_NV
+#define CL_DEVICE_WARP_SIZE_NV                      0x4003
+#endif
+#ifndef CL_DEVICE_GPU_OVERLAP_NV
+#define CL_DEVICE_GPU_OVERLAP_NV                    0x4004
+#endif
+#ifndef CL_DEVICE_KERNEL_EXEC_TIMEOUT_NV
+#define CL_DEVICE_KERNEL_EXEC_TIMEOUT_NV            0x4005
+#endif
+#ifndef CL_DEVICE_INTEGRATED_MEMORY_NV
+#define CL_DEVICE_INTEGRATED_MEMORY_NV              0x4006
+#endif
+
+// *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length);
 
 // *****************************************************************************
