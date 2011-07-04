@@ -139,7 +139,7 @@ void OpenCL_platforms_list::Initialize()
 
     free_me(tmp_platforms, nb_platforms);
 
-//     /*
+    /*
     // Debugging: Add dummy platform
     {
         platforms["test"].vendor    = "aaa Dummy Vendor";
@@ -148,7 +148,7 @@ void OpenCL_platforms_list::Initialize()
         platforms["test"].extensions= "Dummy Extensions";
         platforms["test"].profile   = "Dummy Profile";
     }
-//     */
+    */
 }
 
 // *****************************************************************************
