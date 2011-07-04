@@ -296,10 +296,11 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
         abort();
     }
 
-    if      (queue_properties == CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE)
-        queue_properties_string = "CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE";
-    else if (queue_properties == CL_QUEUE_PROFILING_ENABLE)
-        queue_properties_string = "CL_QUEUE_PROFILING_ENABLE";
+    queue_properties_string = "";
+    if      (queue_properties & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE)
+        queue_properties_string += "CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, ";
+    else if (queue_properties & CL_QUEUE_PROFILING_ENABLE)
+        queue_properties_string += "CL_QUEUE_PROFILING_ENABLE, ";
     else
     {
         std_cout << "ERROR: Unknown OpenCL queue properties \"" << queue_properties << "\". Exiting.\n";
