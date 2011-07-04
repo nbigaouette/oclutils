@@ -232,7 +232,7 @@ class OpenCL_platforms_list
 {
 private:
 public:
-    std::map<std::string,OpenCL_platform> platforms;
+    std::map<std::string,OpenCL_platform>   platforms;
 
 
     void Initialize();
