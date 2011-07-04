@@ -104,14 +104,6 @@ enum LOGMODES
     //CLOSELOG   = 32  // bit to close log file, if open, after any requested file write
 };
 
-//////////////////////////////////////////////////////////////////////////////
-//! Get and return device capability
-//!
-//! @return the 2 digit integer representation of device Cap (major minor). return -1 if NA
-//! @param device         OpenCL id of the device
-//////////////////////////////////////////////////////////////////////////////
-extern "C" int oclGetDevCap(cl_device_id device);
-
 // *********************************************************************
 // Helper function to log standardized information to Console, to File or to both
 //! Examples: shrLogEx(LOGBOTH, 0, "Function A\n");

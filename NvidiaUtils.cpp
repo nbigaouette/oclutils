@@ -80,52 +80,6 @@ cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID)
     return CL_SUCCESS;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//! Get and return device capability
-//!
-//! @return the 2 digit integer representation of device Cap (major minor). return -1 if NA
-//! @param device         OpenCL id of the device
-//////////////////////////////////////////////////////////////////////////////
-int oclGetDevCap(cl_device_id device)
-{
-    char cDevString[1024];
-    bool bDevAttributeQuery = false;
-    int iDevArch = -1;
-
-    // Get device extensions, and if any then search for cl_nv_device_attribute_query
-    clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, sizeof(cDevString), &cDevString, NULL);
-    if (cDevString != 0)
-    {
-        std::string stdDevString;
-        stdDevString = std::string(cDevString);
-        size_t szOldPos = 0;
-        size_t szSpacePos = stdDevString.find(' ', szOldPos); // extensions string is space delimited
-        while (szSpacePos != stdDevString.npos)
-        {
-            if( strcmp("cl_nv_device_attribute_query", stdDevString.substr(szOldPos, szSpacePos - szOldPos).c_str()) == 0 )
-            {
-                bDevAttributeQuery = true;
-            }
-
-            do {
-                szOldPos = szSpacePos + 1;
-                szSpacePos = stdDevString.find(' ', szOldPos);
-            } while (szSpacePos == szOldPos);
-        }
-    }
-
-    // if search succeeded, get device caps
-    if(bDevAttributeQuery)
-    {
-        cl_int iComputeCapMajor, iComputeCapMinor;
-        clGetDeviceInfo(device, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV, sizeof(cl_uint), (void*)&iComputeCapMajor, NULL);
-        clGetDeviceInfo(device, CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV, sizeof(cl_uint), (void*)&iComputeCapMinor, NULL);
-        iDevArch = (10 * iComputeCapMajor) + iComputeCapMinor;
-    }
-
-    return iDevArch;
-}
-
 // Helper function to get OpenCL error string from constant
 // *********************************************************************
 const char* oclErrorString(cl_int error)
