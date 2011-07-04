@@ -221,8 +221,6 @@ public:
     OpenCL_platform();
 
     void Print();
-
-    bool operator<(const OpenCL_platform &other);
 };
 
 // *****************************************************************************

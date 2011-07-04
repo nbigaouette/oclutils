@@ -63,22 +63,6 @@ void OpenCL_platform::Print()
     devices_list.Print();
 }
 
-
-// *****************************************************************************
-bool OpenCL_platform::operator<(const OpenCL_platform &other)
-/**
- * Needed to use a std::map for the platforms list since std::map's are sorted.
- * Just sort alphabetically by name.
- */
-{
-    bool result = false;
-
-    if (this->name[0] > other.name[0])
-        result = true;
-
-    return result;
-}
-
 // *****************************************************************************
 void OpenCL_platforms_list::Initialize()
 {
