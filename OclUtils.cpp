@@ -108,12 +108,7 @@ void OpenCL_platforms_list::Initialize()
             abort();
         }
 
-        OpenCL_platform tmp_platform;
-        platforms.insert(std::pair<std::string,OpenCL_platform>(key, tmp_platform));
-
         OpenCL_platform &platform = platforms[key];
-
-
 
         platform.id = tmp_platforms[i];
 
@@ -140,7 +135,6 @@ void OpenCL_platforms_list::Initialize()
 
         // Initialize the platform's devices
         platform.devices_list.Initialize(platform);
-
     }
 
     free_me(tmp_platforms, nb_platforms);
