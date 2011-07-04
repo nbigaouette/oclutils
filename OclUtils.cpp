@@ -96,12 +96,12 @@ void OpenCL_platforms_list::Initialize()
         std::string platform_vendor = std::string(tmp_string);
         std::transform(platform_vendor.begin(), platform_vendor.end(), platform_vendor.begin(), tolower);
         std::string key;
-        if      (platform_vendor.find("advanced micro devices") != std::string::npos or platform_vendor.find("amd") != std::string::npos)
-            key = std::string("amd");
+        if      (platform_vendor.find("nvidia") != std::string::npos)
+            key = OPENCL_PLATFORMS_NVIDIA;
+        else if (platform_vendor.find("advanced micro devices") != std::string::npos or platform_vendor.find("amd") != std::string::npos)
+            key = OPENCL_PLATFORMS_AMD;
         else if (platform_vendor.find("intel") != std::string::npos)
-            key = std::string("intel");
-        else if (platform_vendor.find("nvidia") != std::string::npos)
-            key = std::string("nvidia");
+            key = OPENCL_PLATFORMS_INTEL;
         else
         {
             std_cout << "ERROR: Unknown OpenCL platform \"" << platform_vendor << "\"! Exiting.\n" << std::flush;
