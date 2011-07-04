@@ -38,6 +38,26 @@ char *read_opencl_kernel(const std::string filename, int *length)
 }
 
 // *****************************************************************************
+OpenCL_platform::OpenCL_platform()
+{
+    id = NULL;
+    nb_devices = 0;
+}
+
+// *****************************************************************************
+void OpenCL_platform::Print()
+{
+    std_cout
+        << "    Platform information:\n"
+        << "        id:         " << id << "\n"
+        << "        nb_devices: " << nb_devices << "\n"
+        << "        profile:    " << profile << "\n"
+        << "        version:    " << version << "\n"
+        << "        name:       " << name << "\n"
+        << "        vendor:     " << vendor << "\n"
+        << "        extensions: " << extensions << "\n"
+    ;
+}
 OpenCL_device::OpenCL_device()
 {
     name                        = "";

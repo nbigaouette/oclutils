@@ -132,6 +132,25 @@ public:
 
 };
 
+// *****************************************************************************
+class OpenCL_platform
+{
+private:
+public:
+    cl_platform_id              id;
+    int                         nb_devices;
+    std::string                 profile;
+    std::string                 version;
+    std::string                 name;
+    std::string                 vendor;
+    std::string                 extensions;
+    OpenCL_devices_list         devices_list;
+
+    OpenCL_platform();
+
+    void Print();
+};
+
 // **************************************************************
 class OpenCL_Kernel
 {
