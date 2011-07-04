@@ -541,17 +541,24 @@ OpenCL_devices_list::~OpenCL_devices_list()
 // *****************************************************************************
 void OpenCL_devices_list::Print()
 {
-    for (it = device_list.begin() ; it != device_list.end() ; ++it)
-        it->Print();
-
-    Print_N_Times("*", 109);
-    std_cout << "Order of preference for OpenCL devices:\n";
-    int i = 0;
-    for (it = device_list.begin() ; it != device_list.end() ; ++it)
+    if (device_list.size() == 0)
     {
-        std_cout << i++ << ".   " << it->Get_Name() << " (id = " << it->Get_ID() << ")\n";
+        std_cout << "        None" << "\n";
     }
-    Print_N_Times("*", 109);
+    else
+    {
+        for (it = device_list.begin() ; it != device_list.end() ; ++it)
+            it->Print();
+
+        Print_N_Times("*", 109);
+        std_cout << "Order of preference for OpenCL devices:\n";
+        int i = 0;
+        for (it = device_list.begin() ; it != device_list.end() ; ++it)
+        {
+            std_cout << i++ << ".   " << it->Get_Name() << " (id = " << it->Get_ID() << ")\n";
+        }
+        Print_N_Times("*", 109);
+    }
 }
 
 // *****************************************************************************
