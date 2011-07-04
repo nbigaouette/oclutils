@@ -138,7 +138,6 @@ class OpenCL_platform
 private:
 public:
     cl_platform_id              id;
-    int                         nb_devices;
     std::string                 profile;
     std::string                 version;
     std::string                 name;
