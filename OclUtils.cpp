@@ -256,6 +256,32 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
 
     OpenCL_Test_Success(err, "OpenCL_device::Set_Information()");
 
+    // Nvidia specific extensions
+    // http://developer.download.nvidia.com/compute/cuda/3_2_prod/toolkit/docs/OpenCL_Extensions/cl_nv_device_attribute_query.txt
+    if (extensions.find("cl_nv_device_attribute_query") != std::string::npos)
+    {
+        err  = clGetDeviceInfo(device, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV,   sizeof(cl_uint),                    &nvidia_device_compute_capability_major,    NULL);
+        err |= clGetDeviceInfo(device, CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV,   sizeof(cl_uint),                    &nvidia_device_compute_capability_minor,    NULL);
+        err |= clGetDeviceInfo(device, CL_DEVICE_REGISTERS_PER_BLOCK_NV,        sizeof(cl_uint),                    &nvidia_device_registers_per_block,         NULL);
+        err |= clGetDeviceInfo(device, CL_DEVICE_WARP_SIZE_NV,                  sizeof(cl_uint),                    &nvidia_device_warp_size,                   NULL);
+        err |= clGetDeviceInfo(device, CL_DEVICE_GPU_OVERLAP_NV,                sizeof(cl_bool),                    &nvidia_device_gpu_overlap,                 NULL);
+        err |= clGetDeviceInfo(device, CL_DEVICE_KERNEL_EXEC_TIMEOUT_NV,        sizeof(cl_bool),                    &nvidia_device_kernel_exec_timeout,         NULL);
+        err |= clGetDeviceInfo(device, CL_DEVICE_INTEGRATED_MEMORY_NV,          sizeof(cl_bool),                    &nvidia_device_integrated_memory,           NULL);
+
+        OpenCL_Test_Success(err, "OpenCL_device::Set_Information() (Nvida specific extensions)");
+    }
+    else
+    {
+        is_nvidia                               = false;
+        nvidia_device_compute_capability_major  = 0;
+        nvidia_device_compute_capability_minor  = 0;
+        nvidia_device_registers_per_block       = 0;
+        nvidia_device_warp_size                 = 0;
+        nvidia_device_gpu_overlap               = false;
+        nvidia_device_kernel_exec_timeout       = false;
+        nvidia_device_integrated_memory         = false;
+    }
+
     if      (type == CL_DEVICE_TYPE_CPU)
         type_string = "CL_DEVICE_TYPE_CPU";
     else if (type == CL_DEVICE_TYPE_GPU)
@@ -369,7 +395,23 @@ void OpenCL_device::Print()
         << "        version:                        " << version << "\n"
         << "        driver_version:                 " << driver_version << "\n";
 
-    std_cout << "Device capability (only nvidia): " << oclGetDevCap(device) << "\n";
+    if (is_nvidia)
+    {
+        std_cout
+            << "        GPU is from NVidia\n"
+            << "            nvidia_device_compute_capability_major: " << nvidia_device_compute_capability_major << "\n"
+            << "            nvidia_device_compute_capability_minor: " << nvidia_device_compute_capability_minor << "\n"
+            << "            nvidia_device_registers_per_block:      " << nvidia_device_registers_per_block      << "\n"
+            << "            nvidia_device_warp_size:                " << nvidia_device_warp_size                << "\n"
+            << "            nvidia_device_gpu_overlap:              " << (nvidia_device_gpu_overlap         ? "yes" : "no") << "\n"
+            << "            nvidia_device_kernel_exec_timeout:      " << (nvidia_device_kernel_exec_timeout ? "yes" : "no") << "\n"
+            << "            nvidia_device_integrated_memory:        " << (nvidia_device_integrated_memory   ? "yes" : "no") << "\n";
+    }
+    else
+    {
+        std_cout
+            << "        GPU is NOT from NVidia\n";
+    }
 
     // Avialable global memory on device
     std_cout.Format(0, 3, 'g');

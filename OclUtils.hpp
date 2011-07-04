@@ -136,6 +136,17 @@ class OpenCL_device
         std::string                     queue_properties_string;
         std::string                     single_fp_config_string;
 
+        // Nvidia specific extensions
+        // http://developer.download.nvidia.com/compute/cuda/3_2_prod/toolkit/docs/OpenCL_Extensions/cl_nv_device_attribute_query.txt
+        bool                            is_nvidia;
+        cl_uint                         nvidia_device_compute_capability_major;
+        cl_uint                         nvidia_device_compute_capability_minor;
+        cl_uint                         nvidia_device_registers_per_block;
+        cl_uint                         nvidia_device_warp_size;
+        cl_bool                         nvidia_device_gpu_overlap;
+        cl_bool                         nvidia_device_kernel_exec_timeout;
+        cl_bool                         nvidia_device_integrated_memory;
+
     public:
         const OpenCL_platform *parent_platform;
 
