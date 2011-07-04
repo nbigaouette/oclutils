@@ -151,6 +151,19 @@ public:
     void Print();
 };
 
+// *****************************************************************************
+class OpenCL_platforms_list
+{
+private:
+public:
+    std::list<OpenCL_platform> platforms;
+
+    OpenCL_platforms_list();
+
+    void Initialize();
+    void Print();
+};
+
 // **************************************************************
 class OpenCL_Kernel
 {
