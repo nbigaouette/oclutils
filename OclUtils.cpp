@@ -704,6 +704,10 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
 OpenCL_Kernel::OpenCL_Kernel(std::string _filename, bool _use_mt, cl_context _context, cl_device_id _device_id):
                            filename(_filename), use_mt(_use_mt), context(_context), device_id(_device_id)
 {
+    kernel           = NULL;
+    program          = NULL;
+    global_work_size = NULL;
+    local_work_size  = NULL;
 }
 
 // *****************************************************************************
@@ -712,8 +716,13 @@ OpenCL_Kernel::~OpenCL_Kernel()
     if (kernel)  clReleaseKernel(kernel);
     if (program) clReleaseProgram(program);
 
-    delete[] global_work_size;
-    delete[] local_work_size;
+    if (global_work_size) delete[] global_work_size;
+    if (local_work_size)  delete[] local_work_size;
+
+    kernel           = NULL;
+    program          = NULL;
+    global_work_size = NULL;
+    local_work_size  = NULL;
 }
 
 // *****************************************************************************
