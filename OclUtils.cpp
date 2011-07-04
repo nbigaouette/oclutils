@@ -351,7 +351,7 @@ void OpenCL_devices_list::Print()
 // *****************************************************************************
 void OpenCL_devices_list::Initialize(const cl_platform_id &_platform_id)
 {
-    std_cout << "Initialize OpenCL object and context\n" << std::flush;
+    std_cout << "OpenCL: Initialize OpenCL object and context\n" << std::flush;
 
     platform_id = _platform_id;
 
@@ -360,7 +360,7 @@ void OpenCL_devices_list::Initialize(const cl_platform_id &_platform_id)
     err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &nb_gpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
-        std_cout << "WARNING: Can't find a usable GPU!\n" << std::flush;
+        std_cout << "OpenCL: WARNING: Can't find a usable GPU!\n" << std::flush;
         err = CL_SUCCESS;
     }
     OpenCL_Test_Success(err, "clGetDeviceIDs()");
@@ -369,7 +369,7 @@ void OpenCL_devices_list::Initialize(const cl_platform_id &_platform_id)
     err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 0, NULL, &nb_cpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
-        std_cout << "WARNING: Can't find a usable CPU!\n" << std::flush;
+        std_cout << "OpenCL: WARNING: Can't find a usable CPU!\n" << std::flush;
         err = CL_SUCCESS;
     }
     OpenCL_Test_Success(err, "clGetDeviceIDs()");
@@ -434,9 +434,9 @@ void OpenCL_devices_list::Initialize(const cl_platform_id &_platform_id)
         while (!correct_answer)
         {
             // Ask the user if he still wants to execute the program.
-            std_cout << "WARNING: It seem's that all OpenCL devices are in use!\n"
-                     << "         If you are certain no other program is using the device(s), you can delete the file '" << TMP_FILE << "'\n"
-                     << "         Do you want to force the execution and continue? [y/n]\n";
+            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices are in use!\n"
+                     << "                 If you are certain no other program is using the device(s), you can delete the file '" << TMP_FILE << "'\n"
+                     << "                 Do you want to force the execution and continue? [y/n]\n";
             std::string answer;
             std::cin >> answer;
 
