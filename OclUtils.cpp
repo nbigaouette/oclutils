@@ -627,10 +627,8 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
         it->parent_platform = &_platform;
 
-    // Sort the list. The order is defined by "OpenCL_device::operator<" (line 112)
+    // Sort the list. The order is defined by "OpenCL_device::operator<"
     device_list.sort();
-
-    Print();
 
     // Initialize context on a device
     preferred_device = NULL;    // The preferred device is unknown for now.
