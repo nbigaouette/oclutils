@@ -88,13 +88,6 @@ extern "C" cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID);
 // *********************************************************************
 extern "C" const char* oclErrorString(cl_int error);
 
-//////////////////////////////////////////////////////////////////////////////
-//! Print the device name
-//!
-//! @param device         OpenCL id of the device
-//////////////////////////////////////////////////////////////////////////////
-extern "C" void oclPrintDevName(cl_device_id device);
-
 
 // Defines and enum for use with logging functions
 // *********************************************************************

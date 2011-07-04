@@ -81,19 +81,6 @@ cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-//! Print the device name
-//!
-//! @param iLogMode       enum LOGBOTH, LOGCONSOLE, LOGFILE
-//! @param device         OpenCL id of the device
-//////////////////////////////////////////////////////////////////////////////
-void oclPrintDevName(cl_device_id device)
-{
-    char device_string[1024];
-    clGetDeviceInfo(device, CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
-    std_cout << "Device name: " << device_string << "\n";
-}
-
-//////////////////////////////////////////////////////////////////////////////
 //! Get and return device capability
 //!
 //! @return the 2 digit integer representation of device Cap (major minor). return -1 if NA
