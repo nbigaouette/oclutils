@@ -118,7 +118,7 @@ void OpenCL_platforms_list::Initialize()
         OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_EXTENSIONS)");
         platform.extensions = std::string(tmp_string);
 
-        platform.devices_list.Initialize(platform.id);
+        platform.devices_list.Initialize(platform);
 
     }
 
@@ -222,6 +222,7 @@ void OpenCL_device::Print()
         << "Available OpenCL device:\n"
         << "    name: " << name << "\n"
         << "    id:   " << id << "\n"
+        << "    parent platform:   " << (parent_platform != NULL ? parent_platform->name : "") << "\n"
         << "    device_is_used " << (device_is_used ? "yes" : "no ") << "\n"
         << "    max_compute_unit: " << max_compute_unit << "\n"
         << "    device is GPU? " << (device_is_gpu ? "yes" : "no ") << "\n";
@@ -350,11 +351,11 @@ void OpenCL_devices_list::Print()
 }
 
 // *****************************************************************************
-void OpenCL_devices_list::Initialize(const cl_platform_id &_platform_id)
+void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
 {
     std_cout << "OpenCL: Initialize OpenCL object and context\n" << std::flush;
 
-    platform_id = _platform_id;
+    platform_id = _platform.id;
 
     // Get the number of GPU devices available to the platform
     // Number of GPU
@@ -459,6 +460,9 @@ void OpenCL_devices_list::Initialize(const cl_platform_id &_platform_id)
             }
         }
     }
+
+    for (it = device_list.begin() ; it != device_list.end() ; ++it)
+        it->parent_platform = &_platform;
 
     // Sort the list. The order is defined by "OpenCL_device::operator<" (line 112)
     device_list.sort();

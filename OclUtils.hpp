@@ -137,7 +137,7 @@ public:
     inline cl_device_id  &  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
     inline cl_context    &  Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
 
-    void Initialize(const cl_platform_id &_platform_id);
+    void Initialize(const OpenCL_platform &_platform);
 
 };
 
