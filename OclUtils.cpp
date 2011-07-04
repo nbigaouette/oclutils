@@ -138,6 +138,17 @@ void OpenCL_platforms_list::Initialize()
     }
 
     free_me(tmp_platforms, nb_platforms);
+
+//     /*
+    // Debugging: Add dummy platform
+    {
+        platforms["test"].vendor    = "aaa Dummy Vendor";
+        platforms["test"].name      = "Dummy platform";
+        platforms["test"].version   = "Dummy Version 3.1415";
+        platforms["test"].extensions= "Dummy Extensions";
+        platforms["test"].profile   = "Dummy Profile";
+    }
+//     */
 }
 
 // *****************************************************************************
