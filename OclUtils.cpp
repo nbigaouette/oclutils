@@ -55,6 +55,10 @@ void OpenCL_platform::Print()
         << "        vendor:     " << vendor << "\n"
         << "        extensions: " << extensions << "\n"
     ;
+
+    std_cout
+        << "    Available devices on platform:\n";
+    devices_list.Print();
 }
 
 // *****************************************************************************
