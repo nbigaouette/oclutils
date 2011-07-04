@@ -139,6 +139,7 @@ void OpenCL_platforms_list::Print()
 // *****************************************************************************
 OpenCL_device::OpenCL_device()
 {
+    parent_platform             = NULL;
     name                        = "";
     id                          = -1;
     device_is_gpu               = false;

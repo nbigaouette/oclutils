@@ -85,9 +85,12 @@ class OpenCL_device
         cl_ulong        available_memory_constant;
 
     public:
+        const OpenCL_platform *parent_platform;
+
         OpenCL_device();
         ~OpenCL_device();
 
+        const OpenCL_platform *   Get_Parent_Platform() { return parent_platform;    }
         std::string         Get_Name()      { return name;      }
         cl_uint             Get_Compute_Unit() { return max_compute_unit;      }
         int                 Get_ID()        { return id;        }
