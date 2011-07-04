@@ -26,7 +26,7 @@ if ((err) != CL_SUCCESS)                                            \
     std_cout                                                        \
         << "ERROR calling " << fct_name << "() ("                   \
         << __FILE__ << " line " << __LINE__ << "): "                \
-        << oclErrorString(err) << "\n" << std::flush;               \
+        << OpenCL_Error_to_String(err) << "\n" << std::flush;               \
     abort();                                                        \
 }
 
@@ -94,6 +94,9 @@ class OpenCL_Kernel;
 #ifndef CL_DEVICE_INTEGRATED_MEMORY_NV
 #define CL_DEVICE_INTEGRATED_MEMORY_NV              0x4006
 #endif
+
+// *****************************************************************************
+std::string OpenCL_Error_to_String(cl_int error);
 
 // *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length);
