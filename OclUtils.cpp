@@ -4,6 +4,8 @@
 #include <string>   // std::string
 #include <cstdarg>  // va_arg, va_list, etc.
 #include <cmath>
+#include <algorithm>
+#include <cctype> // for tolower
 
 #include <Memory.hpp> // Print_N_Times()
 
@@ -61,6 +63,22 @@ void OpenCL_platform::Print()
     devices_list.Print();
 }
 
+
+// *****************************************************************************
+bool OpenCL_platform::operator<(const OpenCL_platform &other)
+/**
+ * Needed to use a std::map for the platforms list since std::map's are sorted.
+ * Just sort alphabetically by name.
+ */
+{
+    bool result = false;
+
+    if (this->name[0] > other.name[0])
+        result = true;
+
+    return result;
+}
+
 // *****************************************************************************
 OpenCL_platforms_list::OpenCL_platforms_list()
 {
@@ -83,41 +101,65 @@ void OpenCL_platforms_list::Initialize()
         abort();
     }
 
-    platforms.resize(nb_platforms);
-
     // Get a list of the OpenCL platforms available.
     cl_platform_id *tmp_platforms;
     tmp_platforms = (cl_platform_id*) calloc_and_check(nb_platforms, sizeof(cl_platform_id), "cl_platform_id*");
     err = clGetPlatformIDs(nb_platforms, tmp_platforms, NULL);
     OpenCL_Test_Success(err, "clGetPlatformIDs");
 
-    std::list<OpenCL_platform>::iterator it = platforms.begin();
-    for (unsigned int i = 0 ; i < nb_platforms ; i++, it++)
+    for (unsigned int i = 0 ; i < nb_platforms ; i++)
     {
-        OpenCL_platform &platform = *it;
+        cl_platform_id tmp_platform_id = tmp_platforms[i];
+
+        err = clGetPlatformInfo(tmp_platform_id, CL_PLATFORM_VENDOR, sizeof(tmp_string), &tmp_string, NULL);
+        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VENDOR)");
+
+        std::string platform_vendor = std::string(tmp_string);
+        std::transform(platform_vendor.begin(), platform_vendor.end(), platform_vendor.begin(), tolower);
+        std::string key;
+        if      (platform_vendor.find("advanced micro devices") != std::string::npos or platform_vendor.find("amd") != std::string::npos)
+            key = std::string("amd");
+        else if (platform_vendor.find("intel") != std::string::npos)
+            key = std::string("intel");
+        else if (platform_vendor.find("nvidia") != std::string::npos)
+            key = std::string("nvidia");
+        else
+        {
+            std_cout << "ERROR: Unknown OpenCL platform \"" << platform_vendor << "\"! Exiting.\n" << std::flush;
+            abort();
+        }
+
+        OpenCL_platform tmp_platform;
+        platforms.insert(std::pair<std::string,OpenCL_platform>(key, tmp_platform));
+
+        OpenCL_platform &platform = platforms[key];
+
+
+
         platform.id = tmp_platforms[i];
 
         // Query platform information
-        err = clGetPlatformInfo(it->id, CL_PLATFORM_PROFILE, sizeof(tmp_string), &tmp_string, NULL);
+        err = clGetPlatformInfo(platform.id, CL_PLATFORM_PROFILE, sizeof(tmp_string), &tmp_string, NULL);
         OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_PROFILE)");
         platform.profile = std::string(tmp_string);
 
-        err = clGetPlatformInfo(it->id, CL_PLATFORM_VERSION, sizeof(tmp_string), &tmp_string, NULL);
+        err = clGetPlatformInfo(platform.id, CL_PLATFORM_VERSION, sizeof(tmp_string), &tmp_string, NULL);
         OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VERSION)");
         platform.version = std::string(tmp_string);
 
-        err = clGetPlatformInfo(it->id, CL_PLATFORM_NAME, sizeof(tmp_string), &tmp_string, NULL);
+        err = clGetPlatformInfo(platform.id, CL_PLATFORM_NAME, sizeof(tmp_string), &tmp_string, NULL);
         OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_NAME)");
         platform.name = std::string(tmp_string);
 
-        err = clGetPlatformInfo(it->id, CL_PLATFORM_VENDOR, sizeof(tmp_string), &tmp_string, NULL);
+        err = clGetPlatformInfo(platform.id, CL_PLATFORM_VENDOR, sizeof(tmp_string), &tmp_string, NULL);
         OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VENDOR)");
         platform.vendor = std::string(tmp_string);
 
-        err = clGetPlatformInfo(it->id, CL_PLATFORM_EXTENSIONS, sizeof(tmp_string), &tmp_string, NULL);
+        err = clGetPlatformInfo(platform.id, CL_PLATFORM_EXTENSIONS, sizeof(tmp_string), &tmp_string, NULL);
         OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_EXTENSIONS)");
         platform.extensions = std::string(tmp_string);
 
+        // Initialize the platform's devices
         platform.devices_list.Initialize(platform);
 
     }
@@ -129,10 +171,10 @@ void OpenCL_platforms_list::Initialize()
 void OpenCL_platforms_list::Print()
 {
     std_cout << "Available platforms:\n";
-    std::list<OpenCL_platform>::iterator it = platforms.begin();
+    std::map<std::string,OpenCL_platform>::iterator it = platforms.begin();
     for (unsigned int i = 0 ; i < platforms.size() ; i++, it++)
     {
-        it->Print();
+        it->second.Print();
     }
 }
 

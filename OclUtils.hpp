@@ -3,6 +3,7 @@
 
 #include <string>
 #include <list>
+#include <map>
 
 #include <CL/cl.h>
 
@@ -220,6 +221,8 @@ public:
     OpenCL_platform();
 
     void Print();
+
+    bool operator<(const OpenCL_platform &other);
 };
 
 // *****************************************************************************
@@ -227,7 +230,7 @@ class OpenCL_platforms_list
 {
 private:
 public:
-    std::list<OpenCL_platform> platforms;
+    std::map<std::string,OpenCL_platform> platforms;
 
     OpenCL_platforms_list();
 
