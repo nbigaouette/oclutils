@@ -60,6 +60,12 @@ if ((err) != CL_SUCCESS)                                            \
     OpenCL_Test_Success(err, "clReleaseContext");                   \
 }
 
+class OpenCL_platform;
+class OpenCL_platforms_list;
+class OpenCL_device;
+class OpenCL_devices_list;
+class OpenCL_Kernel;
+
 // *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length);
 
