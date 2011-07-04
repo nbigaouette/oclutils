@@ -118,6 +118,8 @@ void OpenCL_platforms_list::Initialize()
         OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_EXTENSIONS)");
         platform.extensions = std::string(tmp_string);
 
+        platform.devices_list.Initialize(platform.id);
+
     }
 
     free_me(tmp_platforms, nb_platforms);
@@ -347,12 +349,11 @@ void OpenCL_devices_list::Print()
 }
 
 // *****************************************************************************
-void OpenCL_devices_list::Initialize()
+void OpenCL_devices_list::Initialize(const cl_platform_id &_platform_id)
 {
     std_cout << "Initialize OpenCL object and context\n" << std::flush;
 
-    err = oclGetPlatformID(&platform_id);
-    OpenCL_Test_Success(err, "oclGetPlatformID");
+    platform_id = _platform_id;
 
     // Get the number of GPU devices available to the platform
     // Number of GPU
