@@ -76,13 +76,6 @@ inline int ConvertSMVer2Cores(int major, int minor)
 }
 // end of GPU Architecture definitions
 
-//////////////////////////////////////////////////////////////////////////////
-//! Gets the platform ID for NVIDIA if available, otherwise default to platform 0
-//!
-//! @return the id
-//! @param clSelectedPlatformID         OpenCL platform ID
-//////////////////////////////////////////////////////////////////////////////
-extern "C" cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID);
 
 // Helper function to get OpenCL error string from constant
 // *********************************************************************
