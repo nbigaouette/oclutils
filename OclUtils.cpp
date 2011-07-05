@@ -480,11 +480,18 @@ bool OpenCL_device::operator<(const OpenCL_device &other)
 // *****************************************************************************
 OpenCL_devices_list::OpenCL_devices_list()
 {
-    nb_cpu  = 0;
-    nb_gpu  = 0;
-    err     = 0;
-    preferred_device = NULL;
+    is_initialized  = false;
+    platform_id = NULL;
+    platform = NULL;
+    platforms = NULL;
+    nb_cpu = 0;
+    nb_gpu = 0;
+    total_nb_compute_units = 0;
+    err = 0;
+
     write_to_tmp = true;
+
+    preferred_device = NULL;
 }
 
 // *****************************************************************************
