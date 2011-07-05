@@ -15,6 +15,7 @@
 const std::string OPENCL_PLATFORMS_NVIDIA("nvidia");
 const std::string OPENCL_PLATFORMS_AMD("amd");
 const std::string OPENCL_PLATFORMS_INTEL("intel");
+const std::string OPENCL_PLATFORMS_APPLE("apple");
 
 #define MAX_LOCAL_WORK_SIZE 256
 

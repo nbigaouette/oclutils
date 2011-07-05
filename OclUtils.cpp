@@ -107,6 +107,8 @@ void OpenCL_platforms_list::Initialize()
             key = OPENCL_PLATFORMS_AMD;
         else if (platform_vendor.find("intel") != std::string::npos)
             key = OPENCL_PLATFORMS_INTEL;
+        else if (platform_vendor.find("apple") != std::string::npos)
+            key = OPENCL_PLATFORMS_APPLE;
         else
         {
             std_cout << "ERROR: Unknown OpenCL platform \"" << platform_vendor << "\"! Exiting.\n" << std::flush;
