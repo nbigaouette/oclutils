@@ -512,10 +512,8 @@ OpenCL_devices_list::OpenCL_devices_list()
     is_initialized  = false;
     platform_id = NULL;
     platform = NULL;
-    platforms = NULL;
     nb_cpu = 0;
     nb_gpu = 0;
-    total_nb_compute_units = 0;
     err = 0;
 
     write_to_tmp = true;
@@ -573,8 +571,6 @@ OpenCL_device & OpenCL_devices_list::Prefered_OpenCL()
     {
         std_cout << "ERROR: No OpenCL device is present!\n"
         << "Make sure you call OpenCL_platforms.platforms[<WANTED PLATFORM>] with a valid (i.e. created) platform!\n" << std::flush;
-        if (platforms != NULL)
-            platforms->Print();
         abort();
     }
     else
