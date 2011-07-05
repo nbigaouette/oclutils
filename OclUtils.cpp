@@ -535,6 +535,23 @@ OpenCL_devices_list::~OpenCL_devices_list()
 }
 
 // *****************************************************************************
+OpenCL_device & OpenCL_devices_list::Prefered_OpenCL()
+{
+    if (preferred_device == NULL)
+    {
+        std_cout << "ERROR: No OpenCL device is present!\n"
+        << "Make sure you call OpenCL_platforms.platforms[<WANTED PLATFORM>] with a valid (i.e. created) platform!\n" << std::flush;
+        if (platforms != NULL)
+            platforms->Print();
+        abort();
+    }
+    else
+    {
+        return *preferred_device;
+    }
+}
+
+// *****************************************************************************
 void OpenCL_devices_list::Print() const
 {
     if (device_list.size() == 0)
