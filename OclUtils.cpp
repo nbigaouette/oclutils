@@ -556,7 +556,8 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
     Print_N_Times("-", 109);
     std_cout << "OpenCL: Initialize OpenCL object and context\n" << std::flush;
 
-    platform_id = _platform.id;
+    platform_id =  _platform.id;
+    platform    = &_platform;
 
     // Get the number of GPU devices available to the platform
     // Number of GPU
