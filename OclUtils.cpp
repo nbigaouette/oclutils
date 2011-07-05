@@ -497,6 +497,9 @@ OpenCL_devices_list::OpenCL_devices_list()
 // *****************************************************************************
 OpenCL_devices_list::~OpenCL_devices_list()
 {
+    if (not is_initialized)
+        return;
+
     if (write_to_tmp)
     {
         std::string file_content; // Write the data from the file.
@@ -727,6 +730,8 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
         std_cout << "ERROR: Cannot set an OpenCL context on any of the available devices!\nExiting" << std::flush;
         abort();
     }
+
+    is_initialized = true;
 }
 
 // *****************************************************************************
