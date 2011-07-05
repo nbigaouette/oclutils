@@ -42,7 +42,12 @@ char *read_opencl_kernel(const std::string filename, int *length)
 // *****************************************************************************
 OpenCL_platform::OpenCL_platform()
 {
-    id = NULL;
+    id      = NULL;
+    vendor  = "Not set";
+    name    = "Not set";
+    version = "Not set";
+    extensions = "Not set";
+    profile = "Not set";
 }
 
 // *****************************************************************************
