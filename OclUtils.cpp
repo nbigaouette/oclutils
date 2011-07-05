@@ -168,6 +168,35 @@ void OpenCL_platforms_list::Print() const
 }
 
 // *****************************************************************************
+OpenCL_platform & OpenCL_platforms_list::operator[](const std::string key)
+{
+    std::map<std::string,OpenCL_platform>::iterator it;
+
+    if (key == "-1" or key == "")
+    {
+        if (platforms.size() == 0)
+        {
+            std_cout << "ERROR: Trying to access a platform but the list is uninitialized! Aborting.\n" << std::flush;
+            abort();
+        }
+        // Just take the first one.
+        it = platforms.begin();
+    }
+    else
+    {
+        // Find the right one
+        it = platforms.find(key);
+        if (it == platforms.end())
+        {
+            Print();
+            std_cout << "Cannot find platform \"" << key << "\"! Aborting.\n" << std::flush;
+            abort();
+        }
+    }
+    return it->second;
+}
+
+// *****************************************************************************
 OpenCL_device::OpenCL_device()
 {
     parent_platform             = NULL;

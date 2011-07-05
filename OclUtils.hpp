@@ -266,6 +266,8 @@ public:
 
     void Initialize();
     void Print() const;
+
+    OpenCL_platform & operator[](const std::string key);
 };
 
 // **************************************************************
