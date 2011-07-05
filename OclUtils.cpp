@@ -51,7 +51,7 @@ OpenCL_platform::OpenCL_platform()
 }
 
 // *****************************************************************************
-void OpenCL_platform::Print()
+void OpenCL_platform::Print() const
 {
     std_cout
         << "    Platform information:\n"
@@ -157,10 +157,10 @@ void OpenCL_platforms_list::Initialize()
 }
 
 // *****************************************************************************
-void OpenCL_platforms_list::Print()
+void OpenCL_platforms_list::Print() const
 {
     std_cout << "Available platforms:\n";
-    std::map<std::string,OpenCL_platform>::iterator it = platforms.begin();
+    std::map<std::string,OpenCL_platform>::const_iterator it = platforms.begin();
     for (unsigned int i = 0 ; i < platforms.size() ; i++, it++)
     {
         it->second.Print();
@@ -357,7 +357,7 @@ cl_int OpenCL_device::Set_Context()
 }
 
 // *****************************************************************************
-void OpenCL_device::Print()
+void OpenCL_device::Print() const
 {
     std_cout << "    "; Print_N_Times("-", 105);
 
@@ -528,7 +528,7 @@ OpenCL_devices_list::~OpenCL_devices_list()
 }
 
 // *****************************************************************************
-void OpenCL_devices_list::Print()
+void OpenCL_devices_list::Print() const
 {
     if (device_list.size() == 0)
     {
@@ -536,15 +536,15 @@ void OpenCL_devices_list::Print()
     }
     else
     {
-        for (it = device_list.begin() ; it != device_list.end() ; ++it)
-            it->Print();
+        for (std::list<OpenCL_device>::const_iterator ite = device_list.begin() ; ite != device_list.end() ; ++ite)
+            ite->Print();
 
         Print_N_Times("*", 109);
         std_cout << "Order of preference for OpenCL devices:\n";
         int i = 0;
-        for (it = device_list.begin() ; it != device_list.end() ; ++it)
+        for (std::list<OpenCL_device>::const_iterator ite = device_list.begin() ; ite != device_list.end() ; ++ite)
         {
-            std_cout << i++ << ".   " << it->Get_Name() << " (id = " << it->Get_ID() << ")\n";
+            std_cout << i++ << ".   " << ite->Get_Name() << " (id = " << ite->Get_ID() << ")\n";
         }
         Print_N_Times("*", 109);
     }

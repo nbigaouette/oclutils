@@ -186,9 +186,9 @@ class OpenCL_device
         ~OpenCL_device();
 
         const OpenCL_platform *   Get_Parent_Platform() { return parent_platform;    }
-        std::string         Get_Name()      { return name;      }
-        cl_uint             Get_Compute_Units() { return max_compute_units;      }
-        int                 Get_ID()        { return id;        }
+        std::string         Get_Name() const      { return name;      }
+        cl_uint             Get_Compute_Units() const { return max_compute_units;      }
+        int                 Get_ID() const        { return id;        }
         cl_device_id    &   Get_Device()    { return device;    }
         cl_context      &   Get_Context()   { return context;   }
 
@@ -196,7 +196,7 @@ class OpenCL_device
 
         cl_int Set_Context();
 
-        void Print();
+        void Print() const;
         bool Is_In_Use()    {return device_is_used;}
         int Get_Id() const  {return id;}
 
@@ -226,7 +226,7 @@ public:
 
     int nb_devices() { return nb_cpu + nb_gpu; }
 
-    void Print();
+    void Print() const;
 
     inline OpenCL_device &  Prefered_OpenCL()                { return *preferred_device; }
     inline cl_device_id  &  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
@@ -251,7 +251,7 @@ public:
 
     OpenCL_platform();
 
-    void Print();
+    void Print() const;
 };
 
 // *****************************************************************************
@@ -263,7 +263,7 @@ public:
 
 
     void Initialize();
-    void Print();
+    void Print() const;
 };
 
 // **************************************************************
