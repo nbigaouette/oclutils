@@ -731,6 +731,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
         }
     }
 
+    // For each device, store a pointer to its parent platform
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
         it->parent_platform = &_platform;
 
