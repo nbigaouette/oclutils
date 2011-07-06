@@ -12,7 +12,7 @@
 #include "OclUtils.hpp"
 
 const char TMP_FILE[] = "/tmp/gpu_usage.txt";
-const char string_base[] = "Device = ";
+#define string_base "Platform: %d  Device: %d (%s, %s)"
 
 
 // *****************************************************************************
@@ -240,7 +240,9 @@ OpenCL_device::~OpenCL_device()
 
 // *****************************************************************************
 void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
-                                    const int _platform_id_offset, const bool _device_is_gpu)
+                                    const int platform_id_offset,
+                                    const std::string &platform_name,
+                                    const bool _device_is_gpu)
 {
     id              = _id;
     device          = _device;
@@ -557,7 +559,7 @@ OpenCL_devices_list::~OpenCL_devices_list()
         {
             std::string line;
             char string_to_find[4096];
-            sprintf(string_to_find, string_base, platform_id_offset, preferred_device->Get_Id(), );
+            sprintf(string_to_find, string_base, platform_id_offset, preferred_device->Get_Id(), platform->name.c_str(), preferred_device->Get_Name().c_str());
 
             while (std::getline(file_read, line))
             {
@@ -668,7 +670,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
 
         for (unsigned int i = 0 ; i < nb_cpu ; ++i, ++it)
         {
-            it->Set_Information(i, tmp_devices[i], platform_id_offset, false); // device_is_gpu == false
+            it->Set_Information(i, tmp_devices[i], platform_id_offset, platform->name.c_str(), false); // device_is_gpu == false
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
@@ -686,7 +688,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
         OpenCL_Test_Success(err, "clGetDeviceIDs()");
         for (unsigned int i = 0 ; i < nb_gpu ; ++i, ++it)
         {
-            it->Set_Information(nb_cpu+i, tmp_devices[i], platform_id_offset, true); // device_is_gpu == true
+            it->Set_Information(nb_cpu+i, tmp_devices[i], platform_id_offset, platform->name.c_str(), true); // device_is_gpu == true
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
@@ -757,7 +759,9 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
 
                 if (file)
                 {
-                    file << string_base << preferred_device->Get_Id() << std::endl;
+                    char tmp_string[4096];
+                    sprintf(tmp_string, string_base, platform_id_offset, preferred_device->Get_Id(), platform->name.c_str(), preferred_device->Get_Name().c_str());
+                    file << tmp_string << std::endl;
 
                     file.close();
                 }

@@ -193,7 +193,7 @@ class OpenCL_device
         cl_device_id    &   Get_Device()    { return device;    }
         cl_context      &   Get_Context()   { return context;   }
 
-        void Set_Information(const int _id, cl_device_id _device, const int _platform_id_offset, const bool _device_is_gpu);
+        void Set_Information(const int _id, cl_device_id _device, const int platform_id_offset, const std::string &platform_name, const bool _device_is_gpu);
 
         cl_int Set_Context();
 
