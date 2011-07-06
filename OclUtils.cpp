@@ -561,7 +561,6 @@ OpenCL_devices_list::~OpenCL_devices_list()
 
             while (std::getline(file_read, line))
             {
-
                 // Read every line except the one corresponding to the current device.
                 if (line.find(string_to_find) == std::string::npos)
                 {
