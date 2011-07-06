@@ -210,7 +210,7 @@ class OpenCL_devices_list
 private:
     bool                        is_initialized;
     cl_platform_id              platform_id;
-    const OpenCL_platform       *platform;
+    const OpenCL_platform      *platform;
     int                         platform_id_offset;
     std::list<OpenCL_device>    device_list;
     std::list<OpenCL_device>::iterator it;

@@ -226,11 +226,9 @@ OpenCL_device::OpenCL_device()
     id                          = -1;
     device_is_gpu               = false;
     max_compute_units           = 0;
-
-    device  = NULL;
-    context = NULL;
-
-    device_is_used = false;
+    device                      = NULL;
+    context                     = NULL;
+    device_is_used              = false;
 }
 
 // *****************************************************************************
@@ -532,17 +530,15 @@ bool OpenCL_device::operator<(const OpenCL_device &other)
 // *****************************************************************************
 OpenCL_devices_list::OpenCL_devices_list()
 {
-    is_initialized  = false;
-    platform_id = NULL;
-    platform = NULL;
-    nb_cpu = 0;
-    nb_gpu = 0;
-    err = 0;
-
-    write_to_tmp = true;
-
-    preferred_device = NULL;
+    is_initialized      = false;
+    platform_id         = NULL;
+    platform            = NULL;
     platform_id_offset  = -1;
+    nb_cpu              = 0;
+    nb_gpu              = 0;
+    err                 = 0;
+    write_to_tmp        = true;
+    preferred_device    = NULL;
 }
 
 // *****************************************************************************
