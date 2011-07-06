@@ -545,8 +545,6 @@ void OpenCL_device::Unlock()
         {
             std::string line;
             char string_to_find[4096];
-            //sprintf(string_to_find, string_base, platform_id_offset, id, platform_name.c_str(), name.c_str());
-            std_cout << "this = " << this << "  parent_platform = "<< parent_platform << "\n";
             assert(parent_platform != NULL);
             sprintf(string_to_find, string_base, parent_platform->id_offset, id, parent_platform->name.c_str(), name.c_str());
 
