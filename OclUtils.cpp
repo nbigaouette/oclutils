@@ -563,7 +563,7 @@ OpenCL_devices_list::OpenCL_devices_list()
     is_initialized      = false;
     platform_id         = NULL;
     platform            = NULL;
-    platform_id_offset  = -1;
+    platform_id_offset  = 0;
     nb_cpu              = 0;
     nb_gpu              = 0;
     err                 = 0;
