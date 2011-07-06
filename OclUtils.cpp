@@ -170,7 +170,7 @@ void OpenCL_platforms_list::Initialize()
 
         platform.platform_key  = key;
         platform.platform_list = this;
-        platform.id_offset        = platform_id_offset;
+        platform.id_offset     = platform_id_offset;
 
         platform.id = tmp_platforms[i];
 
@@ -664,9 +664,9 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
 {
     std_cout << "OpenCL: Initialize platform \"" << _platform.name << "\"'s device(s)\n";
 
-    platform_id =  _platform.id;
-    platform    = &_platform;
-    platform_id_offset = _platform_id_offset;
+    platform_id         =  _platform.id;
+    platform            = &_platform;
+    platform_id_offset  = _platform_id_offset;
 
     // Get the number of GPU devices available to the platform
     // Number of GPU
