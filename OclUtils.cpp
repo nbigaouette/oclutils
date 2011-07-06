@@ -14,6 +14,35 @@
 const char TMP_FILE[] = "/tmp/gpu_usage.txt";
 #define string_base "Platform: %d  Device: %d (%s, %s)"
 
+// *****************************************************************************
+bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
+                              const std::string &platform_name, const std::string &device_name)
+{
+    bool device_is_used = false;
+
+    std::ifstream file(TMP_FILE, std::ios::in);
+
+    if (file)
+    {
+        std::string line;
+        char string_to_find[4096];
+        memset(string_to_find, 0, 4096);
+
+        while (std::getline(file, line))
+        {
+            sprintf(string_to_find, string_base, platform_id_offset, device_id, platform_name.c_str(), device_name.c_str());
+
+            if (line.find(string_to_find) != std::string::npos)
+            {
+                device_is_used = true;
+            }
+        }
+
+        file.close();
+    }
+
+    return device_is_used;
+}
 
 // *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length)
@@ -248,30 +277,6 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
     device          = _device;
     device_is_gpu   = _device_is_gpu;
 
-    std::ifstream file(TMP_FILE, std::ios::in);
-
-    if (file)
-    {
-        std::string line;
-        char string_to_find[4096];
-
-        while (std::getline(file, line))
-        {
-            sprintf(string_to_find, "%s%d", string_base, id);
-
-            if (line.find(string_to_find) != std::string::npos)
-            {
-                device_is_used = true;
-            }
-        }
-
-        file.close();
-    }
-    else
-    {
-        device_is_used = false;
-    }
-
     char tmp_string[4096];
 
     cl_int err;
@@ -398,6 +403,8 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
         single_fp_config_string += "CL_FP_ROUND_TO_INF, ";
     if (single_fp_config & CL_FP_FMA)
         single_fp_config_string += "CL_FP_FMA, ";
+
+    device_is_used = Verify_if_Device_is_Used(id, platform_id_offset, platform_name, name);
 }
 
 // *****************************************************************************

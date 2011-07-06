@@ -100,6 +100,10 @@ class OpenCL_Kernel;
 std::string OpenCL_Error_to_String(cl_int error);
 
 // *****************************************************************************
+bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
+                              const std::string &platform_name, const std::string &device_name);
+
+// *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length);
 
 // *****************************************************************************
