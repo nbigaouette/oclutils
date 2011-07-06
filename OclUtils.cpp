@@ -632,7 +632,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
     err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &nb_gpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
-        std_cout << "OpenCL: WARNING: Can't find a usable GPU!\n" << std::flush;
+        std_cout << "OpenCL: WARNING: Can't find a usable GPU!\n";
         err = CL_SUCCESS;
     }
     OpenCL_Test_Success(err, "clGetDeviceIDs()");
@@ -641,7 +641,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
     err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 0, NULL, &nb_cpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
-        std_cout << "OpenCL: WARNING: Can't find a usable CPU!\n" << std::flush;
+        std_cout << "OpenCL: WARNING: Can't find a usable CPU!\n";
         err = CL_SUCCESS;
     }
     OpenCL_Test_Success(err, "clGetDeviceIDs()");
