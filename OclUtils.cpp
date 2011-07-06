@@ -599,7 +599,7 @@ void OpenCL_devices_list::Print() const
             ite->Print();
 
         std_cout << "        "; Print_N_Times("*", 101);
-        std_cout << "        Order of preference for OpenCL devices:\n";
+        std_cout << "        Order of preference for OpenCL devices for this platform:\n";
         int i = 0;
         for (std::list<OpenCL_device>::const_iterator ite = device_list.begin() ; ite != device_list.end() ; ++ite)
         {
