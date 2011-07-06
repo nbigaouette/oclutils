@@ -247,10 +247,10 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
     if (file)
     {
         std::string line;
+        char string_to_find[4096];
 
         while (std::getline(file, line))
         {
-            char string_to_find[4096];
             sprintf(string_to_find, "%s%d", string_base, id);
 
             if (line.find(string_to_find) != std::string::npos)
@@ -553,11 +553,11 @@ OpenCL_devices_list::~OpenCL_devices_list()
         if (file_read)
         {
             std::string line;
+            char string_to_find[4096];
+            sprintf(string_to_find, string_base, platform_id_offset, preferred_device->Get_Id(), );
 
             while (std::getline(file_read, line))
             {
-                char string_to_find[4096];
-                sprintf(string_to_find, "%s%d", string_base, preferred_device->Get_Id());
 
                 // Read every line except the one corresponding to the current device.
                 if (line.find(string_to_find) == std::string::npos)
