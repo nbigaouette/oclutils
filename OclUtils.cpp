@@ -563,6 +563,14 @@ OpenCL_devices_list::~OpenCL_devices_list()
     if (not is_initialized)
         return;
 
+    Clear_Device_from_Locked_File(write_to_tmp, platform_id_offset, preferred_device->Get_Id(),
+                                  platform->name, preferred_device->Get_Name());
+}
+
+// *****************************************************************************
+void Clear_Device_from_Locked_File(const bool write_to_tmp, const int platform_id_offset, const int device_id,
+                                   const std::string &platform_name, const std::string &device_name)
+{
     if (write_to_tmp)
     {
         std::string file_content; // Write the data from the file.
@@ -573,7 +581,7 @@ OpenCL_devices_list::~OpenCL_devices_list()
         {
             std::string line;
             char string_to_find[4096];
-            sprintf(string_to_find, string_base, platform_id_offset, preferred_device->Get_Id(), platform->name.c_str(), preferred_device->Get_Name().c_str());
+            sprintf(string_to_find, string_base, platform_id_offset, device_id, platform_name.c_str(), device_name.c_str());
 
             while (std::getline(file_read, line))
             {
