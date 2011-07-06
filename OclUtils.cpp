@@ -61,6 +61,8 @@ void OpenCL_platform::Print() const
         << "        extensions: " << extensions << "\n"
         << "        id:         " << id << "\n"
         << "        profile:    " << profile << "\n"
+        << "        key:        " << platform_key << "\n"
+        << "        list:       " << platform_list << "\n"
     ;
 
     std_cout
@@ -116,6 +118,9 @@ void OpenCL_platforms_list::Initialize()
         }
 
         OpenCL_platform &platform = platforms[key];
+
+        platform.platform_key  = key;
+        platform.platform_list = this;
 
         platform.id = tmp_platforms[i];
 

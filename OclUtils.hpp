@@ -250,6 +250,8 @@ public:
     std::string                 name;
     std::string                 vendor;
     std::string                 extensions;
+    std::string                 platform_key;
+    OpenCL_platforms_list      *platform_list;
     OpenCL_devices_list         devices_list;
 
     OpenCL_platform();
