@@ -193,7 +193,7 @@ class OpenCL_device
         cl_device_id    &   Get_Device()    { return device;    }
         cl_context      &   Get_Context()   { return context;   }
 
-        void Set_Information(const int _id, cl_device_id _device, const bool _device_is_gpu);
+        void Set_Information(const int _id, cl_device_id _device, const int _platform_id_offset, const bool _device_is_gpu);
 
         cl_int Set_Context();
 
@@ -211,6 +211,7 @@ private:
     bool                        is_initialized;
     cl_platform_id              platform_id;
     const OpenCL_platform       *platform;
+    int                         platform_id_offset;
     std::list<OpenCL_device>    device_list;
     std::list<OpenCL_device>::iterator it;
     cl_uint                     nb_cpu;
@@ -235,7 +236,7 @@ public:
     inline cl_device_id  &  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
     inline cl_context    &  Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
 
-    void Initialize(const OpenCL_platform &_platform);
+    void Initialize(const OpenCL_platform &_platform, const int _platform_id_offset);
 
 };
 

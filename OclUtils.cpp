@@ -159,7 +159,7 @@ void OpenCL_platforms_list::Initialize()
         platform.extensions = std::string(tmp_string);
 
         // Initialize the platform's devices
-        platform.devices_list.Initialize(platform);
+        platform.devices_list.Initialize(platform, platform_id_offset);
 
         ++platform_id_offset;
     }
@@ -241,7 +241,8 @@ OpenCL_device::~OpenCL_device()
 }
 
 // *****************************************************************************
-void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const bool _device_is_gpu)
+void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
+                                    const int _platform_id_offset, const bool _device_is_gpu)
 {
     id              = _id;
     device          = _device;
@@ -541,6 +542,7 @@ OpenCL_devices_list::OpenCL_devices_list()
     write_to_tmp = true;
 
     preferred_device = NULL;
+    platform_id_offset  = -1;
 }
 
 // *****************************************************************************
@@ -625,12 +627,13 @@ void OpenCL_devices_list::Print() const
 }
 
 // *****************************************************************************
-void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
+void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int _platform_id_offset)
 {
     std_cout << "OpenCL: Initialize platform \"" << _platform.name << "\"'s device(s)\n";
 
     platform_id =  _platform.id;
     platform    = &_platform;
+    platform_id_offset = _platform_id_offset;
 
     // Get the number of GPU devices available to the platform
     // Number of GPU
@@ -670,7 +673,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
 
         for (unsigned int i = 0 ; i < nb_cpu ; ++i, ++it)
         {
-            it->Set_Information(i, tmp_devices[i], false); // device_is_gpu == false
+            it->Set_Information(i, tmp_devices[i], platform_id_offset, false); // device_is_gpu == false
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
@@ -688,7 +691,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
         OpenCL_Test_Success(err, "clGetDeviceIDs()");
         for (unsigned int i = 0 ; i < nb_gpu ; ++i, ++it)
         {
-            it->Set_Information(nb_cpu+i, tmp_devices[i], true); // device_is_gpu == true
+            it->Set_Information(nb_cpu+i, tmp_devices[i], platform_id_offset, true); // device_is_gpu == true
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
