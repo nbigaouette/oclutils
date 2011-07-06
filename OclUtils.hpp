@@ -237,8 +237,8 @@ public:
     void Print() const;
 
     OpenCL_device &  Prefered_OpenCL();
-    inline cl_device_id  &  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
-    inline cl_context    &  Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
+    cl_device_id  &  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
+    cl_context    &  Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
 
     void Initialize(const OpenCL_platform &_platform, const int _platform_id_offset);
 
