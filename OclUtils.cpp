@@ -209,6 +209,7 @@ void OpenCL_platforms_list::Initialize()
         platforms["test"].version   = "Dummy Version 3.1415";
         platforms["test"].extensions= "Dummy Extensions";
         platforms["test"].profile   = "Dummy Profile";
+        ++nb_platforms;
     }
     */
 }
