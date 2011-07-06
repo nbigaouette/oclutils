@@ -207,6 +207,9 @@ class OpenCL_device
         bool Is_In_Use()    {return device_is_used;}
         int Get_Id() const  {return id;}
 
+        void Lock_Device();
+        void Unlock_Device();
+
         bool operator<(const OpenCL_device &b);
 };
 

@@ -520,6 +520,18 @@ void OpenCL_device::Print() const
 }
 
 // *****************************************************************************
+void OpenCL_device::Lock_Device()
+{
+
+}
+
+// *****************************************************************************
+void OpenCL_device::Unlock_Device()
+{
+
+}
+
+// *****************************************************************************
 bool OpenCL_device::operator<(const OpenCL_device &other)
 {
     // Start by checking if ones not in use. When this is the case give it priority.
