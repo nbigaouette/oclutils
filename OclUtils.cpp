@@ -622,8 +622,7 @@ void OpenCL_devices_list::Print() const
 // *****************************************************************************
 void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
 {
-    Print_N_Times("-", 109);
-    std_cout << "OpenCL: Initialize OpenCL object and context\n" << std::flush;
+    std_cout << "OpenCL: Initialize platform \"" << _platform.name << "\"'s device(s)\n";
 
     platform_id =  _platform.id;
     platform    = &_platform;
@@ -707,7 +706,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
         while (!correct_answer)
         {
             // Ask the user if he still wants to execute the program.
-            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices are in use!\n"
+            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on platform \"" << platform->name << "\" are in use!\n"
                      << "                 If you are certain no other program is using the device(s), you can delete the file '" << TMP_FILE << "'\n"
                      << "                 Do you want to force the execution and continue? [y/n]\n";
             std::string answer;
@@ -742,7 +741,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
     preferred_device = NULL;    // The preferred device is unknown for now.
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
     {
-        std_cout << "Trying to set an OpenCL context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
+        std_cout << "OpenCL: Trying to set an context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
         if (it->Set_Context() == CL_SUCCESS)
         {
             std_cout << " Success!\n";
