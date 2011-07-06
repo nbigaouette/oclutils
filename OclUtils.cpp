@@ -529,7 +529,19 @@ void OpenCL_device::Print() const
 // *****************************************************************************
 void OpenCL_device::Lock()
 {
+    std::ofstream file(TMP_FILE, std::ios::out | std::ios::app);
 
+    if (file)
+    {
+        char tmp_string[4096];
+        assert(parent_platform != NULL);
+        sprintf(tmp_string, string_base, parent_platform->id_offset, id, parent_platform->name.c_str(), name.c_str());
+        file << tmp_string << std::endl;
+
+        file.close();
+
+        std::cin >> tmp_string;
+    }
 }
 
 // *****************************************************************************
@@ -789,16 +801,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
 
             if (it->write_to_tmp)
             {
-                std::ofstream file(TMP_FILE, std::ios::out | std::ios::app);
-
-                if (file)
-                {
-                    char tmp_string[4096];
-                    sprintf(tmp_string, string_base, platform_id_offset, preferred_device->Get_Id(), platform->name.c_str(), preferred_device->Get_Name().c_str());
-                    file << tmp_string << std::endl;
-
-                    file.close();
-                }
+                it->Lock();
             }
 
             break;
