@@ -77,13 +77,16 @@ void OpenCL_platforms_list::Initialize()
     cl_uint nb_platforms;
     char tmp_string[1024];
 
+    Print_N_Times("-", 109);
+    std_cout << "OpenCL: Getting a list of platform(s)..." << std::flush;
+
     // Get number of platforms available
     err = clGetPlatformIDs(0, NULL, &nb_platforms);
     OpenCL_Test_Success(err, "clGetPlatformIDs");
 
     if (nb_platforms == 0)
     {
-        std_cout << "ERROR: No OpenCL platform found! Exiting.\n";
+        std_cout << "\nERROR: No OpenCL platform found! Exiting.\n";
         abort();
     }
 
@@ -92,6 +95,13 @@ void OpenCL_platforms_list::Initialize()
     tmp_platforms = (cl_platform_id*) calloc_and_check(nb_platforms, sizeof(cl_platform_id), "cl_platform_id*");
     err = clGetPlatformIDs(nb_platforms, tmp_platforms, NULL);
     OpenCL_Test_Success(err, "clGetPlatformIDs");
+
+    std_cout << " done.\n";
+
+    if (nb_platforms == 1)
+        std_cout << "OpenCL: Initializing the available platform...\n";
+    else
+        std_cout << "OpenCL: Initializing the " << nb_platforms << " available platforms...\n";
 
     for (unsigned int i = 0 ; i < nb_platforms ; i++)
     {
@@ -166,7 +176,7 @@ void OpenCL_platforms_list::Initialize()
 // *****************************************************************************
 void OpenCL_platforms_list::Print() const
 {
-    std_cout << "Available platforms:\n";
+    std_cout << "OpenCL: Available platforms:\n";
     std::map<std::string,OpenCL_platform>::const_iterator it = platforms.begin();
     for (unsigned int i = 0 ; i < platforms.size() ; i++, it++)
     {
