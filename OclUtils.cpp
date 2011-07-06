@@ -103,6 +103,9 @@ void OpenCL_platforms_list::Initialize()
     else
         std_cout << "OpenCL: Initializing the " << nb_platforms << " available platforms...\n";
 
+    // This offset allows distinguishing in TMP_FILE the devices that can appear in different platforms.
+    int platform_id_offset = 0;
+
     for (unsigned int i = 0 ; i < nb_platforms ; i++)
     {
         cl_platform_id tmp_platform_id = tmp_platforms[i];
@@ -157,6 +160,8 @@ void OpenCL_platforms_list::Initialize()
 
         // Initialize the platform's devices
         platform.devices_list.Initialize(platform);
+
+        ++platform_id_offset;
     }
 
     free_me(tmp_platforms, nb_platforms);
