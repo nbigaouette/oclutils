@@ -263,6 +263,7 @@ public:
     std::string                 platform_key;
     OpenCL_platforms_list      *platform_list;
     OpenCL_devices_list         devices_list;
+    int                         id_offset;
 
     OpenCL_platform();
 

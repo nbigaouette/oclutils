@@ -77,6 +77,7 @@ OpenCL_platform::OpenCL_platform()
     version = "Not set";
     extensions = "Not set";
     profile = "Not set";
+    id_offset  = 0;
 }
 
 // *****************************************************************************
@@ -169,6 +170,7 @@ void OpenCL_platforms_list::Initialize()
 
         platform.platform_key  = key;
         platform.platform_list = this;
+        platform.id_offset        = platform_id_offset;
 
         platform.id = tmp_platforms[i];
 
