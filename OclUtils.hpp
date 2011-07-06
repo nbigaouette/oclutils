@@ -265,6 +265,8 @@ public:
     cl_device_id  & Prefered_OpenCL_Device()            { return devices_list.Prefered_OpenCL_Device(); }
     cl_context    & Prefered_OpenCL_Device_Context()    { return devices_list.Prefered_OpenCL_Device_Context(); }
 
+    void Lock_Best_Device();
+
     void Print() const;
 };
 

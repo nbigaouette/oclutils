@@ -80,6 +80,12 @@ OpenCL_platform::OpenCL_platform()
 }
 
 // *****************************************************************************
+void OpenCL_platform::Lock_Best_Device()
+{
+
+}
+
+// *****************************************************************************
 void OpenCL_platform::Print() const
 {
     std_cout
