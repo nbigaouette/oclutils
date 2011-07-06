@@ -261,6 +261,10 @@ public:
 
     OpenCL_platform();
 
+    OpenCL_device & Prefered_OpenCL()                   { return devices_list.Prefered_OpenCL(); }
+    cl_device_id  & Prefered_OpenCL_Device()            { return devices_list.Prefered_OpenCL_Device(); }
+    cl_context    & Prefered_OpenCL_Device_Context()    { return devices_list.Prefered_OpenCL_Device_Context(); }
+
     void Print() const;
 };
 
