@@ -473,15 +473,15 @@ void OpenCL_device::Print() const
 
     // Avialable global memory on device
     std_cout.Format(0, 3, 'g');
-    std_cout << "Available memory (global):   " << Bytes_in_String(global_mem_size) << "\n";
+    std_cout << "        Available memory (global):   " << Bytes_in_String(global_mem_size) << "\n";
 
     // Avialable local memory on device
     std_cout.Format(0, 3, 'g');
-    std_cout << "Available memory (local):    " << Bytes_in_String(local_mem_size) << "\n";
+    std_cout << "        Available memory (local):    " << Bytes_in_String(local_mem_size) << "\n";
 
     // Avialable constant memory on device
     std_cout.Format(0, 3, 'g');
-    std_cout << "Available memory (constant): " << Bytes_in_String(max_constant_buffer_size) << "\n";
+    std_cout << "        Available memory (constant): " << Bytes_in_String(max_constant_buffer_size) << "\n";
 }
 
 // *****************************************************************************
