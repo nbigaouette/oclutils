@@ -115,7 +115,7 @@ class OpenCL_device
         cl_device_id    device;
         cl_context      context;
         bool            device_is_gpu;
-        bool            device_is_used;
+        bool            device_is_in_use;
 
         cl_uint                         address_bits;
         cl_bool                         available;
@@ -207,7 +207,7 @@ class OpenCL_device
         cl_int Set_Context();
 
         void Print() const;
-        bool Is_In_Use()    {return device_is_used;}
+        bool Is_In_Use()    {return device_is_in_use;}
         int Get_Id() const  {return id;}
 
         void Lock();

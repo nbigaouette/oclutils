@@ -267,7 +267,7 @@ OpenCL_device::OpenCL_device()
     max_compute_units           = 0;
     device                      = NULL;
     context                     = NULL;
-    device_is_used              = false;
+    device_is_in_use            = false;
     write_to_tmp                = true;
 }
 
@@ -418,7 +418,7 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
     if (single_fp_config & CL_FP_FMA)
         single_fp_config_string += "CL_FP_FMA, ";
 
-    device_is_used = Verify_if_Device_is_Used(id, platform_id_offset, platform_name, name);
+    device_is_in_use = Verify_if_Device_is_Used(id, platform_id_offset, platform_name, name);
 }
 
 // *****************************************************************************
@@ -438,7 +438,7 @@ void OpenCL_device::Print() const
         << "    name: " << name << "\n"
         << "        id:                             " << id << "\n"
         << "        parent platform:                " << (parent_platform != NULL ? parent_platform->name : "") << "\n"
-        << "        device_is_used:                 " << (device_is_used ? "yes" : "no ") << "\n"
+        << "        device_is_used:                 " << (device_is_in_use ? "yes" : "no ") << "\n"
         << "        max_compute_unit:               " << max_compute_units << "\n"
         << "        device is GPU?                  " << (device_is_gpu ? "yes" : "no ") << "\n"
 
@@ -585,9 +585,9 @@ bool OpenCL_device::operator<(const OpenCL_device &other)
     //       are located at the top (front). We thus invert the test here.
     bool result = false;
 
-    if      (this->device_is_used == false && other.device_is_used == true)  // "this" wins (it is not in use).
+    if      (this->device_is_in_use == false && other.device_is_in_use == true)  // "this" wins (it is not in use).
         result = true;
-    else if (this->device_is_used == true  && other.device_is_used == false) // "other" wins (it is not in use).
+    else if (this->device_is_in_use == true  && other.device_is_in_use == false) // "other" wins (it is not in use).
         result = false;
     else // both are used or not used. Thus, we must compare the ammount of compute units.
     {
