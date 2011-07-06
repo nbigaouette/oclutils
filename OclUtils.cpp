@@ -259,6 +259,7 @@ OpenCL_platform & OpenCL_platforms_list::operator[](const std::string key)
 // *****************************************************************************
 OpenCL_device::OpenCL_device()
 {
+    object_is_initialized       = false;
     parent_platform             = NULL;
     name                        = "";
     id                          = -1;
@@ -267,6 +268,7 @@ OpenCL_device::OpenCL_device()
     device                      = NULL;
     context                     = NULL;
     device_is_used              = false;
+    write_to_tmp                = true;
 }
 
 // *****************************************************************************
@@ -274,6 +276,8 @@ OpenCL_device::~OpenCL_device()
 {
     if (context)
         clReleaseContext(context);
+
+    Unlock();
 }
 
 // *****************************************************************************
@@ -282,6 +286,7 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
                                     const std::string &platform_name,
                                     const bool _device_is_gpu)
 {
+    object_is_initialized = true;
     id              = _id;
     device          = _device;
     device_is_gpu   = _device_is_gpu;
@@ -522,15 +527,53 @@ void OpenCL_device::Print() const
 }
 
 // *****************************************************************************
-void OpenCL_device::Lock_Device()
+void OpenCL_device::Lock()
 {
 
 }
 
 // *****************************************************************************
-void OpenCL_device::Unlock_Device()
+void OpenCL_device::Unlock()
 {
+    if (object_is_initialized and write_to_tmp)
+    {
+        std::string file_content; // Write the data from the file.
 
+        std::ifstream file_read(TMP_FILE, std::ios::in);
+
+        if (file_read)
+        {
+            std::string line;
+            char string_to_find[4096];
+            //sprintf(string_to_find, string_base, platform_id_offset, id, platform_name.c_str(), name.c_str());
+            std_cout << "this = " << this << "  parent_platform = "<< parent_platform << "\n";
+            assert(parent_platform != NULL);
+            sprintf(string_to_find, string_base, parent_platform->id_offset, id, parent_platform->name.c_str(), name.c_str());
+
+            while (std::getline(file_read, line))
+            {
+                // Read every line except the one corresponding to the current device.
+                if (line.find(string_to_find) == std::string::npos)
+                {
+                    file_content += line + "\n"; // Add the lines to the string.
+                }
+            }
+
+            file_read.close();
+        }
+
+        // Write back the string to file (the current device being deleted).
+        std::ofstream file_write(TMP_FILE, std::ios::out | std::ios::trunc);
+
+        if (file_write)
+        {
+            file_write << file_content;
+
+            file_write.close();
+        }
+
+        object_is_initialized = false;
+    }
 }
 
 // *****************************************************************************
@@ -567,7 +610,6 @@ OpenCL_devices_list::OpenCL_devices_list()
     nb_cpu              = 0;
     nb_gpu              = 0;
     err                 = 0;
-    write_to_tmp        = true;
     preferred_device    = NULL;
 }
 
@@ -576,49 +618,6 @@ OpenCL_devices_list::~OpenCL_devices_list()
 {
     if (not is_initialized)
         return;
-
-    Clear_Device_from_Locked_File(write_to_tmp, platform_id_offset, preferred_device->Get_Id(),
-                                  platform->name, preferred_device->Get_Name());
-}
-
-// *****************************************************************************
-void Clear_Device_from_Locked_File(const bool write_to_tmp, const int platform_id_offset, const int device_id,
-                                   const std::string &platform_name, const std::string &device_name)
-{
-    if (write_to_tmp)
-    {
-        std::string file_content; // Write the data from the file.
-
-        std::ifstream file_read(TMP_FILE, std::ios::in);
-
-        if (file_read)
-        {
-            std::string line;
-            char string_to_find[4096];
-            sprintf(string_to_find, string_base, platform_id_offset, device_id, platform_name.c_str(), device_name.c_str());
-
-            while (std::getline(file_read, line))
-            {
-                // Read every line except the one corresponding to the current device.
-                if (line.find(string_to_find) == std::string::npos)
-                {
-                    file_content += line + "\n"; // Add the lines to the string.
-                }
-            }
-
-            file_read.close();
-        }
-
-        // Write back the string to file (the current device being deleted).
-        std::ofstream file_write(TMP_FILE, std::ios::out | std::ios::trunc);
-
-        if (file_write)
-        {
-            file_write << file_content;
-
-            file_write.close();
-        }
-    }
 }
 
 // *****************************************************************************
@@ -742,7 +741,8 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
         bool correct_answer = false;
 
         // Don't write to tmp. This would suppress lines created by other program running.
-        write_to_tmp = false;
+        for (it = device_list.begin(); it != device_list.end() ; ++it)
+            it->write_to_tmp = false;
 
         while (!correct_answer)
         {
@@ -789,7 +789,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
             std_cout << " Success!\n";
             preferred_device = &(*it);
 
-            if (write_to_tmp)
+            if (it->write_to_tmp)
             {
                 std::ofstream file(TMP_FILE, std::ios::out | std::ios::app);
 

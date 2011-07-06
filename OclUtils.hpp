@@ -102,8 +102,6 @@ std::string OpenCL_Error_to_String(cl_int error);
 // *****************************************************************************
 bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name);
-void Clear_Device_from_Locked_File(const bool write_to_tmp, const int platform_id_offset, const int device_id,
-                                   const std::string &platform_name, const std::string &device_name);
 
 // *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length);
@@ -112,6 +110,7 @@ char *read_opencl_kernel(const std::string filename, int *length);
 class OpenCL_device
 {
     private:
+        bool            object_is_initialized;
         int             id;
         cl_device_id    device;
         cl_context      context;
@@ -189,6 +188,10 @@ class OpenCL_device
     public:
         const OpenCL_platform *parent_platform;
 
+        // If the device usage is forced (when all devices are used) we dont want to
+        // write anything to /tmp.
+        bool                        write_to_tmp;
+
         OpenCL_device();
         ~OpenCL_device();
 
@@ -207,8 +210,8 @@ class OpenCL_device
         bool Is_In_Use()    {return device_is_used;}
         int Get_Id() const  {return id;}
 
-        void Lock_Device();
-        void Unlock_Device();
+        void Lock();
+        void Unlock();
 
         bool operator<(const OpenCL_device &b);
 };
@@ -226,10 +229,6 @@ private:
     cl_uint                     nb_cpu;
     cl_uint                     nb_gpu;
     int                         err;
-
-    // If the device usage is forced (when all devices are used) we dont want to
-    // write anything to /tmp.
-    bool                        write_to_tmp;
 
     OpenCL_device               *preferred_device;
 
