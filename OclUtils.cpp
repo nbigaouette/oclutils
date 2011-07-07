@@ -542,8 +542,6 @@ void OpenCL_device::Lock()
         file << tmp_string << std::endl;
 
         file.close();
-
-        std::cin >> tmp_string;
     }
 }
 
