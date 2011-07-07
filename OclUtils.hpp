@@ -117,6 +117,8 @@ class OpenCL_device
         bool            device_is_gpu;
         bool            device_is_in_use;
 
+    public:
+
         cl_uint                         address_bits;
         cl_bool                         available;
         cl_bool                         compiler_available;
@@ -185,7 +187,6 @@ class OpenCL_device
         cl_bool                         nvidia_device_kernel_exec_timeout;
         cl_bool                         nvidia_device_integrated_memory;
 
-    public:
         const OpenCL_platform *parent_platform;
 
         // A lock can be acquired on the device only if another program
@@ -231,9 +232,10 @@ private:
     cl_uint                     nb_gpu;
     int                         err;
 
+public:
+
     OpenCL_device               *preferred_device;
 
-public:
     OpenCL_devices_list();
     ~OpenCL_devices_list();
 
@@ -254,6 +256,7 @@ class OpenCL_platform
 {
 private:
 public:
+
     cl_platform_id              id;
     std::string                 profile;
     std::string                 version;
@@ -282,9 +285,10 @@ class OpenCL_platforms_list
 private:
 public:
     std::map<std::string,OpenCL_platform> platforms;
+    std::string prefered_platform;
 
 
-    void Initialize(const std::string &prefered_platform);
+    void Initialize(const std::string &_prefered_platform);
     void Print() const;
 
     OpenCL_platform & operator[](const std::string key);
