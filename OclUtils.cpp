@@ -759,8 +759,9 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
         while (prefered_platform == platform->platform_key and !correct_answer)
         {
             // Ask the user if he still wants to execute the program.
-            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on platform \"" << platform->name << "\" are in use!\n"
-                     << "                 If you are certain no other program is using the device(s), you can delete the file '" << LOCK_FILE << "'\n"
+            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on prefered platform \"" << platform->name << "\" are in use!\n"
+                     << "                 If you are certain no other program is using the device(s), you can delete\n"
+                     << "                 the line(s) the platform's name in the file '" << LOCK_FILE << "'\n"
                      << "                 Do you want to force the execution and continue? [y/n]\n";
             std::string answer;
             std::cin >> answer;
