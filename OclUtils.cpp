@@ -539,7 +539,7 @@ void OpenCL_device::Lock()
         char tmp_string[4096];
         assert(parent_platform != NULL);
         sprintf(tmp_string, string_base, parent_platform->id_offset, id, parent_platform->name.c_str(), name.c_str());
-        file << tmp_string << std::endl;
+        file << tmp_string << std::endl << std::flush;
 
         file.close();
     }
