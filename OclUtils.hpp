@@ -250,42 +250,42 @@ class OpenCL_devices_list
 // *****************************************************************************
 class OpenCL_platform
 {
-private:
-public:
+    private:
+    public:
 
-    cl_platform_id                      id;
-    std::string                         profile;
-    std::string                         version;
-    std::string                         name;
-    std::string                         vendor;
-    std::string                         extensions;
-    std::string                         key;
-    OpenCL_platforms_list              *platform_list;
-    OpenCL_devices_list                 devices_list;
-    int                                 id_offset;
+        cl_platform_id                  id;
+        std::string                     profile;
+        std::string                     version;
+        std::string                     name;
+        std::string                     vendor;
+        std::string                     extensions;
+        std::string                     key;
+        OpenCL_platforms_list           *platform_list;
+        OpenCL_devices_list             devices_list;
+        int                             id_offset;
 
-    OpenCL_platform();
+        OpenCL_platform();
 
-    OpenCL_device &                     Prefered_OpenCL()                   { return devices_list.Prefered_OpenCL(); }
-    cl_device_id &                      Prefered_OpenCL_Device()            { return devices_list.Prefered_OpenCL_Device(); }
-    cl_context &                        Prefered_OpenCL_Device_Context()    { return devices_list.Prefered_OpenCL_Device_Context(); }
-    void                                Lock_Best_Device();
-    void                                Print() const;
+        OpenCL_device &                 Prefered_OpenCL()                   { return devices_list.Prefered_OpenCL(); }
+        cl_device_id &                  Prefered_OpenCL_Device()            { return devices_list.Prefered_OpenCL_Device(); }
+        cl_context &                    Prefered_OpenCL_Device_Context()    { return devices_list.Prefered_OpenCL_Device_Context(); }
+        void                            Lock_Best_Device();
+        void                            Print() const;
 };
 
 // *****************************************************************************
 class OpenCL_platforms_list
 {
-private:
-public:
-    std::map<std::string,OpenCL_platform>   platforms;
-    std::string                             preferred_platform;
+    private:
+    public:
+        std::map<std::string,OpenCL_platform>   platforms;
+        std::string                             preferred_platform;
 
 
-    void Initialize(const std::string &_prefered_platform);
-    void Print() const;
+        void Initialize(const std::string &_prefered_platform);
+        void Print() const;
 
-    OpenCL_platform & operator[](const std::string key);
+        OpenCL_platform & operator[](const std::string key);
 };
 
 // **************************************************************
