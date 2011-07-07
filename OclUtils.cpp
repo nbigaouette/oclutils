@@ -83,7 +83,7 @@ OpenCL_platform::OpenCL_platform()
 // *****************************************************************************
 void OpenCL_platform::Lock_Best_Device()
 {
-    if (Prefered_OpenCL().is_lockable)
+    if (Prefered_OpenCL().Is_Lockable())
     {
         Prefered_OpenCL().Lock();
     }
@@ -769,7 +769,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
 
         // Don't write to tmp. This would suppress lines created by other program running.
         for (it = device_list.begin(); it != device_list.end() ; ++it)
-            it->is_lockable = false;
+            it->Is_Lockable(false);
 
         while (prefered_platform == platform->platform_key and !correct_answer)
         {

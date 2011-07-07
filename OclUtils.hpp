@@ -185,14 +185,14 @@ class OpenCL_device
         cl_bool                         nvidia_device_kernel_exec_timeout;
         cl_bool                         nvidia_device_integrated_memory;
 
-    public:
-
-        const OpenCL_platform          *parent_platform;
-
         // A lock can be acquired on the device only if another program
         // did not acquired one before. If the program detects that the device
         // was is used by another process, it won't try to lock or unlock the device.
         bool                            is_lockable;
+
+    public:
+
+        const OpenCL_platform          *parent_platform;
 
         OpenCL_device();
         ~OpenCL_device();
@@ -204,6 +204,8 @@ class OpenCL_device
         cl_device_id &                  Get_Device()                { return device;            }
         cl_context &                    Get_Context()               { return context;           }
         bool                            Is_In_Use()                 { return device_is_in_use;  }
+        bool                            Is_Lockable()               { return is_lockable;       }
+        void                            Is_Lockable(const bool _is_lockable) { is_lockable = _is_lockable; }
 
         void                            Set_Information(const int _id, cl_device_id _device, const int platform_id_offset,
                                                         const std::string &platform_name, const bool _device_is_gpu);
