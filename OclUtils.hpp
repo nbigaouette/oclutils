@@ -110,12 +110,12 @@ char *read_opencl_kernel(const std::string filename, int *length);
 class OpenCL_device
 {
     private:
-        bool            object_is_initialized;
-        int             id;
-        cl_device_id    device;
-        cl_context      context;
-        bool            device_is_gpu;
-        bool            device_is_in_use;
+        bool                            object_is_initialized;
+        int                             id;
+        cl_device_id                    device;
+        cl_context                      context;
+        bool                            device_is_gpu;
+        bool                            device_is_in_use;
 
     public:
 
@@ -187,35 +187,32 @@ class OpenCL_device
         cl_bool                         nvidia_device_kernel_exec_timeout;
         cl_bool                         nvidia_device_integrated_memory;
 
-        const OpenCL_platform *parent_platform;
+        const OpenCL_platform          *parent_platform;
 
         // A lock can be acquired on the device only if another program
         // did not acquired one before. If the program detects that the device
         // was is used by another process, it won't try to lock or unlock the device.
-        bool                        is_lockable;
+        bool                            is_lockable;
 
         OpenCL_device();
         ~OpenCL_device();
 
-        const OpenCL_platform *   Get_Parent_Platform() { return parent_platform;    }
-        std::string         Get_Name() const      { return name;      }
-        cl_uint             Get_Compute_Units() const { return max_compute_units;      }
-        int                 Get_ID() const        { return id;        }
-        cl_device_id    &   Get_Device()    { return device;    }
-        cl_context      &   Get_Context()   { return context;   }
+        const OpenCL_platform *         Get_Parent_Platform()       { return parent_platform;   }
+        std::string                     Get_Name() const            { return name;              }
+        cl_uint                         Get_Compute_Units() const   { return max_compute_units; }
+        int                             Get_ID() const              { return id;                }
+        cl_device_id &                  Get_Device()                { return device;            }
+        cl_context &                    Get_Context()               { return context;           }
+        bool                            Is_In_Use()                 { return device_is_in_use;  }
 
-        void Set_Information(const int _id, cl_device_id _device, const int platform_id_offset, const std::string &platform_name, const bool _device_is_gpu);
+        void                            Set_Information(const int _id, cl_device_id _device, const int platform_id_offset,
+                                                        const std::string &platform_name, const bool _device_is_gpu);
 
-        cl_int Set_Context();
-
-        void Print() const;
-        bool Is_In_Use()    {return device_is_in_use;}
-        int Get_Id() const  {return id;}
-
-        void Lock();
-        void Unlock();
-
-        bool operator<(const OpenCL_device &b);
+        cl_int                          Set_Context();
+        void                            Print() const;
+        void                            Lock();
+        void                            Unlock();
+        bool                            operator<(const OpenCL_device &b);
 };
 
 // *****************************************************************************
