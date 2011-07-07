@@ -117,6 +117,8 @@ class OpenCL_device
         bool                            device_is_gpu;
         bool                            device_is_in_use;
 
+        // OpenCL device's information.
+        // See http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clGetDeviceInfo.html
         cl_uint                         address_bits;
         cl_bool                         available;
         cl_bool                         compiler_available;
