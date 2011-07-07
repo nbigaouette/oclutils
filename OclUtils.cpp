@@ -83,7 +83,10 @@ OpenCL_platform::OpenCL_platform()
 // *****************************************************************************
 void OpenCL_platform::Lock_Best_Device()
 {
-
+    if (Prefered_OpenCL().is_lockable)
+    {
+        Prefered_OpenCL().Lock();
+    }
 }
 
 // *****************************************************************************
@@ -798,11 +801,6 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
         {
             std_cout << " Success!\n";
             preferred_device = &(*it);
-
-            if (it->is_lockable)
-            {
-                it->Lock();
-            }
 
             break;
         }
