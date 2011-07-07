@@ -251,8 +251,6 @@ class OpenCL_devices_list
 class OpenCL_platform
 {
     private:
-    public:
-
         cl_platform_id                  id;
         std::string                     profile;
         std::string                     version;
@@ -261,9 +259,9 @@ class OpenCL_platform
         std::string                     extensions;
         std::string                     key;
         OpenCL_platforms_list           *platform_list;
-        OpenCL_devices_list             devices_list;
         int                             id_offset;
-
+    public:
+        OpenCL_devices_list             devices_list;
         OpenCL_platform();
 
         void                            Initialize(std::string _key, int id_offset, cl_platform_id _id,
@@ -271,6 +269,10 @@ class OpenCL_platform
         OpenCL_device &                 Prefered_OpenCL()                   { return devices_list.Prefered_OpenCL(); }
         cl_device_id &                  Prefered_OpenCL_Device()            { return devices_list.Prefered_OpenCL_Device(); }
         cl_context &                    Prefered_OpenCL_Device_Context()    { return devices_list.Prefered_OpenCL_Device_Context(); }
+        std::string                     Key() const                         { return key; }
+        std::string   const             Name() const                        { return name; }
+        cl_platform_id                  Id() const                          { return id; }
+        int                             Id_Offset() const                   { return id_offset; }
         void                            Lock_Best_Device();
         void                            Print() const;
 };

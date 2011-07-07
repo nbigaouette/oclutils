@@ -252,7 +252,7 @@ void OpenCL_platforms_list::Print() const
     it = platforms.find(preferred_platform);
     assert(it != platforms.end());
     assert(it->second.devices_list.preferred_device != NULL);
-    std_cout << "OpenCL: Prefered platform's name:          " << it->second.name << "\n";
+    std_cout << "OpenCL: Prefered platform's name:          " << it->second.Name() << "\n";
     std_cout << "OpenCL: Prefered platform's best device:   " << it->second.devices_list.preferred_device->Get_Name() << "\n";
 
     Print_N_Times("-", 109);
@@ -468,7 +468,7 @@ void OpenCL_device::Print() const
     std_cout
         << "    name: " << name << "\n"
         << "        id:                             " << id << "\n"
-        << "        parent platform:                " << (parent_platform != NULL ? parent_platform->name : "") << "\n"
+        << "        parent platform:                " << (parent_platform != NULL ? parent_platform->Name() : "") << "\n"
         << "        device_is_used:                 " << (device_is_in_use ? "yes" : "no ") << "\n"
         << "        max_compute_unit:               " << max_compute_units << "\n"
         << "        device is GPU?                  " << (device_is_gpu ? "yes" : "no ") << "\n"
@@ -566,7 +566,7 @@ void OpenCL_device::Lock()
     {
         char tmp_string[4096];
         assert(parent_platform != NULL);
-        sprintf(tmp_string, string_base, parent_platform->id_offset, id, parent_platform->name.c_str(), name.c_str());
+        sprintf(tmp_string, string_base, parent_platform->Id_Offset(), id, parent_platform->Name().c_str(), name.c_str());
         file << tmp_string << std::endl << std::flush;
 
         file.close();
@@ -587,7 +587,7 @@ void OpenCL_device::Unlock()
             std::string line;
             char string_to_find[4096];
             assert(parent_platform != NULL);
-            sprintf(string_to_find, string_base, parent_platform->id_offset, id, parent_platform->name.c_str(), name.c_str());
+            sprintf(string_to_find, string_base, parent_platform->Id_Offset(), id, parent_platform->Name().c_str(), name.c_str());
 
             while (std::getline(file_read, line))
             {
@@ -699,13 +699,13 @@ void OpenCL_devices_list::Print() const
 void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
                                      const std::string &prefered_platform)
 {
-    std_cout << "OpenCL: Initialize platform \"" << _platform.name << "\"'s device(s)\n";
+    std_cout << "OpenCL: Initialize platform \"" << _platform.Name() << "\"'s device(s)\n";
 
     platform            = &_platform;
 
     // Get the number of GPU devices available to the platform
     // Number of GPU
-    err = clGetDeviceIDs(platform->id, CL_DEVICE_TYPE_GPU, 0, NULL, &nb_gpu);
+    err = clGetDeviceIDs(platform->Id(), CL_DEVICE_TYPE_GPU, 0, NULL, &nb_gpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
         std_cout << "OpenCL: WARNING: Can't find a usable GPU!\n";
@@ -714,7 +714,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
     OpenCL_Test_Success(err, "clGetDeviceIDs()");
 
     // Number of CPU
-    err = clGetDeviceIDs(platform->id, CL_DEVICE_TYPE_CPU, 0, NULL, &nb_cpu);
+    err = clGetDeviceIDs(platform->Id(), CL_DEVICE_TYPE_CPU, 0, NULL, &nb_cpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
         std_cout << "OpenCL: WARNING: Can't find a usable CPU!\n";
@@ -736,12 +736,12 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
     if (nb_cpu >= 1)
     {
         tmp_devices = new cl_device_id[nb_cpu];
-        err = clGetDeviceIDs(platform->id, CL_DEVICE_TYPE_CPU, nb_cpu, tmp_devices, NULL);
+        err = clGetDeviceIDs(platform->Id(), CL_DEVICE_TYPE_CPU, nb_cpu, tmp_devices, NULL);
         OpenCL_Test_Success(err, "clGetDeviceIDs()");
 
         for (unsigned int i = 0 ; i < nb_cpu ; ++i, ++it)
         {
-            it->Set_Information(i, tmp_devices[i], _platform.id_offset, platform->name.c_str(), false); // device_is_gpu == false
+            it->Set_Information(i, tmp_devices[i], _platform.Id_Offset(), platform->Name().c_str(), false); // device_is_gpu == false
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
@@ -755,11 +755,11 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
     if (nb_gpu >= 1)
     {
         tmp_devices = new cl_device_id[nb_gpu];
-        err = clGetDeviceIDs(platform->id, CL_DEVICE_TYPE_GPU, nb_gpu, tmp_devices, NULL);
+        err = clGetDeviceIDs(platform->Id(), CL_DEVICE_TYPE_GPU, nb_gpu, tmp_devices, NULL);
         OpenCL_Test_Success(err, "clGetDeviceIDs()");
         for (unsigned int i = 0 ; i < nb_gpu ; ++i, ++it)
         {
-            it->Set_Information(nb_cpu+i, tmp_devices[i], _platform.id_offset, platform->name.c_str(), true); // device_is_gpu == true
+            it->Set_Information(nb_cpu+i, tmp_devices[i], _platform.Id_Offset(), platform->Name().c_str(), true); // device_is_gpu == true
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
@@ -780,10 +780,10 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
         for (it = device_list.begin(); it != device_list.end() ; ++it)
             it->Set_Lockable(false);
 
-        while (prefered_platform == platform->key and !correct_answer)
+        while (prefered_platform == platform->Key() and !correct_answer)
         {
             // Ask the user if he still wants to execute the program.
-            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on prefered platform \"" << platform->name << "\" are in use!\n"
+            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on prefered platform \"" << platform->Name() << "\" are in use!\n"
                      << "                 If you are certain no other program is using the device(s), you can delete\n"
                      << "                 the line(s) the platform's name in the file '" << LOCK_FILE << "'\n"
                      << "                 Do you want to force the execution and continue? [y/n]\n";
