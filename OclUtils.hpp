@@ -205,7 +205,7 @@ class OpenCL_device
         cl_context &                    Get_Context()               { return context;           }
         bool                            Is_In_Use()                 { return device_is_in_use;  }
         bool                            Is_Lockable()               { return is_lockable;       }
-        void                            Is_Lockable(const bool _is_lockable) { is_lockable = _is_lockable; }
+        void                            Set_Lockable(const bool _is_lockable) { is_lockable = _is_lockable; }
 
         void                            Set_Information(const int _id, cl_device_id _device, const int platform_id_offset,
                                                         const std::string &platform_name, const bool _device_is_gpu);

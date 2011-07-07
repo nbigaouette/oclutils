@@ -769,7 +769,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
 
         // Don't write to tmp. This would suppress lines created by other program running.
         for (it = device_list.begin(); it != device_list.end() ; ++it)
-            it->Is_Lockable(false);
+            it->Set_Lockable(false);
 
         while (prefered_platform == platform->platform_key and !correct_answer)
         {
