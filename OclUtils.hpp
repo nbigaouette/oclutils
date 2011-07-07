@@ -117,8 +117,6 @@ class OpenCL_device
         bool                            device_is_gpu;
         bool                            device_is_in_use;
 
-    public:
-
         cl_uint                         address_bits;
         cl_bool                         available;
         cl_bool                         compiler_available;
@@ -186,6 +184,8 @@ class OpenCL_device
         cl_bool                         nvidia_device_gpu_overlap;
         cl_bool                         nvidia_device_kernel_exec_timeout;
         cl_bool                         nvidia_device_integrated_memory;
+
+    public:
 
         const OpenCL_platform          *parent_platform;
 

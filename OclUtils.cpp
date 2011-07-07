@@ -242,7 +242,7 @@ void OpenCL_platforms_list::Print() const
     assert(it != platforms.end());
     assert(it->second.devices_list.preferred_device != NULL);
     std_cout << "OpenCL: Prefered platform's name:          " << it->second.name << "\n";
-    std_cout << "OpenCL: Prefered platform's best device:   " << it->second.devices_list.preferred_device->name << "\n";
+    std_cout << "OpenCL: Prefered platform's best device:   " << it->second.devices_list.preferred_device->Get_Name() << "\n";
 
     Print_N_Times("-", 109);
 }
