@@ -278,10 +278,10 @@ class OpenCL_platforms_list
 {
     private:
         std::map<std::string,OpenCL_platform>   platforms;
-        std::string                             preferred_platform;
+        std::string                     preferred_platform;
     public:
-        void Initialize(const std::string &_prefered_platform);
-        void Print() const;
+        void                            Initialize(const std::string &_prefered_platform);
+        void                            Print() const;
 
         OpenCL_platform & operator[](const std::string key);
 };
