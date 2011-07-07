@@ -188,8 +188,9 @@ class OpenCL_device
     public:
         const OpenCL_platform *parent_platform;
 
-        // If the device usage is forced (when all devices are used) we dont want to
-        // write anything to /tmp.
+        // A lock can be acquired on the device only if another program
+        // did not acquired one before. If the program detects that the device
+        // was is used by another process, it won't try to lock or unlock the device.
         bool                        is_lockable;
 
         OpenCL_device();
