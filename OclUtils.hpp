@@ -285,7 +285,7 @@ class OpenCL_platforms_list
 private:
 public:
     std::map<std::string,OpenCL_platform> platforms;
-    std::string prefered_platform;
+    std::string preferred_platform;
 
 
     void Initialize(const std::string &_prefered_platform);

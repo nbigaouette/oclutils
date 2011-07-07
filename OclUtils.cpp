@@ -112,7 +112,7 @@ void OpenCL_platform::Print() const
 // *****************************************************************************
 void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
 {
-    prefered_platform = _prefered_platform;
+    preferred_platform = _prefered_platform;
 
     cl_int err;
     cl_uint nb_platforms;
@@ -201,7 +201,7 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
         platform.extensions = std::string(tmp_string);
 
         // Initialize the platform's devices
-        platform.devices_list.Initialize(platform, platform_id_offset, prefered_platform);
+        platform.devices_list.Initialize(platform, platform_id_offset, preferred_platform);
 
         ++platform_id_offset;
     }
@@ -232,7 +232,7 @@ void OpenCL_platforms_list::Print() const
     }
 
     Print_N_Times("-", 109);
-    it = platforms.find(prefered_platform);
+    it = platforms.find(preferred_platform);
     std_cout << "OpenCL: Prefered platform's name:          " << it->second.name << "\n";
     std_cout << "OpenCL: Prefered platform's best device:   " << it->second.devices_list.preferred_device->name << "\n";
 
