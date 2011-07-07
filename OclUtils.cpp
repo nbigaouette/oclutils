@@ -100,7 +100,7 @@ void OpenCL_platform::Print() const
         << "        extensions: " << extensions << "\n"
         << "        id:         " << id << "\n"
         << "        profile:    " << profile << "\n"
-        << "        key:        " << platform_key << "\n"
+        << "        key:        " << key << "\n"
         << "        list:       " << platform_list << "\n"
     ;
 
@@ -173,7 +173,7 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
 
         OpenCL_platform &platform = platforms[key];
 
-        platform.platform_key  = key;
+        platform.key           = key;
         platform.platform_list = this;
         platform.id_offset     = platform_id_offset;
 
@@ -769,7 +769,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
         for (it = device_list.begin(); it != device_list.end() ; ++it)
             it->Set_Lockable(false);
 
-        while (prefered_platform == platform->platform_key and !correct_answer)
+        while (prefered_platform == platform->key and !correct_answer)
         {
             // Ask the user if he still wants to execute the program.
             std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on prefered platform \"" << platform->name << "\" are in use!\n"
