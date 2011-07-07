@@ -721,7 +721,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
     // Temporary list
     cl_device_id *tmp_devices;
 
-    it = device_list.begin();
+    std::list<OpenCL_device>::iterator it = device_list.begin();
 
     bool is_all_devices_in_use = true; // We want to know if all devices are in use.
 

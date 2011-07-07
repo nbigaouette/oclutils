@@ -224,7 +224,6 @@ class OpenCL_devices_list
         const OpenCL_platform          *platform;
         int                             platform_id_offset;
         std::list<OpenCL_device>        device_list;
-        std::list<OpenCL_device>::iterator it;
         cl_uint                         nb_cpu;
         cl_uint                         nb_gpu;
         int                             err;
