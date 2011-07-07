@@ -219,6 +219,12 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
         ++nb_platforms;
     }
     */
+
+    // If the preferred platform is not specified, set it to the first one.
+    if (preferred_platform == "-1" or preferred_platform == "")
+    {
+        preferred_platform = platforms.begin()->first;
+    }
 }
 
 // *****************************************************************************
