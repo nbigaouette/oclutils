@@ -81,6 +81,44 @@ OpenCL_platform::OpenCL_platform()
 }
 
 // *****************************************************************************
+void OpenCL_platform::Initialize(const std::string _key, int _id_offset, cl_platform_id _id,
+                                 OpenCL_platforms_list *_platform_list,
+                                 const std::string preferred_platform)
+{
+    key             = _key;
+    id_offset       = _id_offset;
+    id              = _id;
+    platform_list   = _platform_list;
+
+    cl_int err;
+    char tmp_string[4096];
+
+    // Query platform information
+    err = clGetPlatformInfo(id, CL_PLATFORM_PROFILE, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_PROFILE)");
+    profile = std::string(tmp_string);
+
+    err = clGetPlatformInfo(id, CL_PLATFORM_VERSION, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VERSION)");
+    version = std::string(tmp_string);
+
+    err = clGetPlatformInfo(id, CL_PLATFORM_NAME, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_NAME)");
+    name = std::string(tmp_string);
+
+    err = clGetPlatformInfo(id, CL_PLATFORM_VENDOR, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VENDOR)");
+    vendor = std::string(tmp_string);
+
+    err = clGetPlatformInfo(id, CL_PLATFORM_EXTENSIONS, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_EXTENSIONS)");
+    extensions = std::string(tmp_string);
+
+    // Initialize the platform's devices
+    devices_list.Initialize(*this, preferred_platform);
+}
+
+// *****************************************************************************
 void OpenCL_platform::Lock_Best_Device()
 {
     if (Prefered_OpenCL().Is_Lockable())
@@ -173,35 +211,7 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
 
         OpenCL_platform &platform = platforms[key];
 
-        platform.key           = key;
-        platform.platform_list = this;
-        platform.id_offset     = platform_id_offset;
-
-        platform.id = tmp_platforms[i];
-
-        // Query platform information
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_PROFILE, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_PROFILE)");
-        platform.profile = std::string(tmp_string);
-
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_VERSION, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VERSION)");
-        platform.version = std::string(tmp_string);
-
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_NAME, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_NAME)");
-        platform.name = std::string(tmp_string);
-
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_VENDOR, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VENDOR)");
-        platform.vendor = std::string(tmp_string);
-
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_EXTENSIONS, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_EXTENSIONS)");
-        platform.extensions = std::string(tmp_string);
-
-        // Initialize the platform's devices
-        platform.devices_list.Initialize(platform, preferred_platform);
+        platform.Initialize(key, platform_id_offset, tmp_platforms[i], this, preferred_platform);
 
         ++platform_id_offset;
     }

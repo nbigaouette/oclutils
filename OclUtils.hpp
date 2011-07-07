@@ -266,6 +266,8 @@ class OpenCL_platform
 
         OpenCL_platform();
 
+        void                            Initialize(std::string _key, int id_offset, cl_platform_id _id,
+                                                   OpenCL_platforms_list *_platform_list, const std::string prefered_platform);
         OpenCL_device &                 Prefered_OpenCL()                   { return devices_list.Prefered_OpenCL(); }
         cl_device_id &                  Prefered_OpenCL_Device()            { return devices_list.Prefered_OpenCL_Device(); }
         cl_context &                    Prefered_OpenCL_Device_Context()    { return devices_list.Prefered_OpenCL_Device_Context(); }
