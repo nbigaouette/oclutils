@@ -245,7 +245,7 @@ public:
     cl_device_id  &  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
     cl_context    &  Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
 
-    void Initialize(const OpenCL_platform &_platform, const int _platform_id_offset);
+    void Initialize(const OpenCL_platform &_platform, const int _platform_id_offset, const std::string &prefered_platform);
 
 };
 
@@ -284,7 +284,7 @@ public:
     std::map<std::string,OpenCL_platform> platforms;
 
 
-    void Initialize();
+    void Initialize(const std::string &prefered_platform);
     void Print() const;
 
     OpenCL_platform & operator[](const std::string key);
