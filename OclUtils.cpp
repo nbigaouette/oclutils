@@ -402,6 +402,8 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
         err |= clGetDeviceInfo(device, CL_DEVICE_INTEGRATED_MEMORY_NV,          sizeof(cl_bool),                    &nvidia_device_integrated_memory,           NULL);
 
         OpenCL_Test_Success(err, "OpenCL_device::Set_Information() (Nvida specific extensions)");
+
+        is_nvidia                               = true;
     }
     else
     {
