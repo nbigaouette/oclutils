@@ -224,7 +224,6 @@ class OpenCL_devices_list
 {
     private:
         bool                            is_initialized;
-        cl_platform_id                  platform_id;
         const OpenCL_platform          *platform;
         std::list<OpenCL_device>        device_list;
         cl_uint                         nb_cpu;

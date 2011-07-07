@@ -632,7 +632,6 @@ bool OpenCL_device::operator<(const OpenCL_device &other)
 OpenCL_devices_list::OpenCL_devices_list()
 {
     is_initialized      = false;
-    platform_id         = NULL;
     platform            = NULL;
     nb_cpu              = 0;
     nb_gpu              = 0;
@@ -691,12 +690,11 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
 {
     std_cout << "OpenCL: Initialize platform \"" << _platform.name << "\"'s device(s)\n";
 
-    platform_id         =  _platform.id;
     platform            = &_platform;
 
     // Get the number of GPU devices available to the platform
     // Number of GPU
-    err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &nb_gpu);
+    err = clGetDeviceIDs(platform->id, CL_DEVICE_TYPE_GPU, 0, NULL, &nb_gpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
         std_cout << "OpenCL: WARNING: Can't find a usable GPU!\n";
@@ -705,7 +703,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
     OpenCL_Test_Success(err, "clGetDeviceIDs()");
 
     // Number of CPU
-    err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 0, NULL, &nb_cpu);
+    err = clGetDeviceIDs(platform->id, CL_DEVICE_TYPE_CPU, 0, NULL, &nb_cpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
         std_cout << "OpenCL: WARNING: Can't find a usable CPU!\n";
@@ -727,7 +725,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
     if (nb_cpu >= 1)
     {
         tmp_devices = new cl_device_id[nb_cpu];
-        err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, nb_cpu, tmp_devices, NULL);
+        err = clGetDeviceIDs(platform->id, CL_DEVICE_TYPE_CPU, nb_cpu, tmp_devices, NULL);
         OpenCL_Test_Success(err, "clGetDeviceIDs()");
 
         for (unsigned int i = 0 ; i < nb_cpu ; ++i, ++it)
@@ -746,7 +744,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
     if (nb_gpu >= 1)
     {
         tmp_devices = new cl_device_id[nb_gpu];
-        err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, nb_gpu, tmp_devices, NULL);
+        err = clGetDeviceIDs(platform->id, CL_DEVICE_TYPE_GPU, nb_gpu, tmp_devices, NULL);
         OpenCL_Test_Success(err, "clGetDeviceIDs()");
         for (unsigned int i = 0 ; i < nb_gpu ; ++i, ++it)
         {
