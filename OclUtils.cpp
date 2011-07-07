@@ -201,7 +201,7 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
         platform.extensions = std::string(tmp_string);
 
         // Initialize the platform's devices
-        platform.devices_list.Initialize(platform, platform_id_offset, preferred_platform);
+        platform.devices_list.Initialize(platform, preferred_platform);
 
         ++platform_id_offset;
     }
@@ -685,7 +685,7 @@ void OpenCL_devices_list::Print() const
 }
 
 // *****************************************************************************
-void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int _platform_id_offset,
+void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
                                      const std::string &prefered_platform)
 {
     std_cout << "OpenCL: Initialize platform \"" << _platform.name << "\"'s device(s)\n";

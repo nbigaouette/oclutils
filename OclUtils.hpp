@@ -243,7 +243,6 @@ class OpenCL_devices_list
         int                             nb_devices()                     { return nb_cpu + nb_gpu; }
         void                            Print() const;
         void                            Initialize(const OpenCL_platform &_platform,
-                                                   const int _platform_id_offset,
                                                    const std::string &prefered_platform);
 
 };
