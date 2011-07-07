@@ -672,15 +672,15 @@ void OpenCL_devices_list::Print() const
     }
     else
     {
-        for (std::list<OpenCL_device>::const_iterator ite = device_list.begin() ; ite != device_list.end() ; ++ite)
-            ite->Print();
+        for (std::list<OpenCL_device>::const_iterator it = device_list.begin() ; it != device_list.end() ; ++it)
+            it->Print();
 
         std_cout << "        "; Print_N_Times("*", 101);
         std_cout << "        Order of preference for OpenCL devices for this platform:\n";
         int i = 0;
-        for (std::list<OpenCL_device>::const_iterator ite = device_list.begin() ; ite != device_list.end() ; ++ite)
+        for (std::list<OpenCL_device>::const_iterator it = device_list.begin() ; it != device_list.end() ; ++it)
         {
-            std_cout << "        " << i++ << ".   " << ite->Get_Name() << " (id = " << ite->Get_ID() << ")\n";
+            std_cout << "        " << i++ << ".   " << it->Get_Name() << " (id = " << it->Get_ID() << ")\n";
         }
         std_cout << "        "; Print_N_Times("*", 101);
     }
