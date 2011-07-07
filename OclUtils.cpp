@@ -112,9 +112,9 @@ void OpenCL_platform::Print() const
 // *****************************************************************************
 void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
 {
-    int err;
     prefered_platform = _prefered_platform;
 
+    cl_int err;
     cl_uint nb_platforms;
     char tmp_string[1024];
 
