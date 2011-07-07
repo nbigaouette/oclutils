@@ -268,7 +268,7 @@ OpenCL_device::OpenCL_device()
     device                      = NULL;
     context                     = NULL;
     device_is_in_use            = false;
-    write_to_tmp                = true;
+    is_lockable                = true;
 }
 
 // *****************************************************************************
@@ -547,7 +547,7 @@ void OpenCL_device::Lock()
 // *****************************************************************************
 void OpenCL_device::Unlock()
 {
-    if (object_is_initialized and write_to_tmp)
+    if (object_is_initialized and is_lockable)
     {
         std::string file_content; // Write the data from the file.
 
@@ -752,7 +752,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
 
         // Don't write to tmp. This would suppress lines created by other program running.
         for (it = device_list.begin(); it != device_list.end() ; ++it)
-            it->write_to_tmp = false;
+            it->is_lockable = false;
 
         while (!correct_answer)
         {
@@ -799,7 +799,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
             std_cout << " Success!\n";
             preferred_device = &(*it);
 
-            if (it->write_to_tmp)
+            if (it->is_lockable)
             {
                 it->Lock();
             }

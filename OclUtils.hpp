@@ -190,7 +190,7 @@ class OpenCL_device
 
         // If the device usage is forced (when all devices are used) we dont want to
         // write anything to /tmp.
-        bool                        write_to_tmp;
+        bool                        is_lockable;
 
         OpenCL_device();
         ~OpenCL_device();
