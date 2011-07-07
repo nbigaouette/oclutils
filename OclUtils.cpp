@@ -11,7 +11,7 @@
 
 #include "OclUtils.hpp"
 
-const char TMP_FILE[] = "/tmp/gpu_usage.txt";
+const char LOCK_FILE[] = "/tmp/gpu_usage.txt";
 #define string_base "Platform: %d  Device: %d (%s, %s)"
 
 // *****************************************************************************
@@ -20,7 +20,7 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
 {
     bool device_is_used = false;
 
-    std::ifstream file(TMP_FILE, std::ios::in);
+    std::ifstream file(LOCK_FILE, std::ios::in);
 
     if (file)
     {
@@ -529,7 +529,7 @@ void OpenCL_device::Print() const
 // *****************************************************************************
 void OpenCL_device::Lock()
 {
-    std::ofstream file(TMP_FILE, std::ios::out | std::ios::app);
+    std::ofstream file(LOCK_FILE, std::ios::out | std::ios::app);
 
     if (file)
     {
@@ -551,7 +551,7 @@ void OpenCL_device::Unlock()
     {
         std::string file_content; // Write the data from the file.
 
-        std::ifstream file_read(TMP_FILE, std::ios::in);
+        std::ifstream file_read(LOCK_FILE, std::ios::in);
 
         if (file_read)
         {
@@ -573,7 +573,7 @@ void OpenCL_device::Unlock()
         }
 
         // Write back the string to file (the current device being deleted).
-        std::ofstream file_write(TMP_FILE, std::ios::out | std::ios::trunc);
+        std::ofstream file_write(LOCK_FILE, std::ios::out | std::ios::trunc);
 
         if (file_write)
         {
@@ -758,7 +758,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform, const int
         {
             // Ask the user if he still wants to execute the program.
             std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on platform \"" << platform->name << "\" are in use!\n"
-                     << "                 If you are certain no other program is using the device(s), you can delete the file '" << TMP_FILE << "'\n"
+                     << "                 If you are certain no other program is using the device(s), you can delete the file '" << LOCK_FILE << "'\n"
                      << "                 Do you want to force the execution and continue? [y/n]\n";
             std::string answer;
             std::cin >> answer;
