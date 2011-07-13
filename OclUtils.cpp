@@ -234,7 +234,7 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
 
     // Get a list of the OpenCL platforms available.
     cl_platform_id *tmp_platforms;
-    tmp_platforms = (cl_platform_id*) calloc_and_check(nb_platforms, sizeof(cl_platform_id), "cl_platform_id*");
+    tmp_platforms = new cl_platform_id[nb_platforms];
     err = clGetPlatformIDs(nb_platforms, tmp_platforms, NULL);
     OpenCL_Test_Success(err, "clGetPlatformIDs");
 
@@ -281,7 +281,8 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
         ++platform_id_offset;
     }
 
-    free_me(tmp_platforms, nb_platforms);
+    delete[] tmp_platforms;
+
 
     /*
     // Debugging: Add dummy platform
