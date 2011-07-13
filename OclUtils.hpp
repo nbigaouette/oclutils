@@ -73,6 +73,7 @@ class OpenCL_device
         cl_context      context;
         cl_uint         max_compute_unit;
         bool            device_is_gpu;
+        bool            device_is_used;
         cl_ulong        available_memory_global;
         cl_ulong        available_memory_local;
         cl_ulong        available_memory_constant;
@@ -91,6 +92,8 @@ class OpenCL_device
         cl_int Set_Context();
 
         void Print();
+        bool Is_In_Use()    {return device_is_used;}
+        int Get_Id() const  {return id;}
 
         bool operator<(const OpenCL_device &b);
 };
@@ -105,6 +108,10 @@ private:
     cl_uint                     nb_cpu;
     cl_uint                     nb_gpu;
     int                         err;
+
+    // If the device usage is forced (when all devices are used) we dont want to
+    // write anything to /tmp.
+    bool                        write_to_tmp;
 
     OpenCL_device               *preferred_device;
 

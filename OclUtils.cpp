@@ -9,6 +9,9 @@
 
 #include "OclUtils.hpp"
 
+const char TMP_FILE[] = "/tmp/gpu_usage.txt";
+const char string_base[] = "Device = ";
+
 
 // *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length)
@@ -16,7 +19,8 @@ char *read_opencl_kernel(const std::string filename, int *length)
     FILE *f = fopen(filename.c_str(), "r");
     void *buffer;
 
-    if (!f) {
+    if (!f)
+    {
         std_cout << "Unable to open " << filename << " for reading\n";
         abort();
     }
@@ -46,6 +50,8 @@ OpenCL_device::OpenCL_device()
 
     device  = NULL;
     context = NULL;
+
+    device_is_used = false;
 }
 
 // *****************************************************************************
@@ -61,6 +67,30 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
     id              = _id;
     device          = _device;
     device_is_gpu   = _device_is_gpu;
+
+    std::ifstream file(TMP_FILE, std::ios::in);
+
+    if (file)
+    {
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            char string_to_find[512];
+            sprintf(string_to_find, "%s%d", string_base, id);
+
+            if (line.find(string_to_find) != std::string::npos)
+            {
+                device_is_used = true;
+            }
+        }
+
+        file.close();
+    }
+    else
+    {
+        device_is_used = false;
+    }
 
     char tmp_name[4096];
 
@@ -92,6 +122,7 @@ void OpenCL_device::Print()
         << "Available OpenCL device:\n"
         << "    name: " << name << "\n"
         << "    id:   " << id << "\n"
+        << "    device_is_used " << (device_is_used ? "yes" : "no ") << "\n"
         << "    max_compute_unit: " << max_compute_unit << "\n"
         << "    device is GPU? " << (device_is_gpu ? "yes" : "no ") << "\n";
 
@@ -129,12 +160,27 @@ void OpenCL_device::Print()
 }
 
 // *****************************************************************************
-bool OpenCL_device::operator<(const OpenCL_device &b)
+bool OpenCL_device::operator<(const OpenCL_device &other)
 {
-    // Compare the maximum number of compute unit
+    // Start by checking if ones not in use. When this is the case give it priority.
+    // Then compare the maximum number of compute unit
     // NOTE: We want a sorted list where device with higher compute units
     //       are located at the top (front). We thus invert the test here.
-    return (this->max_compute_unit > b.max_compute_unit) ? true : false;
+    bool result = false;
+
+    if      (this->device_is_used == false && other.device_is_used == true)  // "this" wins (it is not in use).
+        result = true;
+    else if (this->device_is_used == true  && other.device_is_used == false) // "other" wins (it is not in use).
+        result = false;
+    else // both are used or not used. Thus, we must compare the ammount of compute units.
+    {
+        if (this->max_compute_unit > other.max_compute_unit) // "this" wins (having more compute units).
+            result = true;
+        else                                                 // "other" wins (having more or equal compute units).
+            result = false;
+    }
+
+    return result;
 }
 
 // *****************************************************************************
@@ -144,11 +190,47 @@ OpenCL_devices_list::OpenCL_devices_list()
     nb_gpu  = 0;
     err     = 0;
     preferred_device = NULL;
+    write_to_tmp = true;
 }
 
 // *****************************************************************************
 OpenCL_devices_list::~OpenCL_devices_list()
 {
+    if (write_to_tmp)
+    {
+        std::string file_content; // Write the data from the file.
+
+        std::ifstream file_read(TMP_FILE, std::ios::in);
+
+        if (file_read)
+        {
+            std::string line;
+
+            while (std::getline(file_read, line))
+            {
+                char string_to_find[512];
+                sprintf(string_to_find, "%s%d", string_base, preferred_device->Get_Id());
+
+                // Read every line except the one corresponding to the current device.
+                if (line.find(string_to_find) == std::string::npos)
+                {
+                    file_content += line + "\n"; // Add the lines to the string.
+                }
+            }
+
+            file_read.close();
+        }
+
+        // Write back the string to file (the current device being deleted).
+        std::ofstream file_write(TMP_FILE, std::ios::out | std::ios::trunc);
+
+        if (file_write)
+        {
+            file_write << file_content;
+
+            file_write.close();
+        }
+    }
 }
 
 // *****************************************************************************
@@ -202,6 +284,8 @@ void OpenCL_devices_list::Initialize()
 
     it = device_list.begin();
 
+    bool is_all_devices_in_use = true; // We want to know if all devices are in use.
+
     // Add CPUs to list
     if (nb_cpu >= 1)
     {
@@ -212,6 +296,11 @@ void OpenCL_devices_list::Initialize()
         for (unsigned int i = 0 ; i < nb_cpu ; ++i, ++it)
         {
             it->Set_Information(i, tmp_devices[i], false); // device_is_gpu == false
+
+            // When one device is not in use... One device is not in use!
+            if (!it->Is_In_Use())
+                is_all_devices_in_use = false;
+
         }
         delete[] tmp_devices;
     }
@@ -225,11 +314,50 @@ void OpenCL_devices_list::Initialize()
         for (unsigned int i = 0 ; i < nb_gpu ; ++i, ++it)
         {
             it->Set_Information(nb_cpu+i, tmp_devices[i], true); // device_is_gpu == true
+
+            // When one device is not in use... One device is not in use!
+            if (!it->Is_In_Use())
+                is_all_devices_in_use = false;
         }
         delete[] tmp_devices;
     }
 
     assert(it == device_list.end());
+
+    // When all devices are in use we ask the user if he would like
+    // his simulation to be forced.
+    if (is_all_devices_in_use == true)
+    {
+        bool correct_answer = false;
+
+        // Don't write to tmp. This would suppress lines created by other program running.
+        write_to_tmp = false;
+
+        while (!correct_answer)
+        {
+            // Ask the user if he still wants to execute the program.
+            std_cout << "WARNING: It seem's that all OpenCL devices are in use. Do you want to continue? [y/n]\n";
+            std::string answer;
+            std::cin >> answer;
+
+            if (answer == "yes" || answer == "Y" || answer == "y" || answer == "oui" || answer == "O" || answer == "o")
+            {
+                correct_answer = true;
+                std_cout << "Proceeding... \n";
+            }
+            else if (answer == "no" || answer == "No" || answer == "N" || answer == "n" || answer == "non" || answer == "Non")
+            {
+                correct_answer = true;
+                std_cout << "Exiting... \n";
+                abort();
+            }
+            else
+            {
+                correct_answer = false;
+                std_cout << "You entered an invalid answer!\n";
+            }
+        }
+    }
 
     // Sort the list. The order is defined by "OpenCL_device::operator<" (line 112)
     device_list.sort();
@@ -245,6 +373,19 @@ void OpenCL_devices_list::Initialize()
         {
             std_cout << " Success!\n";
             preferred_device = &(*it);
+
+            if (write_to_tmp)
+            {
+                std::ofstream file(TMP_FILE, std::ios::out | std::ios::app);
+
+                if (file)
+                {
+                    file << string_base << preferred_device->Get_Id() << std::endl;
+
+                    file.close();
+                }
+            }
+
             break;
         }
         else
@@ -330,11 +471,11 @@ void OpenCL_Kernel::Compute_Work_Size(int N, int _p, int _q)
     global_work_size = new size_t[dimension];
     local_work_size = new size_t[dimension];
 
-    if(_p * _q > MAX_LOCAL_WORK_SIZE)
+    if (_p * _q > MAX_LOCAL_WORK_SIZE)
     {
         _p = MAX_LOCAL_WORK_SIZE / _q;
     }
-    else if(_q == 1 && N < _p)
+    else if (_q == 1 && N < _p)
     {
         _p = N;
     }
