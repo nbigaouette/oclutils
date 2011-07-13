@@ -90,7 +90,7 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
     {
         std::string line;
         char string_to_find[4096];
-        memset(string_to_find, 0, 4096);
+        //memset(string_to_find, 0, 4096);
 
         while (std::getline(file, line))
         {
