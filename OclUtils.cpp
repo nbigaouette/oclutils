@@ -17,19 +17,83 @@
 */
 
 #include <stdio.h>
-#include <stdlib.h> // abort()
-#include <string>   // std::string
-#include <cstdarg>  // va_arg, va_list, etc.
+#include <stdlib.h>     // abort()
+#include <string>       // std::string
+#include <cstdarg>      // va_arg, va_list, etc.
 #include <cmath>
-#include <algorithm>
-#include <cctype> // for tolower
-
-#include <Memory.hpp> // Print_N_Times()
+#include <algorithm>    // std::ostringstream
+#include <cctype>       // for tolower
+#include <sstream>
 
 #include "OclUtils.hpp"
 
 const char LOCK_FILE[] = "/tmp/gpu_usage.txt";
 #define string_base "Platform: %d  Device: %d (%s, %s)"
+
+// Quote something, usefull to quote a macro's value
+#ifndef _QUOTEME
+#define _QUOTEME(x) #x
+#endif // #ifndef _QUOTEME
+#ifndef QUOTEME
+#define QUOTEME(x) _QUOTEME(x)
+#endif // #ifndef QUOTEME
+
+#define assert(x)                                       \
+    if (!(x)) {                                         \
+        std_cout                                        \
+            << "##########################"             \
+            << "##########################"             \
+            << "##########################\n"           \
+            << "Assertion failed in \"" << __FILE__     \
+            << "\", line " << __LINE__ << ": "          \
+            << "!(" << QUOTEME(x) << ")\n"              \
+            << "##########################"             \
+            << "##########################"             \
+            << "##########################\n"           \
+            << std::flush;                              \
+        abort();                                        \
+    }
+
+const double B_to_KiB   = 9.76562500000000e-04;
+const double B_to_MiB   = 9.53674316406250e-07;
+const double B_to_GiB   = 9.31322574615479e-10;
+const double KiB_to_B   = 1024.0;
+const double KiB_to_MiB = 9.76562500000000e-04;
+const double KiB_to_GiB = 9.53674316406250e-07;
+const double MiB_to_B   = 1048576.0;
+const double MiB_to_KiB = 1024.0;
+const double MiB_to_GiB = 9.76562500000000e-04;
+const double GiB_to_B   = 1073741824.0;
+const double GiB_to_KiB = 1048576.0;
+const double GiB_to_MiB = 1024.0;
+
+// **************************************************************
+void Print_N_Times(const std::string x, const int N, const bool newline = true);
+
+// **************************************************************
+inline std::string Bytes_in_String(const uint64_t bytes)
+{
+    std::ostringstream MyStream;
+    MyStream
+        << bytes << " bytes ("
+            << B_to_KiB * bytes << " KiB, "
+            << B_to_MiB * bytes << " MiB, "
+            << B_to_GiB * bytes << " GiB)"
+        << std::flush;
+    return (MyStream.str());
+}
+
+// **************************************************************
+void Print_N_Times(const std::string x, const int N, const bool newline)
+{
+    for (int i = 0 ; i < N ; i++)
+    {
+        std_cout << x;
+    }
+
+    if (newline)
+        std_cout << "\n";
+}
 
 // *****************************************************************************
 bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
@@ -43,7 +107,7 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
     {
         std::string line;
         char string_to_find[4096];
-        memset(string_to_find, 0, 4096);
+        //memset(string_to_find, 0, 4096);
 
         while (std::getline(file, line))
         {
@@ -187,7 +251,7 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
 
     // Get a list of the OpenCL platforms available.
     cl_platform_id *tmp_platforms;
-    tmp_platforms = (cl_platform_id*) calloc_and_check(nb_platforms, sizeof(cl_platform_id), "cl_platform_id*");
+    tmp_platforms = new cl_platform_id[nb_platforms];
     err = clGetPlatformIDs(nb_platforms, tmp_platforms, NULL);
     OpenCL_Test_Success(err, "clGetPlatformIDs");
 
@@ -234,7 +298,8 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
         ++platform_id_offset;
     }
 
-    free_me(tmp_platforms, nb_platforms);
+    delete[] tmp_platforms;
+
 
     /*
     // Debugging: Add dummy platform
@@ -564,15 +629,12 @@ void OpenCL_device::Print() const
     }
 
     // Avialable global memory on device
-    std_cout.Format(0, 3, 'g');
     std_cout << "        Available memory (global):   " << Bytes_in_String(global_mem_size) << "\n";
 
     // Avialable local memory on device
-    std_cout.Format(0, 3, 'g');
     std_cout << "        Available memory (local):    " << Bytes_in_String(local_mem_size) << "\n";
 
     // Avialable constant memory on device
-    std_cout.Format(0, 3, 'g');
     std_cout << "        Available memory (constant): " << Bytes_in_String(max_constant_buffer_size) << "\n";
 }
 

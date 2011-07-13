@@ -25,10 +25,12 @@
 
 #include <CL/cl.h>
 
-#include <StdCout.hpp>
-
-#include "NvidiaUtils.hpp"
-
+#ifndef std_cout
+#define std_cout std::cout
+#include <iostream>
+#include <fstream>
+#include <fstream>
+#endif // #ifndef std_cout
 
 const std::string OPENCL_PLATFORMS_NVIDIA("nvidia");
 const std::string OPENCL_PLATFORMS_AMD("amd");
