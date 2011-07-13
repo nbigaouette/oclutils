@@ -9,7 +9,6 @@
 
 #include <StdCout.hpp>
 
-#include "NvidiaUtils.hpp"
 
 
 const std::string OPENCL_PLATFORMS_NVIDIA("nvidia");
