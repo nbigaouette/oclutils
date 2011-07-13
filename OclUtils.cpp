@@ -1,13 +1,12 @@
 
 #include <stdio.h>
-#include <stdlib.h> // abort()
-#include <string>   // std::string
-#include <cstdarg>  // va_arg, va_list, etc.
+#include <stdlib.h>     // abort()
+#include <string>       // std::string
+#include <cstdarg>      // va_arg, va_list, etc.
 #include <cmath>
-#include <algorithm>
-#include <cctype> // for tolower
-
-#include <Memory.hpp> // Print_N_Times()
+#include <algorithm>    // std::ostringstream
+#include <cctype>       // for tolower
+#include <sstream>
 
 #include "OclUtils.hpp"
 
