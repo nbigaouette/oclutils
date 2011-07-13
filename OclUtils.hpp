@@ -286,6 +286,7 @@ class OpenCL_platforms_list
     public:
         void                            Initialize(const std::string &_prefered_platform);
         void                            Print() const;
+        std::string                     Get_Running_Platform()              { return preferred_platform; }
 
         OpenCL_platform & operator[](const std::string key);
 };
