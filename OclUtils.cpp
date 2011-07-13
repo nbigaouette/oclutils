@@ -13,6 +13,29 @@
 const char LOCK_FILE[] = "/tmp/gpu_usage.txt";
 #define string_base "Platform: %d  Device: %d (%s, %s)"
 
+// Quote something, usefull to quote a macro's value
+#ifndef _QUOTEME
+#define _QUOTEME(x) #x
+#endif // #ifndef _QUOTEME
+#ifndef QUOTEME
+#define QUOTEME(x) _QUOTEME(x)
+#endif // #ifndef QUOTEME
+
+#define assert(x)                                       \
+    if (!(x)) {                                         \
+        std_cout                                        \
+            << "##########################"             \
+            << "##########################"             \
+            << "##########################\n"           \
+            << "Assertion failed in \"" << __FILE__     \
+            << "\", line " << __LINE__ << ": "          \
+            << "!(" << QUOTEME(x) << ")\n"              \
+            << "##########################"             \
+            << "##########################"             \
+            << "##########################\n"           \
+            << std::flush;                              \
+        abort();                                        \
+    }
 // *****************************************************************************
 bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
