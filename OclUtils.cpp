@@ -11,9 +11,38 @@
 
 #include "OclUtils.hpp"
 
-const char TMP_FILE[] = "/tmp/gpu_usage.txt";
-const char string_base[] = "Device = ";
+const char LOCK_FILE[] = "/tmp/gpu_usage.txt";
+#define string_base "Platform: %d  Device: %d (%s, %s)"
 
+// *****************************************************************************
+bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
+                              const std::string &platform_name, const std::string &device_name)
+{
+    bool device_is_used = false;
+
+    std::ifstream file(LOCK_FILE, std::ios::in);
+
+    if (file)
+    {
+        std::string line;
+        char string_to_find[4096];
+        memset(string_to_find, 0, 4096);
+
+        while (std::getline(file, line))
+        {
+            sprintf(string_to_find, string_base, platform_id_offset, device_id, platform_name.c_str(), device_name.c_str());
+
+            if (line.find(string_to_find) != std::string::npos)
+            {
+                device_is_used = true;
+            }
+        }
+
+        file.close();
+    }
+
+    return device_is_used;
+}
 
 // *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length)
@@ -48,6 +77,54 @@ OpenCL_platform::OpenCL_platform()
     version = "Not set";
     extensions = "Not set";
     profile = "Not set";
+    id_offset  = 0;
+}
+
+// *****************************************************************************
+void OpenCL_platform::Initialize(const std::string _key, int _id_offset, cl_platform_id _id,
+                                 OpenCL_platforms_list *_platform_list,
+                                 const std::string preferred_platform)
+{
+    key             = _key;
+    id_offset       = _id_offset;
+    id              = _id;
+    platform_list   = _platform_list;
+
+    cl_int err;
+    char tmp_string[4096];
+
+    // Query platform information
+    err = clGetPlatformInfo(id, CL_PLATFORM_PROFILE, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_PROFILE)");
+    profile = std::string(tmp_string);
+
+    err = clGetPlatformInfo(id, CL_PLATFORM_VERSION, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VERSION)");
+    version = std::string(tmp_string);
+
+    err = clGetPlatformInfo(id, CL_PLATFORM_NAME, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_NAME)");
+    name = std::string(tmp_string);
+
+    err = clGetPlatformInfo(id, CL_PLATFORM_VENDOR, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VENDOR)");
+    vendor = std::string(tmp_string);
+
+    err = clGetPlatformInfo(id, CL_PLATFORM_EXTENSIONS, sizeof(tmp_string), &tmp_string, NULL);
+    OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_EXTENSIONS)");
+    extensions = std::string(tmp_string);
+
+    // Initialize the platform's devices
+    devices_list.Initialize(*this, preferred_platform);
+}
+
+// *****************************************************************************
+void OpenCL_platform::Lock_Best_Device()
+{
+    if (Prefered_OpenCL().Is_Lockable())
+    {
+        Prefered_OpenCL().Lock();
+    }
 }
 
 // *****************************************************************************
@@ -61,6 +138,8 @@ void OpenCL_platform::Print() const
         << "        extensions: " << extensions << "\n"
         << "        id:         " << id << "\n"
         << "        profile:    " << profile << "\n"
+        << "        key:        " << key << "\n"
+        << "        list:       " << platform_list << "\n"
     ;
 
     std_cout
@@ -69,11 +148,15 @@ void OpenCL_platform::Print() const
 }
 
 // *****************************************************************************
-void OpenCL_platforms_list::Initialize()
+void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
 {
-    int err;
+    preferred_platform = _prefered_platform;
+
+    cl_int err;
     cl_uint nb_platforms;
-    char tmp_string[1024];
+
+    Print_N_Times("-", 109);
+    std_cout << "OpenCL: Getting a list of platform(s)..." << std::flush;
 
     // Get number of platforms available
     err = clGetPlatformIDs(0, NULL, &nb_platforms);
@@ -81,7 +164,7 @@ void OpenCL_platforms_list::Initialize()
 
     if (nb_platforms == 0)
     {
-        std_cout << "ERROR: No OpenCL platform found! Exiting.\n";
+        std_cout << "\nERROR: No OpenCL platform found! Exiting.\n";
         abort();
     }
 
@@ -90,6 +173,18 @@ void OpenCL_platforms_list::Initialize()
     tmp_platforms = (cl_platform_id*) calloc_and_check(nb_platforms, sizeof(cl_platform_id), "cl_platform_id*");
     err = clGetPlatformIDs(nb_platforms, tmp_platforms, NULL);
     OpenCL_Test_Success(err, "clGetPlatformIDs");
+
+    std_cout << " done.\n";
+
+    if (nb_platforms == 1)
+        std_cout << "OpenCL: Initializing the available platform...\n";
+    else
+        std_cout << "OpenCL: Initializing the " << nb_platforms << " available platforms...\n";
+
+    // This offset allows distinguishing in LOCK_FILE the devices that can appear in different platforms.
+    int platform_id_offset = 0;
+
+    char tmp_string[4096];
 
     for (unsigned int i = 0 ; i < nb_platforms ; i++)
     {
@@ -117,31 +212,9 @@ void OpenCL_platforms_list::Initialize()
 
         OpenCL_platform &platform = platforms[key];
 
-        platform.id = tmp_platforms[i];
+        platform.Initialize(key, platform_id_offset, tmp_platforms[i], this, preferred_platform);
 
-        // Query platform information
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_PROFILE, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_PROFILE)");
-        platform.profile = std::string(tmp_string);
-
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_VERSION, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VERSION)");
-        platform.version = std::string(tmp_string);
-
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_NAME, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_NAME)");
-        platform.name = std::string(tmp_string);
-
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_VENDOR, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VENDOR)");
-        platform.vendor = std::string(tmp_string);
-
-        err = clGetPlatformInfo(platform.id, CL_PLATFORM_EXTENSIONS, sizeof(tmp_string), &tmp_string, NULL);
-        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_EXTENSIONS)");
-        platform.extensions = std::string(tmp_string);
-
-        // Initialize the platform's devices
-        platform.devices_list.Initialize(platform);
+        ++platform_id_offset;
     }
 
     free_me(tmp_platforms, nb_platforms);
@@ -149,24 +222,40 @@ void OpenCL_platforms_list::Initialize()
     /*
     // Debugging: Add dummy platform
     {
-        platforms["test"].vendor    = "aaa Dummy Vendor";
+        platforms["test"].vendor    = "Dummy Vendor";
         platforms["test"].name      = "Dummy platform";
         platforms["test"].version   = "Dummy Version 3.1415";
         platforms["test"].extensions= "Dummy Extensions";
         platforms["test"].profile   = "Dummy Profile";
+        ++nb_platforms;
     }
     */
+
+    // If the preferred platform is not specified, set it to the first one.
+    if (preferred_platform == "-1" or preferred_platform == "")
+    {
+        preferred_platform = platforms.begin()->first;
+    }
 }
 
 // *****************************************************************************
 void OpenCL_platforms_list::Print() const
 {
-    std_cout << "Available platforms:\n";
+    std_cout << "OpenCL: Available platforms:\n";
     std::map<std::string,OpenCL_platform>::const_iterator it = platforms.begin();
     for (unsigned int i = 0 ; i < platforms.size() ; i++, it++)
     {
         it->second.Print();
     }
+
+    Print_N_Times("-", 109);
+    it = platforms.find(preferred_platform);
+    assert(it != platforms.end());
+    assert(it->second.devices_list.preferred_device != NULL);
+    std_cout << "OpenCL: Prefered platform's name:          " << it->second.Name() << "\n";
+    std_cout << "OpenCL: Prefered platform's best device:   " << it->second.devices_list.preferred_device->Get_Name() << "\n";
+
+    Print_N_Times("-", 109);
 }
 
 // *****************************************************************************
@@ -201,16 +290,16 @@ OpenCL_platform & OpenCL_platforms_list::operator[](const std::string key)
 // *****************************************************************************
 OpenCL_device::OpenCL_device()
 {
+    object_is_initialized       = false;
     parent_platform             = NULL;
     name                        = "";
     id                          = -1;
     device_is_gpu               = false;
     max_compute_units           = 0;
-
-    device  = NULL;
-    context = NULL;
-
-    device_is_used = false;
+    device                      = NULL;
+    context                     = NULL;
+    device_is_in_use            = false;
+    is_lockable                = true;
 }
 
 // *****************************************************************************
@@ -218,38 +307,20 @@ OpenCL_device::~OpenCL_device()
 {
     if (context)
         clReleaseContext(context);
+
+    Unlock();
 }
 
 // *****************************************************************************
-void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const bool _device_is_gpu)
+void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
+                                    const int platform_id_offset,
+                                    const std::string &platform_name,
+                                    const bool _device_is_gpu)
 {
+    object_is_initialized = true;
     id              = _id;
     device          = _device;
     device_is_gpu   = _device_is_gpu;
-
-    std::ifstream file(TMP_FILE, std::ios::in);
-
-    if (file)
-    {
-        std::string line;
-
-        while (std::getline(file, line))
-        {
-            char string_to_find[512];
-            sprintf(string_to_find, "%s%d", string_base, id);
-
-            if (line.find(string_to_find) != std::string::npos)
-            {
-                device_is_used = true;
-            }
-        }
-
-        file.close();
-    }
-    else
-    {
-        device_is_used = false;
-    }
 
     char tmp_string[4096];
 
@@ -377,6 +448,8 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device, const b
         single_fp_config_string += "CL_FP_ROUND_TO_INF, ";
     if (single_fp_config & CL_FP_FMA)
         single_fp_config_string += "CL_FP_FMA, ";
+
+    device_is_in_use = Verify_if_Device_is_Used(id, platform_id_offset, platform_name, name);
 }
 
 // *****************************************************************************
@@ -395,8 +468,8 @@ void OpenCL_device::Print() const
     std_cout
         << "    name: " << name << "\n"
         << "        id:                             " << id << "\n"
-        << "        parent platform:                " << (parent_platform != NULL ? parent_platform->name : "") << "\n"
-        << "        device_is_used:                 " << (device_is_used ? "yes" : "no ") << "\n"
+        << "        parent platform:                " << (parent_platform != NULL ? parent_platform->Name() : "") << "\n"
+        << "        device_is_used:                 " << (device_is_in_use ? "yes" : "no ") << "\n"
         << "        max_compute_unit:               " << max_compute_units << "\n"
         << "        device is GPU?                  " << (device_is_gpu ? "yes" : "no ") << "\n"
 
@@ -473,15 +546,73 @@ void OpenCL_device::Print() const
 
     // Avialable global memory on device
     std_cout.Format(0, 3, 'g');
-    std_cout << "Available memory (global):   " << Bytes_in_String(global_mem_size) << "\n";
+    std_cout << "        Available memory (global):   " << Bytes_in_String(global_mem_size) << "\n";
 
     // Avialable local memory on device
     std_cout.Format(0, 3, 'g');
-    std_cout << "Available memory (local):    " << Bytes_in_String(local_mem_size) << "\n";
+    std_cout << "        Available memory (local):    " << Bytes_in_String(local_mem_size) << "\n";
 
     // Avialable constant memory on device
     std_cout.Format(0, 3, 'g');
-    std_cout << "Available memory (constant): " << Bytes_in_String(max_constant_buffer_size) << "\n";
+    std_cout << "        Available memory (constant): " << Bytes_in_String(max_constant_buffer_size) << "\n";
+}
+
+// *****************************************************************************
+void OpenCL_device::Lock()
+{
+    std::ofstream file(LOCK_FILE, std::ios::out | std::ios::app);
+
+    if (file)
+    {
+        char tmp_string[4096];
+        assert(parent_platform != NULL);
+        sprintf(tmp_string, string_base, parent_platform->Id_Offset(), id, parent_platform->Name().c_str(), name.c_str());
+        file << tmp_string << std::endl << std::flush;
+
+        file.close();
+    }
+}
+
+// *****************************************************************************
+void OpenCL_device::Unlock()
+{
+    if (object_is_initialized and is_lockable)
+    {
+        std::string file_content; // Write the data from the file.
+
+        std::ifstream file_read(LOCK_FILE, std::ios::in);
+
+        if (file_read)
+        {
+            std::string line;
+            char string_to_find[4096];
+            assert(parent_platform != NULL);
+            sprintf(string_to_find, string_base, parent_platform->Id_Offset(), id, parent_platform->Name().c_str(), name.c_str());
+
+            while (std::getline(file_read, line))
+            {
+                // Read every line except the one corresponding to the current device.
+                if (line.find(string_to_find) == std::string::npos)
+                {
+                    file_content += line + "\n"; // Add the lines to the string.
+                }
+            }
+
+            file_read.close();
+        }
+
+        // Write back the string to file (the current device being deleted).
+        std::ofstream file_write(LOCK_FILE, std::ios::out | std::ios::trunc);
+
+        if (file_write)
+        {
+            file_write << file_content;
+
+            file_write.close();
+        }
+
+        object_is_initialized = false;
+    }
 }
 
 // *****************************************************************************
@@ -493,9 +624,9 @@ bool OpenCL_device::operator<(const OpenCL_device &other)
     //       are located at the top (front). We thus invert the test here.
     bool result = false;
 
-    if      (this->device_is_used == false && other.device_is_used == true)  // "this" wins (it is not in use).
+    if      (this->device_is_in_use == false && other.device_is_in_use == true)  // "this" wins (it is not in use).
         result = true;
-    else if (this->device_is_used == true  && other.device_is_used == false) // "other" wins (it is not in use).
+    else if (this->device_is_in_use == true  && other.device_is_in_use == false) // "other" wins (it is not in use).
         result = false;
     else // both are used or not used. Thus, we must compare the ammount of compute units.
     {
@@ -511,16 +642,12 @@ bool OpenCL_device::operator<(const OpenCL_device &other)
 // *****************************************************************************
 OpenCL_devices_list::OpenCL_devices_list()
 {
-    is_initialized  = false;
-    platform_id = NULL;
-    platform = NULL;
-    nb_cpu = 0;
-    nb_gpu = 0;
-    err = 0;
-
-    write_to_tmp = true;
-
-    preferred_device = NULL;
+    is_initialized      = false;
+    platform            = NULL;
+    nb_cpu              = 0;
+    nb_gpu              = 0;
+    err                 = 0;
+    preferred_device    = NULL;
 }
 
 // *****************************************************************************
@@ -528,42 +655,6 @@ OpenCL_devices_list::~OpenCL_devices_list()
 {
     if (not is_initialized)
         return;
-
-    if (write_to_tmp)
-    {
-        std::string file_content; // Write the data from the file.
-
-        std::ifstream file_read(TMP_FILE, std::ios::in);
-
-        if (file_read)
-        {
-            std::string line;
-
-            while (std::getline(file_read, line))
-            {
-                char string_to_find[512];
-                sprintf(string_to_find, "%s%d", string_base, preferred_device->Get_Id());
-
-                // Read every line except the one corresponding to the current device.
-                if (line.find(string_to_find) == std::string::npos)
-                {
-                    file_content += line + "\n"; // Add the lines to the string.
-                }
-            }
-
-            file_read.close();
-        }
-
-        // Write back the string to file (the current device being deleted).
-        std::ofstream file_write(TMP_FILE, std::ios::out | std::ios::trunc);
-
-        if (file_write)
-        {
-            file_write << file_content;
-
-            file_write.close();
-        }
-    }
 }
 
 // *****************************************************************************
@@ -590,44 +681,43 @@ void OpenCL_devices_list::Print() const
     }
     else
     {
-        for (std::list<OpenCL_device>::const_iterator ite = device_list.begin() ; ite != device_list.end() ; ++ite)
-            ite->Print();
+        for (std::list<OpenCL_device>::const_iterator it = device_list.begin() ; it != device_list.end() ; ++it)
+            it->Print();
 
-        Print_N_Times("*", 109);
-        std_cout << "Order of preference for OpenCL devices:\n";
+        std_cout << "        "; Print_N_Times("*", 101);
+        std_cout << "        Order of preference for OpenCL devices for this platform:\n";
         int i = 0;
-        for (std::list<OpenCL_device>::const_iterator ite = device_list.begin() ; ite != device_list.end() ; ++ite)
+        for (std::list<OpenCL_device>::const_iterator it = device_list.begin() ; it != device_list.end() ; ++it)
         {
-            std_cout << i++ << ".   " << ite->Get_Name() << " (id = " << ite->Get_ID() << ")\n";
+            std_cout << "        " << i++ << ".   " << it->Get_Name() << " (id = " << it->Get_ID() << ")\n";
         }
-        Print_N_Times("*", 109);
+        std_cout << "        "; Print_N_Times("*", 101);
     }
 }
 
 // *****************************************************************************
-void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
+void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
+                                     const std::string &prefered_platform)
 {
-    Print_N_Times("-", 109);
-    std_cout << "OpenCL: Initialize OpenCL object and context\n" << std::flush;
+    std_cout << "OpenCL: Initialize platform \"" << _platform.Name() << "\"'s device(s)\n";
 
-    platform_id =  _platform.id;
-    platform    = &_platform;
+    platform            = &_platform;
 
     // Get the number of GPU devices available to the platform
     // Number of GPU
-    err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &nb_gpu);
+    err = clGetDeviceIDs(platform->Id(), CL_DEVICE_TYPE_GPU, 0, NULL, &nb_gpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
-        std_cout << "OpenCL: WARNING: Can't find a usable GPU!\n" << std::flush;
+        std_cout << "OpenCL: WARNING: Can't find a usable GPU!\n";
         err = CL_SUCCESS;
     }
     OpenCL_Test_Success(err, "clGetDeviceIDs()");
 
     // Number of CPU
-    err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 0, NULL, &nb_cpu);
+    err = clGetDeviceIDs(platform->Id(), CL_DEVICE_TYPE_CPU, 0, NULL, &nb_cpu);
     if (err == CL_DEVICE_NOT_FOUND)
     {
-        std_cout << "OpenCL: WARNING: Can't find a usable CPU!\n" << std::flush;
+        std_cout << "OpenCL: WARNING: Can't find a usable CPU!\n";
         err = CL_SUCCESS;
     }
     OpenCL_Test_Success(err, "clGetDeviceIDs()");
@@ -638,7 +728,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
     // Temporary list
     cl_device_id *tmp_devices;
 
-    it = device_list.begin();
+    std::list<OpenCL_device>::iterator it = device_list.begin();
 
     bool is_all_devices_in_use = true; // We want to know if all devices are in use.
 
@@ -646,12 +736,12 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
     if (nb_cpu >= 1)
     {
         tmp_devices = new cl_device_id[nb_cpu];
-        err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, nb_cpu, tmp_devices, NULL);
+        err = clGetDeviceIDs(platform->Id(), CL_DEVICE_TYPE_CPU, nb_cpu, tmp_devices, NULL);
         OpenCL_Test_Success(err, "clGetDeviceIDs()");
 
         for (unsigned int i = 0 ; i < nb_cpu ; ++i, ++it)
         {
-            it->Set_Information(i, tmp_devices[i], false); // device_is_gpu == false
+            it->Set_Information(i, tmp_devices[i], _platform.Id_Offset(), platform->Name().c_str(), false); // device_is_gpu == false
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
@@ -665,11 +755,11 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
     if (nb_gpu >= 1)
     {
         tmp_devices = new cl_device_id[nb_gpu];
-        err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, nb_gpu, tmp_devices, NULL);
+        err = clGetDeviceIDs(platform->Id(), CL_DEVICE_TYPE_GPU, nb_gpu, tmp_devices, NULL);
         OpenCL_Test_Success(err, "clGetDeviceIDs()");
         for (unsigned int i = 0 ; i < nb_gpu ; ++i, ++it)
         {
-            it->Set_Information(nb_cpu+i, tmp_devices[i], true); // device_is_gpu == true
+            it->Set_Information(nb_cpu+i, tmp_devices[i], _platform.Id_Offset(), platform->Name().c_str(), true); // device_is_gpu == true
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
@@ -687,13 +777,15 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
         bool correct_answer = false;
 
         // Don't write to tmp. This would suppress lines created by other program running.
-        write_to_tmp = false;
+        for (it = device_list.begin(); it != device_list.end() ; ++it)
+            it->Set_Lockable(false);
 
-        while (!correct_answer)
+        while (prefered_platform == platform->Key() and !correct_answer)
         {
             // Ask the user if he still wants to execute the program.
-            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices are in use!\n"
-                     << "                 If you are certain no other program is using the device(s), you can delete the file '" << TMP_FILE << "'\n"
+            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on prefered platform \"" << platform->Name() << "\" are in use!\n"
+                     << "                 If you are certain no other program is using the device(s), you can delete\n"
+                     << "                 the line(s) the platform's name in the file '" << LOCK_FILE << "'\n"
                      << "                 Do you want to force the execution and continue? [y/n]\n";
             std::string answer;
             std::cin >> answer;
@@ -717,6 +809,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
         }
     }
 
+    // For each device, store a pointer to its parent platform
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
         it->parent_platform = &_platform;
 
@@ -727,23 +820,11 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform)
     preferred_device = NULL;    // The preferred device is unknown for now.
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
     {
-        std_cout << "Trying to set an OpenCL context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
+        std_cout << "OpenCL: Trying to set an context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
         if (it->Set_Context() == CL_SUCCESS)
         {
             std_cout << " Success!\n";
             preferred_device = &(*it);
-
-            if (write_to_tmp)
-            {
-                std::ofstream file(TMP_FILE, std::ios::out | std::ios::app);
-
-                if (file)
-                {
-                    file << string_base << preferred_device->Get_Id() << std::endl;
-
-                    file.close();
-                }
-            }
 
             break;
         }

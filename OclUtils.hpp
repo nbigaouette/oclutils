@@ -100,18 +100,25 @@ class OpenCL_Kernel;
 std::string OpenCL_Error_to_String(cl_int error);
 
 // *****************************************************************************
+bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
+                              const std::string &platform_name, const std::string &device_name);
+
+// *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length);
 
 // *****************************************************************************
 class OpenCL_device
 {
     private:
-        int             id;
-        cl_device_id    device;
-        cl_context      context;
-        bool            device_is_gpu;
-        bool            device_is_used;
+        bool                            object_is_initialized;
+        int                             id;
+        cl_device_id                    device;
+        cl_context                      context;
+        bool                            device_is_gpu;
+        bool                            device_is_in_use;
 
+        // OpenCL device's information.
+        // See http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clGetDeviceInfo.html
         cl_uint                         address_bits;
         cl_bool                         available;
         cl_bool                         compiler_available;
@@ -180,95 +187,107 @@ class OpenCL_device
         cl_bool                         nvidia_device_kernel_exec_timeout;
         cl_bool                         nvidia_device_integrated_memory;
 
+        // A lock can be acquired on the device only if another program
+        // did not acquired one before. If the program detects that the device
+        // was is used by another process, it won't try to lock or unlock the device.
+        bool                            is_lockable;
+
     public:
-        const OpenCL_platform *parent_platform;
+
+        const OpenCL_platform          *parent_platform;
 
         OpenCL_device();
         ~OpenCL_device();
 
-        const OpenCL_platform *   Get_Parent_Platform() { return parent_platform;    }
-        std::string         Get_Name() const      { return name;      }
-        cl_uint             Get_Compute_Units() const { return max_compute_units;      }
-        int                 Get_ID() const        { return id;        }
-        cl_device_id    &   Get_Device()    { return device;    }
-        cl_context      &   Get_Context()   { return context;   }
+        const OpenCL_platform *         Get_Parent_Platform()       { return parent_platform;   }
+        std::string                     Get_Name() const            { return name;              }
+        cl_uint                         Get_Compute_Units() const   { return max_compute_units; }
+        int                             Get_ID() const              { return id;                }
+        cl_device_id &                  Get_Device()                { return device;            }
+        cl_context &                    Get_Context()               { return context;           }
+        bool                            Is_In_Use()                 { return device_is_in_use;  }
+        bool                            Is_Lockable()               { return is_lockable;       }
+        void                            Set_Lockable(const bool _is_lockable) { is_lockable = _is_lockable; }
 
-        void Set_Information(const int _id, cl_device_id _device, const bool _device_is_gpu);
+        void                            Set_Information(const int _id, cl_device_id _device, const int platform_id_offset,
+                                                        const std::string &platform_name, const bool _device_is_gpu);
 
-        cl_int Set_Context();
-
-        void Print() const;
-        bool Is_In_Use()    {return device_is_used;}
-        int Get_Id() const  {return id;}
-
-        bool operator<(const OpenCL_device &b);
+        cl_int                          Set_Context();
+        void                            Print() const;
+        void                            Lock();
+        void                            Unlock();
+        bool                            operator<(const OpenCL_device &b);
 };
 
 // *****************************************************************************
 class OpenCL_devices_list
 {
-private:
-    bool                        is_initialized;
-    cl_platform_id              platform_id;
-    const OpenCL_platform       *platform;
-    std::list<OpenCL_device>    device_list;
-    std::list<OpenCL_device>::iterator it;
-    cl_uint                     nb_cpu;
-    cl_uint                     nb_gpu;
-    int                         err;
+    private:
+        bool                            is_initialized;
+        const OpenCL_platform          *platform;
+        std::list<OpenCL_device>        device_list;
+        cl_uint                         nb_cpu;
+        cl_uint                         nb_gpu;
+        int                             err;
 
-    // If the device usage is forced (when all devices are used) we dont want to
-    // write anything to /tmp.
-    bool                        write_to_tmp;
+    public:
 
-    OpenCL_device               *preferred_device;
+        OpenCL_device                  *preferred_device;
 
-public:
-    OpenCL_devices_list();
-    ~OpenCL_devices_list();
+        OpenCL_devices_list();
+        ~OpenCL_devices_list();
 
-    int nb_devices() { return nb_cpu + nb_gpu; }
-
-    void Print() const;
-
-    OpenCL_device &  Prefered_OpenCL();
-    inline cl_device_id  &  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
-    inline cl_context    &  Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
-
-    void Initialize(const OpenCL_platform &_platform);
+        OpenCL_device &                 Prefered_OpenCL();
+        cl_device_id &                  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
+        cl_context &                    Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
+        int                             nb_devices()                     { return nb_cpu + nb_gpu; }
+        void                            Print() const;
+        void                            Initialize(const OpenCL_platform &_platform,
+                                                   const std::string &prefered_platform);
 
 };
 
 // *****************************************************************************
 class OpenCL_platform
 {
-private:
-public:
-    cl_platform_id              id;
-    std::string                 profile;
-    std::string                 version;
-    std::string                 name;
-    std::string                 vendor;
-    std::string                 extensions;
-    OpenCL_devices_list         devices_list;
+    private:
+        cl_platform_id                  id;
+        std::string                     profile;
+        std::string                     version;
+        std::string                     name;
+        std::string                     vendor;
+        std::string                     extensions;
+        std::string                     key;
+        OpenCL_platforms_list           *platform_list;
+        int                             id_offset;
+    public:
+        OpenCL_devices_list             devices_list;
+        OpenCL_platform();
 
-    OpenCL_platform();
-
-    void Print() const;
+        void                            Initialize(std::string _key, int id_offset, cl_platform_id _id,
+                                                   OpenCL_platforms_list *_platform_list, const std::string prefered_platform);
+        OpenCL_device &                 Prefered_OpenCL()                   { return devices_list.Prefered_OpenCL(); }
+        cl_device_id &                  Prefered_OpenCL_Device()            { return devices_list.Prefered_OpenCL_Device(); }
+        cl_context &                    Prefered_OpenCL_Device_Context()    { return devices_list.Prefered_OpenCL_Device_Context(); }
+        std::string                     Key() const                         { return key; }
+        std::string   const             Name() const                        { return name; }
+        cl_platform_id                  Id() const                          { return id; }
+        int                             Id_Offset() const                   { return id_offset; }
+        void                            Lock_Best_Device();
+        void                            Print() const;
 };
 
 // *****************************************************************************
 class OpenCL_platforms_list
 {
-private:
-public:
-    std::map<std::string,OpenCL_platform> platforms;
+    private:
+        std::map<std::string,OpenCL_platform>   platforms;
+        std::string                     preferred_platform;
+    public:
+        void                            Initialize(const std::string &_prefered_platform);
+        void                            Print() const;
 
-
-    void Initialize();
-    void Print() const;
-
-    OpenCL_platform & operator[](const std::string key);
+        OpenCL_platform & operator[](const std::string key);
 };
 
 // **************************************************************
