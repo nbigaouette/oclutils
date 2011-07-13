@@ -36,6 +36,21 @@ const char LOCK_FILE[] = "/tmp/gpu_usage.txt";
             << std::flush;                              \
         abort();                                        \
     }
+// **************************************************************
+void Print_N_Times(const std::string x, const int N, const bool newline = true);
+
+// **************************************************************
+void Print_N_Times(const std::string x, const int N, const bool newline)
+{
+    for (int i = 0 ; i < N ; i++)
+    {
+        std_cout << x;
+    }
+
+    if (newline)
+        std_cout << "\n";
+}
+
 // *****************************************************************************
 bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
