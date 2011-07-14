@@ -60,6 +60,13 @@ int main(int argc, char *argv[])
     // Print All information possible on the platforms and their devices.
     platforms_list.Print();
 
+    // Create a command queue on "platform"'s prefered device.
+    cl_int err;
+    cl_command_queue command_queue = clCreateCommandQueue(
+        platforms_list[platform].Prefered_OpenCL_Device_Context(),  // OpenCL context
+        platforms_list[platform].Prefered_OpenCL_Device(),          // OpenCL device id
+        0, &err);
+
     return EXIT_SUCCESS;
 }
 
