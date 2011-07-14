@@ -10,12 +10,14 @@ Compilation
 -------------------------
 
 To compile, you'll need [CMake version 2.4](http://www.cmake.org/) or up.
-<pre>$ git clone git://github.com/nbigaouette/oclutils.git
+```sh
+$ git clone git://github.com/nbigaouette/oclutils.git
 $ cd oclutils
 $ mkdir build
 $ cd build
 $ cmake ../ -DCMAKE_INSTALL_PREFIX="/usr"
-$ make</pre>
+$ make
+```
 
 Then to install:
 ```sh
