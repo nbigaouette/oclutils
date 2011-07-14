@@ -18,16 +18,23 @@ $ cmake ../ -DCMAKE_INSTALL_PREFIX="/usr"
 $ make</pre>
 
 Then to install:
-<pre>$ sudo make install</pre>
+```sh
+$ sudo make install
+```
 This will install the include file into /usr/include and the
 libraries into /usr/lib.
 
 To use it in you code, just include OclUtils.hpp:
-<pre>#include <OclUtils.hpp></pre>
+```C++
+#include <OclUtils.hpp>
+```
 and link to either the static or dynamic lib:
-<pre>$ g++ [...] -loclutils [...]</pre>
-<pre>$ g++ [...] /usr/lib/liboclutils.a [...]</pre>
-
+```sh
+$ g++ [...] -loclutils [...]
+```
+```sh
+$ g++ [...] /usr/lib/liboclutils.a [...]
+```
 
 License
 -------------------------
@@ -40,7 +47,7 @@ Example
 Here's the output of the example code on a machine with the three (AMD APP, NVIDIA CUDA and Intel OpenCL) SDK
 installed. Both AMD and Intel's SDK expose the CPU, while the NVIDIA only expose the video card (GT 220).
 If there was an AMD/ATI video card in it, the AMD APP would show it too:
-<pre>
+```sh
 $ ./example/OclUtilsExample
 -------------------------------------------------------------------------------------------------------------
 OpenCL: Getting a list of platform(s)... done.
@@ -288,5 +295,5 @@ OpenCL: Available platforms:
 OpenCL: Prefered platform's name:          AMD Accelerated Parallel Processing
 OpenCL: Prefered platform's best device:   Intel(R) Core(TM)2 Quad CPU    Q9500  @ 2.83GHz
 -------------------------------------------------------------------------------------------------------------
-</pre>
+```
 
