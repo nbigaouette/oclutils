@@ -10,14 +10,15 @@ Compilation
 -------------------------
 
 To compile, you'll need [CMake version 2.4](http://www.cmake.org/) or up.
-``$ git clone git://github.com/nbigaouette/oclutils.git
+<pre>$ git clone git://github.com/nbigaouette/oclutils.git
 $ cd oclutils
 $ mkdir build
 $ cd build
 $ cmake ../ -DCMAKE_INSTALL_PREFIX="/usr"
-$ make``
+$ make</pre>
+
 Then to install:
-``$ sudo make install``
+<pre>$ sudo make install</pre>
 This will install the include file into /usr/include and the
 libraries into /usr/lib
 
