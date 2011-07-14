@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     //      "apple"     Apple OpenCL (only on MacOSX)
     //      "-1"        Default value. This will take the first
     //                  platform available, in alphabetical order.
-    platforms_list.Initialize("amd");
+    platforms_list.Initialize("-1");
 
     // By passing "-1", to Initialize(), the first platform in the list
     // is chosen. Get that platform's string for later reference.
