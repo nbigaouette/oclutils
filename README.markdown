@@ -6,6 +6,23 @@ Content
 
 C++ library to initialize a list of OpenCL platforms and the available (sorted) list of devices on each platforms.
 
+Compilation
+-------------------------
+
+To compile, you'll need [CMake version 2.4](http://www.cmake.org/) or up.
+``$ git clone git://github.com/nbigaouette/oclutils.git
+$ cd oclutils
+$ mkdir build
+$ cd build
+$ cmake ../ -DCMAKE_INSTALL_PREFIX="/usr"
+$ make``
+Then to install:
+``$ sudo make install``
+This will install the include file into /usr/include and the
+libraries into /usr/lib
+
+
+
 License
 -------------------------
 
