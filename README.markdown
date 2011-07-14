@@ -20,7 +20,14 @@ $ make</pre>
 Then to install:
 <pre>$ sudo make install</pre>
 This will install the include file into /usr/include and the
-libraries into /usr/lib
+libraries into /usr/lib.
+
+To use it in you code, just include OclUtils.hpp:
+<pre>#include <OclUtils.hpp></pre>
+and link to either the static or dynamic lib:
+<pre>$ g++ [...] -loclutils [...]</pre>
+<pre>$ g++ [...] /usr/lib/liboclutils.a [...]</pre>
+
 
 License
 -------------------------
