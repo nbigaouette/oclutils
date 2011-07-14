@@ -9,4 +9,4 @@ C++ library to initialize a list of OpenCL platforms and the available (sorted) 
 License
 -------------------------
 
-This code is distributed under the terms of the [GNU General Public License v3 (GPLv3)](http://www.gnu.org/licenses/gpl.html) and is Copyright 2010 Nicolas Bigaouette
+This code is distributed under the terms of the [GNU General Public License v3 (GPLv3)](http://www.gnu.org/licenses/gpl.html) and is Copyright 2011 Nicolas Bigaouette
