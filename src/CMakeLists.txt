@@ -1,9 +1,7 @@
-cmake_minimum_required(VERSION 2.4)
-project(OclUtils)
 
-# include(FindOpenCL)
-# find_package(OpenCL REQUIRED)
-# include_directories(${OPENCL_INCLUDE_DIR})
+#
+# Library
+#
 
 set(SRCS OclUtils.cpp)
 
