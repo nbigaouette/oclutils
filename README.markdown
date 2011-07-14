@@ -10,7 +10,8 @@ Compilation
 -------------------------
 
 To compile, you'll need [CMake version 2.4](http://www.cmake.org/) or up.
-```sh
+
+``` bash
 $ git clone git://github.com/nbigaouette/oclutils.git
 $ cd oclutils
 $ mkdir build
@@ -20,21 +21,29 @@ $ make
 ```
 
 Then to install:
-```sh
+
+``` bash
 $ sudo make install
 ```
+
 This will install the include file into /usr/include and the
 libraries into /usr/lib.
 
 To use it in you code, just include OclUtils.hpp:
-```C++
+
+``` C++
 #include <OclUtils.hpp>
 ```
-and link to either the static or dynamic lib:
-```sh
+
+and link to either the dynamic lib:
+
+``` bash
 $ g++ [...] -loclutils [...]
 ```
-```sh
+
+or static lib:
+
+``` bash
 $ g++ [...] /usr/lib/liboclutils.a [...]
 ```
 
@@ -49,7 +58,8 @@ Example
 Here's the output of the example code on a machine with the three (AMD APP, NVIDIA CUDA and Intel OpenCL) SDK
 installed. Both AMD and Intel's SDK expose the CPU, while the NVIDIA only expose the video card (GT 220).
 If there was an AMD/ATI video card in it, the AMD APP would show it too:
-```sh
+
+```
 $ ./example/OclUtilsExample
 -------------------------------------------------------------------------------------------------------------
 OpenCL: Getting a list of platform(s)... done.
