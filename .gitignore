@@ -4,4 +4,4 @@ Makefile
 cmake_install.cmake
 *.a
 *.so
-
+*.kate-swp
