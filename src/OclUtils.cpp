@@ -1061,6 +1061,27 @@ void OpenCL_Kernel::Launch(cl_command_queue command_queue)
 }
 
 // *****************************************************************************
+int OpenCL_Kernel::Get_Multiple(int n, int base)
+{
+    int multipleOfWorkSize = 0;
+
+    if (n < base)
+    {
+        multipleOfWorkSize = n;
+    }
+    else if (n % base == 0)
+    {
+        multipleOfWorkSize = n;
+    }
+    else
+    {
+        multipleOfWorkSize = base*std::floor(n/base) + base;
+    }
+
+    return multipleOfWorkSize;
+}
+
+// *****************************************************************************
 void OpenCL_Kernel::Load_Program_From_File()
 {
     // Program Setup
@@ -1135,27 +1156,6 @@ void OpenCL_Kernel::Build_Executable()
     delete[] build_log;
 
     std_cout << "done.\n";
-}
-
-// *****************************************************************************
-int OpenCL_Kernel::Get_Multiple(int n, int base)
-{
-    int multipleOfWorkSize = 0;
-
-    if (n < base)
-    {
-        multipleOfWorkSize = n;
-    }
-    else if (n % base == 0)
-    {
-        multipleOfWorkSize = n;
-    }
-    else
-    {
-        multipleOfWorkSize = base*std::floor(n/base) + base;
-    }
-
-    return multipleOfWorkSize;
 }
 
 // *****************************************************************************
