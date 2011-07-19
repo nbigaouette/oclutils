@@ -930,8 +930,12 @@ OpenCL_Kernel::OpenCL_Kernel(std::string _filename, bool _use_mt, cl_context _co
 {
     kernel           = NULL;
     program          = NULL;
-    global_work_size = NULL;
-    local_work_size  = NULL;
+
+    dimension = 2; // Always use two dimensions.
+
+    // Create array once
+    global_work_size = new size_t[dimension];
+    local_work_size  = new size_t[dimension];
 }
 
 // *****************************************************************************
