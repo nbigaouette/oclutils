@@ -321,8 +321,8 @@ class OpenCL_Kernel
 
         void Build(std::string _kernel_name, std::string _compiler_options);
 
-        void Compute_Work_Size(int N);
-        void Compute_Work_Size(int N, int _p, int _q);
+        // By default global_y is one, local_x is MAX_WORK_SIZE and local_y is one.
+        void Compute_Work_Size(size_t _global_x, size_t _global_y = 1, size_t _local_x = MAX_LOCAL_WORK_SIZE, size_t _local_y = 1);
 
         cl_kernel Get_Kernel() const;
 
