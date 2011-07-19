@@ -1010,7 +1010,7 @@ void OpenCL_Kernel::Compute_Work_Size(int N, int _p, int _q)
     local_work_size[0] = _p;
     local_work_size[1] = _q;
 
-    global_work_size[0] = Get_Multiple_Of_Work_Size(N, _p*_q);
+    global_work_size[0] = Get_Multiple(N, _p*_q);
     global_work_size[1] = _q;
 
     p = _p;
@@ -1130,21 +1130,21 @@ void OpenCL_Kernel::Build_Executable()
 }
 
 // *****************************************************************************
-int OpenCL_Kernel::Get_Multiple_Of_Work_Size(int n, int _p)
+int OpenCL_Kernel::Get_Multiple(int n, int base)
 {
     int multipleOfWorkSize = 0;
 
-    if (n < _p)
+    if (n < base)
     {
         multipleOfWorkSize = n;
     }
-    else if (n % _p == 0)
+    else if (n % base == 0)
     {
         multipleOfWorkSize = n;
     }
     else
     {
-        multipleOfWorkSize = _p*std::floor(n/_p) + _p;
+        multipleOfWorkSize = base*std::floor(n/base) + base;
     }
 
     return multipleOfWorkSize;

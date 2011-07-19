@@ -332,6 +332,8 @@ class OpenCL_Kernel
         int Get_Dimension() const;
         bool Uses_MT() const;
 
+        static int Get_Multiple(int n, int base);
+
     private:
 
         std::string filename;
@@ -361,8 +363,6 @@ class OpenCL_Kernel
 
         // Build runtime executable from a program
         void Build_Executable();
-
-        int Get_Multiple_Of_Work_Size(int n, int _p);
 };
 
 #endif // INC_OCLUTILS_hpp
