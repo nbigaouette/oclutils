@@ -332,6 +332,8 @@ class OpenCL_Kernel
         int Get_Dimension() const;
         bool Uses_MT() const;
 
+        void Launch(cl_command_queue command_queue);
+
         static int Get_Multiple(int n, int base);
 
     private:

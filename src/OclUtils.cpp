@@ -1052,6 +1052,14 @@ bool OpenCL_Kernel::Uses_MT() const
     return use_mt;
 }
 
+void OpenCL_Kernel::Launch(cl_command_queue command_queue)
+{
+    err = clEnqueueNDRangeKernel(command_queue, Get_Kernel(), Get_Dimension(), NULL,
+                                 Get_Global_Work_Size(), Get_Local_Work_Size(),
+                                 0, NULL, NULL);
+    OpenCL_Test_Success(err, "clEnqueueNDRangeKernel");
+}
+
 // *****************************************************************************
 void OpenCL_Kernel::Load_Program_From_File()
 {
