@@ -1067,7 +1067,7 @@ int OpenCL_Kernel::Get_Multiple(int n, int base)
 
     if (n < base)
     {
-        multipleOfWorkSize = n;
+        multipleOfWorkSize = base;
     }
     else if (n % base == 0)
     {
@@ -1075,7 +1075,7 @@ int OpenCL_Kernel::Get_Multiple(int n, int base)
     }
     else
     {
-        multipleOfWorkSize = base*std::floor(n/base) + base;
+        multipleOfWorkSize = base*(int)std::floor(n/base) + base;
     }
 
     return multipleOfWorkSize;
