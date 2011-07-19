@@ -313,7 +313,7 @@ class OpenCL_Kernel
 {
     public:
 
-        OpenCL_Kernel(std::string _filename, bool _use_mt, cl_context _context, cl_device_id _device_id);
+        OpenCL_Kernel(std::string _filename, cl_context _context, cl_device_id _device_id);
         ~OpenCL_Kernel();
 
         void Build(std::string _kernel_name, std::string _compiler_options);

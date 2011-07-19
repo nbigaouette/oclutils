@@ -925,8 +925,8 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
 
 // *****************************************************************************
 
-OpenCL_Kernel::OpenCL_Kernel(std::string _filename, bool _use_mt, cl_context _context, cl_device_id _device_id):
-                           filename(_filename), use_mt(_use_mt), context(_context), device_id(_device_id)
+OpenCL_Kernel::OpenCL_Kernel(std::string _filename, cl_context _context, cl_device_id _device_id):
+                           filename(_filename), context(_context), device_id(_device_id)
 {
     kernel           = NULL;
     program          = NULL;
