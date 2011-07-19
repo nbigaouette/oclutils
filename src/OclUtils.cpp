@@ -1021,12 +1021,6 @@ int OpenCL_Kernel::Get_Dimension() const
     return dimension;
 }
 
-// *****************************************************************************
-bool OpenCL_Kernel::Uses_MT() const
-{
-    return use_mt;
-}
-
 void OpenCL_Kernel::Launch(cl_command_queue command_queue)
 {
     err = clEnqueueNDRangeKernel(command_queue, Get_Kernel(), Get_Dimension(), NULL,

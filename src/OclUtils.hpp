@@ -327,7 +327,6 @@ class OpenCL_Kernel
         size_t *Get_Local_Work_Size() const;
 
         int Get_Dimension() const;
-        bool Uses_MT() const;
 
         void Launch(cl_command_queue command_queue);
 
@@ -336,7 +335,6 @@ class OpenCL_Kernel
     private:
 
         std::string filename;
-        bool use_mt;
         cl_context context;
         cl_device_id device_id;
 
