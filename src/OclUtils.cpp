@@ -27,8 +27,13 @@
 
 #include "OclUtils.hpp"
 
-const char LOCK_FILE[] = "/tmp/gpu_usage.txt";
 #define string_base "Platform: %d  Device: %d (%s, %s)"
+
+std::string get_lock_filename(const int device_id)
+{
+    std::string f = "/tmp/gpu";
+
+}
 
 // Quote something, usefull to quote a macro's value
 #ifndef _QUOTEME
