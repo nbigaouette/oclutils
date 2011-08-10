@@ -31,8 +31,12 @@
 
 std::string get_lock_filename(const int device_id)
 {
-    std::string f = "/tmp/gpu";
-
+    std::string f = "/tmp/gpu"; //start of lock filename
+    char t[256];
+    sprintf(t, "%d", device_id); //add device id
+    f += t;
+    f += ".lock"; //add file suffix
+    return f;
 }
 
 // Quote something, usefull to quote a macro's value
