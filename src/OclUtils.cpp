@@ -148,28 +148,15 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
 {
     int check = LockFile(get_lock_filename(device_id, platform_id_offset, platform_name, device_name).c_str());
 
-    std::ifstream file(LOCK_FILE, std::ios::in);
-
-    if (file)
+    if (check == -1)
     {
-        std::string line;
-        char string_to_find[4096];
-        memset(string_to_find, 0, 4096);
-
-        while (std::getline(file, line))
-        {
-            sprintf(string_to_find, string_base, platform_id_offset, device_id, platform_name.c_str(), device_name.c_str());
-
-            if (line.find(string_to_find) != std::string::npos)
-            {
-                device_is_used = true;
-            }
-        }
-
-        file.close();
+        return true; //device is used
     }
-
-    return device_is_used;
+    else
+    {
+        close(check); //close file
+        return false; //device not in use
+    }
 }
 
 // *****************************************************************************
