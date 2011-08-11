@@ -84,7 +84,7 @@ int LockFile(const char *path)
         {
             std::cout << "File lock operation failed!\n";
             close(f);
-            return -1; //another error occured
+            return -1; // Another error occurred
         }
     }
     return f;
