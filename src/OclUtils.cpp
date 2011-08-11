@@ -72,6 +72,7 @@ int LockFile(const char *path)
             return -1; //another error occured
         }
     }
+    is_locked = true;
     return f;
 }
 
@@ -421,7 +422,8 @@ OpenCL_device::OpenCL_device()
     device                      = NULL;
     context                     = NULL;
     device_is_in_use            = false;
-    is_lockable                = true;
+    is_lockable                 = true;
+    file_locked                 = false;
 }
 
 // *****************************************************************************
@@ -429,7 +431,7 @@ OpenCL_device::~OpenCL_device()
 {
     if (context)
         clReleaseContext(context);
-
+    
     Unlock();
 }
 
