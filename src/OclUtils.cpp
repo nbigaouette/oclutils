@@ -70,7 +70,7 @@ int LockFile(const char *path)
     }
 
     // Set file's permission. Needed so that multi-user systems can share the lock file.
-    const int fchmod_result = fchmod(f, 0777);
+    const int fchmod_result = fchmod(f, 0666);
     if (fchmod_result == -1)
     {
         std::cout << "Could not change lock file's permissions!\n" << std::flush;
