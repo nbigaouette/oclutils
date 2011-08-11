@@ -875,16 +875,19 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
     {
         std_cout << "OpenCL: Trying to set an context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
-        if (it->Set_Context() == CL_SUCCESS)
+        if (!it->Is_In_Use())
         {
-            std_cout << " Success!\n";
-            preferred_device = &(*it);
+            if (it->Set_Context() == CL_SUCCESS)
+            {
+                std_cout << " Success!\n";
+                preferred_device = &(*it);
 
-            break;
-        }
-        else
-        {
-            std_cout << " Failed. Maybe next one will work?\n";
+                break;
+            }
+            else
+            {
+                std_cout << " Failed. Maybe next one will work?\n";
+            }
         }
     }
     if (preferred_device == NULL)
