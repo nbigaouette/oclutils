@@ -33,14 +33,12 @@
 
 #include "OclUtils.hpp"
 
-#define string_base "Platform: %d  Device: %d (%s, %s)"
-
 std::string get_lock_filename(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
 {
     std::string f = "/tmp/gpu"; // Beginning of lock filename
     char t[4096];
-    sprintf(t, string_base, platform_id_offset, device_id, platform_name.c_str(), device_name.c_str()); //generate string filename
+    sprintf(t, "Platform: %d  Device: %d (%s, %s)", platform_id_offset, device_id, platform_name.c_str(), device_name.c_str()); //generate string filename
     int len = strlen(t);
     for (int i = 0; i < len; i++)
     {
