@@ -61,11 +61,11 @@ int LockFile(const char *path)
  */
 {
     std::cout <<"Attempt to open and lock file " <<path <<"\n";
-    int f = open(path, O_CREAT | O_TRUNC, 0777); //open file, with permissions 777
+    int f = open(path, O_CREAT | O_TRUNC, 0777); // Open file with permissions 777
     if (f == -1)
     {
-        std::cout <<"Could not open lock file!\n";
-        return -1; //open failed
+        std::cout << "Could not open lock file!\n" << std::flush;
+        return -1; // Open failed
     }
     int r = flock(f, LOCK_EX | LOCK_NB); //try to lock file
     if (r == -1)
