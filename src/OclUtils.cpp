@@ -90,11 +90,13 @@ int LockFile(const char *path)
     return f;
 }
 
-//unlock lock file
 void UnlockFile(int f)
+/**
+ * Unlock file
+ */
 {
-    std::cout <<"Closing lock file!\n";
-    close(f); //close file, automatically unlocks file
+    std::cout << "Closing lock file!\n";
+    close(f); // Close file automatically unlocks file
 }
 
 
