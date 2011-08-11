@@ -173,12 +173,12 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
 
     if (check == -1)
     {
-        return true; //device is used
+        return true;        // Device is used
     }
     else
     {
-        UnlockFile(check); //close file
-        return false; //device not in use
+        UnlockFile(check);  // Close file
+        return false;       // Device not in use
     }
 }
 
@@ -447,7 +447,7 @@ OpenCL_device::~OpenCL_device()
 {
     if (context)
         clReleaseContext(context);
-    
+
     Unlock();
 }
 
