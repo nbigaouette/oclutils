@@ -35,7 +35,8 @@
 
 #define string_base "Platform: %d  Device: %d (%s, %s)"
 
-std::string get_lock_filename(const int device_id, const int platform_id_offset, const std::string &platform_name, const std::string &device_name)
+std::string get_lock_filename(const int device_id, const int platform_id_offset,
+                              const std::string &platform_name, const std::string &device_name)
 {
     std::string f = "/tmp/gpu"; //start of lock filename
     char t[4096];
