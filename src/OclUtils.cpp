@@ -154,7 +154,7 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
     }
     else
     {
-        close(check); //close file
+        UnlockFile(check); //close file
         return false; //device not in use
     }
 }
