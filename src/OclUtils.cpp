@@ -32,12 +32,9 @@
 std::string get_lock_filename(const int device_id, const int platform_id_offset, const std::string &platform_name, const std::string &device_name)
 {
     std::string f = "/tmp/gpu"; //start of lock filename
-    char t[256];
-    sprintf(t, "%d", device_id); //add device id
+    char t[4096];
+    sprintf(t, string_base, platform_id_offset, device_id, platform_name.c_str(), device_name.c_str()); //generate string filename
     f += t;
-
-
-
     f += ".lock"; //add file suffix
     return f;
 }
