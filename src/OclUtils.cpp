@@ -54,9 +54,11 @@ std::string get_lock_filename(const int device_id, const int platform_id_offset,
     return f;
 }
 
-//attempt to lock file, and check lock status on lock file
-//return file handle if locked, or -1 if failed
 int LockFile(const char *path)
+/**
+ * Attempt to lock file, and check lock status on lock file
+ * @return      file handle if locked, or -1 if failed
+ */
 {
     std::cout <<"Attempt to open and lock file " <<path <<"\n";
     int f = open(path, O_CREAT | O_TRUNC, 0777); //open file, with permissions 777
