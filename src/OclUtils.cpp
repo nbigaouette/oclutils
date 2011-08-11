@@ -242,8 +242,6 @@ void OpenCL_platform::Initialize(const std::string _key, int _id_offset, cl_plat
 // *****************************************************************************
 void OpenCL_platform::Lock_Best_Device()
 {
-    std::cout <<"OpenCL platform: \n";
-    Prefered_OpenCL().Print();
     if (Prefered_OpenCL().Is_Lockable())
     {
         Prefered_OpenCL().Lock();
@@ -422,7 +420,7 @@ OpenCL_device::OpenCL_device()
     max_compute_units           = 0;
     device                      = NULL;
     context                     = NULL;
-    device_is_in_use            = true;
+    device_is_in_use            = false;
     is_lockable                 = true;
     file_locked                 = false;
 }
@@ -876,22 +874,13 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
     preferred_device = NULL;    // The preferred device is unknown for now.
     for (it = device_list.begin() ; it != device_list.end() ; ++it)
     {
-        std::cout <<"Check device " << it->Get_Name() << " is not in use...";
-        if (!it->Is_In_Use())
+        std_cout << "OpenCL: Trying to set an context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
+        if (it->Set_Context() == CL_SUCCESS)
         {
             std_cout << " Success!\n";
-            std_cout << "OpenCL: Trying to set an context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
-            if (it->Set_Context() == CL_SUCCESS)
-            {
-                std_cout << " Success!\n";
-                preferred_device = &(*it);
+            preferred_device = &(*it);
 
-                break;
-            }
-            else
-            {
-                std_cout << " Failed. Maybe next one will work?\n";
-            }
+            break;
         }
         else
         {
