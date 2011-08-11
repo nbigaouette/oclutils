@@ -242,6 +242,8 @@ void OpenCL_platform::Initialize(const std::string _key, int _id_offset, cl_plat
 // *****************************************************************************
 void OpenCL_platform::Lock_Best_Device()
 {
+    std::cout <<"OpenCL platform: \n";
+    Prefered_OpenCL().Print();
     if (Prefered_OpenCL().Is_Lockable())
     {
         Prefered_OpenCL().Lock();
@@ -420,7 +422,7 @@ OpenCL_device::OpenCL_device()
     max_compute_units           = 0;
     device                      = NULL;
     context                     = NULL;
-    device_is_in_use            = false;
+    device_is_in_use            = true;
     is_lockable                 = true;
     file_locked                 = false;
 }
