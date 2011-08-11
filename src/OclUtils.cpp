@@ -681,43 +681,7 @@ void OpenCL_device::Lock()
 // *****************************************************************************
 void OpenCL_device::Unlock()
 {
-    if (object_is_initialized and is_lockable)
-    {
-        std::string file_content; // Write the data from the file.
-
-        std::ifstream file_read(LOCK_FILE, std::ios::in);
-
-        if (file_read)
-        {
-            std::string line;
-            char string_to_find[4096];
-            assert(parent_platform != NULL);
-            sprintf(string_to_find, string_base, parent_platform->Id_Offset(), id, parent_platform->Name().c_str(), name.c_str());
-
-            while (std::getline(file_read, line))
-            {
-                // Read every line except the one corresponding to the current device.
-                if (line.find(string_to_find) == std::string::npos)
-                {
-                    file_content += line + "\n"; // Add the lines to the string.
-                }
-            }
-
-            file_read.close();
-        }
-
-        // Write back the string to file (the current device being deleted).
-        std::ofstream file_write(LOCK_FILE, std::ios::out | std::ios::trunc);
-
-        if (file_write)
-        {
-            file_write << file_content;
-
-            file_write.close();
-        }
-
-        object_is_initialized = false;
-    }
+    UnlockFile(lock_file);
 }
 
 // *****************************************************************************
