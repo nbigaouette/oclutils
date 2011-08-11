@@ -60,25 +60,29 @@ int LockFile(const char *path)
  * @return      file handle if locked, or -1 if failed
  */
 {
-    std::cout <<"Attempt to open and lock file " <<path <<"\n";
-    int f = open(path, O_CREAT | O_TRUNC, 0777); // Open file with permissions 777
+    std::cout << "Attempt to open and lock file " << path <<"\n";
+
+    // Open file with permissions 777
+    int f = open(path, O_CREAT | O_TRUNC, 0777);
     if (f == -1)
     {
         std::cout << "Could not open lock file!\n" << std::flush;
         return -1; // Open failed
     }
-    int r = flock(f, LOCK_EX | LOCK_NB); //try to lock file
+
+    // Try to lock file
+    int r = flock(f, LOCK_EX | LOCK_NB);
     if (r == -1)
     {
         if (errno == EWOULDBLOCK)
         {
             close(f);
-            std::cout <<"Lock file is already locked!\n";
-            return -1; //file is locked
+            std::cout << "Lock file is already locked!\n";
+            return -1; // File is locked
         }
         else
         {
-            std::cout <<"File lock operation failed!\n";
+            std::cout << "File lock operation failed!\n";
             close(f);
             return -1; //another error occured
         }
