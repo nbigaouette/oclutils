@@ -38,7 +38,7 @@ std::string get_lock_filename(const int device_id, const int platform_id_offset,
 {
     std::string f = "/tmp/OpenCL_"; // Beginning of lock filename
     char t[4096];
-    sprintf(t, "Platform: %d  Device: %d (%s, %s)", platform_id_offset, device_id, platform_name.c_str(), device_name.c_str()); //generate string filename
+    sprintf(t, "Platform%d_Device%d__%s_%s", platform_id_offset, device_id, platform_name.c_str(), device_name.c_str()); //generate string filename
     int len = strlen(t);
     for (int i = 0; i < len; i++)
     {
