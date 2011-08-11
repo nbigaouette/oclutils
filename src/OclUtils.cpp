@@ -675,17 +675,7 @@ void OpenCL_device::Print() const
 // *****************************************************************************
 void OpenCL_device::Lock()
 {
-    std::ofstream file(LOCK_FILE, std::ios::out | std::ios::app);
-
-    if (file)
-    {
-        char tmp_string[4096];
-        assert(parent_platform != NULL);
-        sprintf(tmp_string, string_base, parent_platform->Id_Offset(), id, parent_platform->Name().c_str(), name.c_str());
-        file << tmp_string << std::endl << std::flush;
-
-        file.close();
-    }
+    lock_file = LockFile(get_lock_filename(parent_platform->Id_Offset(), id, parent_platform->Name(), device_name).c_str());
 }
 
 // *****************************************************************************
