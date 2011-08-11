@@ -705,7 +705,7 @@ void OpenCL_device::Lock()
         std::cout << "An error occurred locking the file!\n" << std::flush;
         abort();
     }
-    file_locked = true; //file is locked
+    file_locked = true; // File is now locked
 }
 
 // *****************************************************************************
