@@ -41,9 +41,8 @@ std::string get_lock_filename(const int device_id, const int platform_id_offset,
 
 //attempt to lock file, and check lock status on lock file
 //return file handle if locked, or -1 if failed
-int LockFile(char *path)
+int LockFile(const char *path)
 {
-    char *path = "/tmp/qfdtd.lock";
     std::cout <<"Attempt to open and lock file " <<path <<"\n";
     int f = open(path, O_CREAT | O_TRUNC, 0777); //open file, with permissions 777
     if (f == -1)
@@ -147,7 +146,7 @@ void Print_N_Times(const std::string x, const int N, const bool newline)
 bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
 {
-    bool device_is_used = false;
+    int check = LockFile(get_lock_filename(device_id, platform_id_offset, platform_name, device_name).c_str());
 
     std::ifstream file(LOCK_FILE, std::ios::in);
 
