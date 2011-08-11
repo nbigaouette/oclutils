@@ -29,15 +29,57 @@
 
 #define string_base "Platform: %d  Device: %d (%s, %s)"
 
-std::string get_lock_filename(const int device_id)
+std::string get_lock_filename(const int device_id, const int platform_id_offset, const std::string &platform_name, const std::string &device_name)
 {
     std::string f = "/tmp/gpu"; //start of lock filename
     char t[256];
     sprintf(t, "%d", device_id); //add device id
     f += t;
+
+
+
     f += ".lock"; //add file suffix
     return f;
 }
+
+//attempt to lock file, and check lock status on lock file
+//return file handle if locked, or -1 if failed
+int LockFile(char *path)
+{
+    char *path = "/tmp/qfdtd.lock";
+    std::cout <<"Attempt to open and lock file " <<path <<"\n";
+    int f = open(path, O_CREAT | O_TRUNC, 0777); //open file, with permissions 777
+    if (f == -1)
+    {
+        std::cout <<"Could not open lock file!\n";
+        return -1; //open failed
+    }
+    int r = flock(f, LOCK_EX | LOCK_NB); //try to lock file
+    if (r == -1)
+    {
+        if (errno == EWOULDBLOCK)
+        {
+            close(f);
+            std::cout <<"Lock file is already locked!\n";
+            return -1; //file is locked
+        }
+        else
+        {
+            std::cout <<"File lock operation failed!\n";
+            close(f);
+            return -1; //another error occured
+        }
+    }
+    return f;
+}
+
+//unlock lock file
+void UnlockFile(int f)
+{
+    std::cout <<"Closing lock file!\n";
+    close(f); //close file, automatically unlocks file
+}
+
 
 // Quote something, usefull to quote a macro's value
 #ifndef _QUOTEME
@@ -108,8 +150,28 @@ void Print_N_Times(const std::string x, const int N, const bool newline)
 bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
 {
+    bool device_is_used = false;
 
+    std::ifstream file(LOCK_FILE, std::ios::in);
 
+    if (file)
+    {
+        std::string line;
+        char string_to_find[4096];
+        memset(string_to_find, 0, 4096);
+
+        while (std::getline(file, line))
+        {
+            sprintf(string_to_find, string_base, platform_id_offset, device_id, platform_name.c_str(), device_name.c_str());
+
+            if (line.find(string_to_find) != std::string::npos)
+            {
+                device_is_used = true;
+            }
+        }
+
+        file.close();
+    }
 
     return device_is_used;
 }
