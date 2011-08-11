@@ -61,11 +61,19 @@ int LockFile(const char *path)
 {
     std::cout << "Attempt to open and lock file " << path <<"\n";
 
-    // Open file with permissions 777
-    int f = open(path, O_CREAT | O_TRUNC, 0777);
+    // Open file
+    int f = open(path, O_CREAT | O_TRUNC);
     if (f == -1)
     {
         std::cout << "Could not open lock file!\n" << std::flush;
+        return -1; // Open failed
+    }
+
+    // Set file's permission. Needed so that multi-user systems can share the lock file.
+    const int fchmod_result = fchmod(f, 0777);
+    if (fchmod_result == -1)
+    {
+        std::cout << "Could not change lock file's permissions!\n" << std::flush;
         return -1; // Open failed
     }
 
