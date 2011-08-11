@@ -676,6 +676,11 @@ void OpenCL_device::Print() const
 void OpenCL_device::Lock()
 {
     lock_file = LockFile(get_lock_filename(parent_platform->Id_Offset(), id, parent_platform->Name(), device_name).c_str());
+    if (lock_file == -1)
+    {
+        std::cout <<"An error occurred locking the file!\n";
+        abort(); //could not lock the file
+    }
 }
 
 // *****************************************************************************
@@ -839,43 +844,11 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
 
     assert(it == device_list.end());
 
-    // When all devices are in use we ask the user if he would like
-    // his simulation to be forced.
+    // When all devices are in use we abort the program
     if (is_all_devices_in_use == true)
     {
-        bool correct_answer = false;
-
-        // Don't write to tmp. This would suppress lines created by other program running.
-        for (it = device_list.begin(); it != device_list.end() ; ++it)
-            it->Set_Lockable(false);
-
-        while (prefered_platform == platform->Key() and !correct_answer)
-        {
-            // Ask the user if he still wants to execute the program.
-            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on prefered platform \"" << platform->Name() << "\" are in use!\n"
-                     << "                 If you are certain no other program is using the device(s), you can delete\n"
-                     << "                 the line(s) the platform's name in the file '" << LOCK_FILE << "'\n"
-                     << "                 Do you want to force the execution and continue? [y/n]\n";
-            std::string answer;
-            std::cin >> answer;
-
-            if (answer == "yes" || answer == "Y" || answer == "y" || answer == "oui" || answer == "O" || answer == "o")
-            {
-                correct_answer = true;
-                std_cout << "Proceeding... \n";
-            }
-            else if (answer == "no" || answer == "No" || answer == "N" || answer == "n" || answer == "non" || answer == "Non")
-            {
-                correct_answer = true;
-                std_cout << "Exiting... \n";
-                abort();
-            }
-            else
-            {
-                correct_answer = false;
-                std_cout << "You entered an invalid answer!\n";
-            }
-        }
+        std::cout <<"All devices are in use!\n";
+        abort();
     }
 
     // For each device, store a pointer to its parent platform
