@@ -702,8 +702,8 @@ void OpenCL_device::Lock()
     lock_file = LockFile(get_lock_filename(id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
     if (lock_file == -1)
     {
-        std::cout <<"An error occurred locking the file!\n";
-        abort(); //could not lock the file
+        std::cout << "An error occurred locking the file!\n" << std::flush;
+        abort();
     }
     file_locked = true; //file is locked
 }
