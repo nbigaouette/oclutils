@@ -72,7 +72,6 @@ int LockFile(const char *path)
             return -1; //another error occured
         }
     }
-    file_locked = true;
     return f;
 }
 
