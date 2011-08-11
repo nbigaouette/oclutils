@@ -50,7 +50,7 @@ std::string get_lock_filename(const int device_id, const int platform_id_offset,
         }
     }
     f += t;
-    f += ".lock"; //add file suffix
+    f += ".lck"; // File suffix
     return f;
 }
 
