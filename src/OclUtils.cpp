@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <sys/file.h>
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>     // abort()
 #include <string>       // std::string
