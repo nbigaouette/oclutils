@@ -46,7 +46,7 @@ std::string get_lock_filename(const int device_id, const int platform_id_offset,
     {
         if (!isalpha(t[i]) && !isdigit(t[i]))
         {
-            t[i] = 'x'; //replace all non alphanumeric characters with the letter x
+            t[i] = '_'; //replace all non alphanumeric characters with underscore
         }
     }
     f += t;
