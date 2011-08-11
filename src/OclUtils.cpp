@@ -684,7 +684,7 @@ void OpenCL_device::Print() const
 // *****************************************************************************
 void OpenCL_device::Lock()
 {
-    lock_file = LockFile(get_lock_filename(parent_platform->Id_Offset(), id, parent_platform->Name(), name).c_str());
+    lock_file = LockFile(get_lock_filename(id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
     if (lock_file == -1)
     {
         std::cout <<"An error occurred locking the file!\n";
