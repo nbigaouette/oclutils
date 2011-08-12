@@ -62,7 +62,7 @@ int LockFile(const char *path)
     std::cout << "Attempt to open and lock file " << path <<"\n";
 
     // Open file
-    int f = open(path, O_CREAT | O_TRUNC);
+    int f = open(path, O_CREAT | O_TRUNC, 0666);
     if (f == -1)
     {
         std::cout << "Could not open lock file!\n" << std::flush;
