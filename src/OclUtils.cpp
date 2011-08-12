@@ -69,13 +69,13 @@ int LockFile(const char *path)
         return -1; // Open failed
     }
 
-    // Set file's permission. Needed so that multi-user systems can share the lock file.
-    const int fchmod_result = fchmod(f, 0666);
-    if (fchmod_result == -1)
-    {
-        std::cout << "Could not change lock file's permissions!\n" << std::flush;
-        return -1; // Open failed
-    }
+    // Set file's permissions.
+    // Needed so that multi-user systems can share the lock file.
+    // WARNING: The call's return value is not tested. We know it would
+    //          fail if the file is owned by another process. So just try
+    //          to do it, but don't test it. Anyway, what is important
+    //          is the locking with flock().
+    fchmod(f, 0666);
 
     // Try to lock file
     int r = flock(f, LOCK_EX | LOCK_NB);
