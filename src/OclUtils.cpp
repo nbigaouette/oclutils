@@ -82,6 +82,30 @@ int LockFile(const char *path);
 void UnlockFile(int f);
 
 
+// *****************************************************************************
+inline std::string Bytes_in_String(const uint64_t bytes)
+{
+    std::ostringstream MyStream;
+    MyStream
+        << bytes << " bytes ("
+            << B_to_KiB * bytes << " KiB, "
+            << B_to_MiB * bytes << " MiB, "
+            << B_to_GiB * bytes << " GiB)"
+        << std::flush;
+    return (MyStream.str());
+}
+
+// *****************************************************************************
+void Print_N_Times(const std::string x, const int N, const bool newline)
+{
+    for (int i = 0 ; i < N ; i++)
+    {
+        std_cout << x;
+    }
+
+    if (newline)
+        std_cout << "\n";
+}
 
 // *****************************************************************************
 std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
@@ -157,31 +181,6 @@ void UnlockFile(int f)
 {
     std::cout << "Closing lock file!\n";
     close(f); // Close file automatically unlocks file
-}
-
-// *****************************************************************************
-inline std::string Bytes_in_String(const uint64_t bytes)
-{
-    std::ostringstream MyStream;
-    MyStream
-        << bytes << " bytes ("
-            << B_to_KiB * bytes << " KiB, "
-            << B_to_MiB * bytes << " MiB, "
-            << B_to_GiB * bytes << " GiB)"
-        << std::flush;
-    return (MyStream.str());
-}
-
-// *****************************************************************************
-void Print_N_Times(const std::string x, const int N, const bool newline)
-{
-    for (int i = 0 ; i < N ; i++)
-    {
-        std_cout << x;
-    }
-
-    if (newline)
-        std_cout << "\n";
 }
 
 // *****************************************************************************
