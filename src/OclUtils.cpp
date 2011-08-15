@@ -74,7 +74,14 @@ const double GiB_to_KiB = 1048576.0;
 const double GiB_to_MiB = 1024.0;
 
 // *****************************************************************************
+// **************** Local functions prototypes *********************************
 void Print_N_Times(const std::string x, const int N, const bool newline = true);
+std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
+                              const std::string &platform_name, const std::string &device_name);
+int LockFile(const char *path);
+void UnlockFile(int f);
+
+
 
 // *****************************************************************************
 std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
