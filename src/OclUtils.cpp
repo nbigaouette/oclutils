@@ -33,6 +33,49 @@
 
 #include "OclUtils.hpp"
 
+
+// *****************************************************************************
+// Quote something, usefull to quote a macro's value
+#ifndef _QUOTEME
+#define _QUOTEME(x) #x
+#endif // #ifndef _QUOTEME
+#ifndef QUOTEME
+#define QUOTEME(x) _QUOTEME(x)
+#endif // #ifndef QUOTEME
+
+#define assert(x)                                       \
+    if (!(x)) {                                         \
+        std_cout                                        \
+            << "##########################"             \
+            << "##########################"             \
+            << "##########################\n"           \
+            << "Assertion failed in \"" << __FILE__     \
+            << "\", line " << __LINE__ << ": "          \
+            << "!(" << QUOTEME(x) << ")\n"              \
+            << "##########################"             \
+            << "##########################"             \
+            << "##########################\n"           \
+            << std::flush;                              \
+        abort();                                        \
+    }
+
+// *****************************************************************************
+const double B_to_KiB   = 9.76562500000000e-04;
+const double B_to_MiB   = 9.53674316406250e-07;
+const double B_to_GiB   = 9.31322574615479e-10;
+const double KiB_to_B   = 1024.0;
+const double KiB_to_MiB = 9.76562500000000e-04;
+const double KiB_to_GiB = 9.53674316406250e-07;
+const double MiB_to_B   = 1048576.0;
+const double MiB_to_KiB = 1024.0;
+const double MiB_to_GiB = 9.76562500000000e-04;
+const double GiB_to_B   = 1073741824.0;
+const double GiB_to_KiB = 1048576.0;
+const double GiB_to_MiB = 1024.0;
+
+// *****************************************************************************
+void Print_N_Times(const std::string x, const int N, const bool newline = true);
+
 // *****************************************************************************
 std::string get_lock_filename(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
@@ -108,47 +151,6 @@ void UnlockFile(int f)
     std::cout << "Closing lock file!\n";
     close(f); // Close file automatically unlocks file
 }
-
-
-// Quote something, usefull to quote a macro's value
-#ifndef _QUOTEME
-#define _QUOTEME(x) #x
-#endif // #ifndef _QUOTEME
-#ifndef QUOTEME
-#define QUOTEME(x) _QUOTEME(x)
-#endif // #ifndef QUOTEME
-
-#define assert(x)                                       \
-    if (!(x)) {                                         \
-        std_cout                                        \
-            << "##########################"             \
-            << "##########################"             \
-            << "##########################\n"           \
-            << "Assertion failed in \"" << __FILE__     \
-            << "\", line " << __LINE__ << ": "          \
-            << "!(" << QUOTEME(x) << ")\n"              \
-            << "##########################"             \
-            << "##########################"             \
-            << "##########################\n"           \
-            << std::flush;                              \
-        abort();                                        \
-    }
-
-const double B_to_KiB   = 9.76562500000000e-04;
-const double B_to_MiB   = 9.53674316406250e-07;
-const double B_to_GiB   = 9.31322574615479e-10;
-const double KiB_to_B   = 1024.0;
-const double KiB_to_MiB = 9.76562500000000e-04;
-const double KiB_to_GiB = 9.53674316406250e-07;
-const double MiB_to_B   = 1048576.0;
-const double MiB_to_KiB = 1024.0;
-const double MiB_to_GiB = 9.76562500000000e-04;
-const double GiB_to_B   = 1073741824.0;
-const double GiB_to_KiB = 1048576.0;
-const double GiB_to_MiB = 1024.0;
-
-// *****************************************************************************
-void Print_N_Times(const std::string x, const int N, const bool newline = true);
 
 // *****************************************************************************
 inline std::string Bytes_in_String(const uint64_t bytes)
