@@ -23,12 +23,8 @@
 
 #include <cerrno>       // errno, EWOULDBLOCK
 #include <cstring>      // strlen()
-#include <cstdlib>      // abort()
-#include <string>       // std::string
-#include <cstdarg>      // va_arg, va_list, etc.
 #include <cmath>
 #include <algorithm>    // std::ostringstream
-#include <cctype>       // for tolower
 #include <sstream>
 
 #include "OclUtils.hpp"
