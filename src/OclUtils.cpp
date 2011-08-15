@@ -131,13 +131,13 @@ int Lock_File(const char *path)
  * @return      file handle if locked, or -1 if failed
  */
 {
-    std_cout << "Attempt to open and lock file " << path <<"\n";
+    std_cout << "OpenCL: Attempt to open and lock file " << path <<"\n";
 
     // Open file
     int f = open(path, O_CREAT | O_TRUNC, 0666);
     if (f == -1)
     {
-        std_cout << "Could not open lock file!\n" << std::flush;
+        std_cout << "OpenCL: Could not open lock file!\n" << std::flush;
         return -1; // Open failed
     }
 
@@ -156,12 +156,12 @@ int Lock_File(const char *path)
         if (errno == EWOULDBLOCK)
         {
             close(f);
-            std_cout << "Lock file is already locked!\n";
+            std_cout << "OpenCL: Lock file is already locked!\n";
             return -1; // File is locked
         }
         else
         {
-            std_cout << "File lock operation failed!\n";
+            std_cout << "OpenCL: File lock operation failed!\n";
             close(f);
             return -1; // Another error occurred
         }
@@ -175,7 +175,7 @@ void Unlock_File(int f)
  * Unlock file
  */
 {
-    std_cout << "Closing lock file!\n";
+    std_cout << "OpenCL: Closing lock file!\n";
     close(f); // Close file automatically unlocks file
 }
 
@@ -204,7 +204,7 @@ char *read_opencl_kernel(const std::string filename, int *length)
 
     if (!f)
     {
-        std_cout << "Unable to open " << filename << " for reading\n";
+        std_cout << "OpenCL: Unable to open " << filename << " for reading\n";
         abort();
     }
 
