@@ -33,6 +33,7 @@
 
 #include "OclUtils.hpp"
 
+// *****************************************************************************
 std::string get_lock_filename(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
 {
@@ -53,6 +54,7 @@ std::string get_lock_filename(const int device_id, const int platform_id_offset,
     return f;
 }
 
+// *****************************************************************************
 int LockFile(const char *path)
 /**
  * Attempt to lock file, and check lock status on lock file
@@ -97,6 +99,7 @@ int LockFile(const char *path)
     return f;
 }
 
+// *****************************************************************************
 void UnlockFile(int f)
 /**
  * Unlock file
@@ -144,10 +147,10 @@ const double GiB_to_B   = 1073741824.0;
 const double GiB_to_KiB = 1048576.0;
 const double GiB_to_MiB = 1024.0;
 
-// **************************************************************
+// *****************************************************************************
 void Print_N_Times(const std::string x, const int N, const bool newline = true);
 
-// **************************************************************
+// *****************************************************************************
 inline std::string Bytes_in_String(const uint64_t bytes)
 {
     std::ostringstream MyStream;
@@ -160,7 +163,7 @@ inline std::string Bytes_in_String(const uint64_t bytes)
     return (MyStream.str());
 }
 
-// **************************************************************
+// *****************************************************************************
 void Print_N_Times(const std::string x, const int N, const bool newline)
 {
     for (int i = 0 ; i < N ; i++)
