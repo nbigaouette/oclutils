@@ -78,7 +78,7 @@ const double GiB_to_MiB = 1024.0;
 void Print_N_Times(const std::string x, const int N, const bool newline = true);
 std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name);
-int LockFile(const char *path);
+int Lock_File(const char *path);
 void UnlockFile(int f);
 
 
@@ -129,7 +129,7 @@ std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
 }
 
 // *****************************************************************************
-int LockFile(const char *path)
+int Lock_File(const char *path)
 /**
  * Attempt to lock file, and check lock status on lock file
  * @return      file handle if locked, or -1 if failed
@@ -187,7 +187,7 @@ void UnlockFile(int f)
 bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
 {
-    int check = LockFile(Get_Lock_Filename(device_id, platform_id_offset, platform_name, device_name).c_str());
+    int check = Lock_File(Get_Lock_Filename(device_id, platform_id_offset, platform_name, device_name).c_str());
 
     if (check == -1)
     {
@@ -717,7 +717,7 @@ void OpenCL_device::Print() const
 // *****************************************************************************
 void OpenCL_device::Lock()
 {
-    lock_file = LockFile(Get_Lock_Filename(id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
+    lock_file = Lock_File(Get_Lock_Filename(id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
     if (lock_file == -1)
     {
         std::cout << "An error occurred locking the file!\n" << std::flush;
