@@ -21,95 +21,16 @@
 #include <fcntl.h>
 #include <sys/file.h>
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>     // abort()
-#include <string>       // std::string
-#include <cstdarg>      // va_arg, va_list, etc.
+#include <cerrno>       // errno, EWOULDBLOCK
+#include <cstring>      // strlen()
 #include <cmath>
 #include <algorithm>    // std::ostringstream
-#include <cctype>       // for tolower
 #include <sstream>
 
 #include "OclUtils.hpp"
 
-// *****************************************************************************
-std::string get_lock_filename(const int device_id, const int platform_id_offset,
-                              const std::string &platform_name, const std::string &device_name)
-{
-    std::string f = "/tmp/OpenCL_"; // Beginning of lock filename
-    char t[4096];
-    sprintf(t, "Platform%d_Device%d__%s_%s", platform_id_offset, device_id, platform_name.c_str(), device_name.c_str()); //generate string filename
-    int len = strlen(t);
-    for (int i = 0; i < len; i++)
-    {
-        // Replace all non alphanumeric characters with underscore
-        if (!isalpha(t[i]) && !isdigit(t[i]))
-        {
-            t[i] = '_';
-        }
-    }
-    f += t;
-    f += ".lck"; // File suffix
-    return f;
-}
 
 // *****************************************************************************
-int LockFile(const char *path)
-/**
- * Attempt to lock file, and check lock status on lock file
- * @return      file handle if locked, or -1 if failed
- */
-{
-    std::cout << "Attempt to open and lock file " << path <<"\n";
-
-    // Open file
-    int f = open(path, O_CREAT | O_TRUNC, 0666);
-    if (f == -1)
-    {
-        std::cout << "Could not open lock file!\n" << std::flush;
-        return -1; // Open failed
-    }
-
-    // Set file's permissions.
-    // Needed so that multi-user systems can share the lock file.
-    // WARNING: The call's return value is not tested. We know it would
-    //          fail if the file is owned by another process. So just try
-    //          to do it, but don't test it. Anyway, what is important
-    //          is the locking with flock().
-    fchmod(f, 0666);
-
-    // Try to lock file
-    int r = flock(f, LOCK_EX | LOCK_NB);
-    if (r == -1)
-    {
-        if (errno == EWOULDBLOCK)
-        {
-            close(f);
-            std::cout << "Lock file is already locked!\n";
-            return -1; // File is locked
-        }
-        else
-        {
-            std::cout << "File lock operation failed!\n";
-            close(f);
-            return -1; // Another error occurred
-        }
-    }
-    return f;
-}
-
-// *****************************************************************************
-void UnlockFile(int f)
-/**
- * Unlock file
- */
-{
-    std::cout << "Closing lock file!\n";
-    close(f); // Close file automatically unlocks file
-}
-
-
 // Quote something, usefull to quote a macro's value
 #ifndef _QUOTEME
 #define _QUOTEME(x) #x
@@ -134,6 +55,7 @@ void UnlockFile(int f)
         abort();                                        \
     }
 
+// *****************************************************************************
 const double B_to_KiB   = 9.76562500000000e-04;
 const double B_to_MiB   = 9.53674316406250e-07;
 const double B_to_GiB   = 9.31322574615479e-10;
@@ -148,7 +70,13 @@ const double GiB_to_KiB = 1048576.0;
 const double GiB_to_MiB = 1024.0;
 
 // *****************************************************************************
+// **************** Local functions prototypes *********************************
 void Print_N_Times(const std::string x, const int N, const bool newline = true);
+std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
+                              const std::string &platform_name, const std::string &device_name);
+int Lock_File(const char *path);
+void Unlock_File(int f);
+
 
 // *****************************************************************************
 inline std::string Bytes_in_String(const uint64_t bytes)
@@ -176,10 +104,86 @@ void Print_N_Times(const std::string x, const int N, const bool newline)
 }
 
 // *****************************************************************************
+std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
+                              const std::string &platform_name, const std::string &device_name)
+{
+    std::string f = "/tmp/OpenCL_"; // Beginning of lock filename
+    char t[4096];
+    sprintf(t, "Platform%d_Device%d__%s_%s", platform_id_offset, device_id, platform_name.c_str(), device_name.c_str()); //generate string filename
+    int len = strlen(t);
+    for (int i = 0; i < len; i++)
+    {
+        // Replace all non alphanumeric characters with underscore
+        if (!isalpha(t[i]) && !isdigit(t[i]))
+        {
+            t[i] = '_';
+        }
+    }
+    f += t;
+    f += ".lck"; // File suffix
+    return f;
+}
+
+// *****************************************************************************
+int Lock_File(const char *path)
+/**
+ * Attempt to lock file, and check lock status on lock file
+ * @return      file handle if locked, or -1 if failed
+ */
+{
+    std_cout << "OpenCL: Attempt to open and lock file " << path <<"\n";
+
+    // Open file
+    int f = open(path, O_CREAT | O_TRUNC, 0666);
+    if (f == -1)
+    {
+        std_cout << "OpenCL: Could not open lock file!\n" << std::flush;
+        return -1; // Open failed
+    }
+
+    // Set file's permissions.
+    // Needed so that multi-user systems can share the lock file.
+    // WARNING: The call's return value is not tested. We know it would
+    //          fail if the file is owned by another process. So just try
+    //          to do it, but don't test it. Anyway, what is important
+    //          is the locking with flock().
+    fchmod(f, 0666);
+
+    // Try to lock file
+    int r = flock(f, LOCK_EX | LOCK_NB);
+    if (r == -1)
+    {
+        if (errno == EWOULDBLOCK)
+        {
+            close(f);
+            std_cout << "OpenCL: Lock file is already locked!\n";
+            return -1; // File is locked
+        }
+        else
+        {
+            std_cout << "OpenCL: File lock operation failed!\n";
+            close(f);
+            return -1; // Another error occurred
+        }
+    }
+    return f;
+}
+
+// *****************************************************************************
+void Unlock_File(int f)
+/**
+ * Unlock file
+ */
+{
+    std_cout << "OpenCL: Closing lock file!\n";
+    close(f); // Close file automatically unlocks file
+}
+
+// *****************************************************************************
 bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
 {
-    int check = LockFile(get_lock_filename(device_id, platform_id_offset, platform_name, device_name).c_str());
+    int check = Lock_File(Get_Lock_Filename(device_id, platform_id_offset, platform_name, device_name).c_str());
 
     if (check == -1)
     {
@@ -187,7 +191,7 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
     }
     else
     {
-        UnlockFile(check);  // Close file
+        Unlock_File(check);  // Close file
         return false;       // Device not in use
     }
 }
@@ -200,7 +204,7 @@ char *read_opencl_kernel(const std::string filename, int *length)
 
     if (!f)
     {
-        std_cout << "Unable to open " << filename << " for reading\n";
+        std_cout << "OpenCL: Unable to open " << filename << " for reading\n";
         abort();
     }
 
@@ -709,10 +713,10 @@ void OpenCL_device::Print() const
 // *****************************************************************************
 void OpenCL_device::Lock()
 {
-    lock_file = LockFile(get_lock_filename(id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
+    lock_file = Lock_File(Get_Lock_Filename(id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
     if (lock_file == -1)
     {
-        std::cout << "An error occurred locking the file!\n" << std::flush;
+        std_cout << "An error occurred locking the file!\n" << std::flush;
         abort();
     }
     file_locked = true; // File is now locked
@@ -723,7 +727,7 @@ void OpenCL_device::Unlock()
 {
     if (file_locked == true)
     {
-        UnlockFile(lock_file);
+        Unlock_File(lock_file);
         file_locked = false;
     }
 }
@@ -886,7 +890,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
     // When all devices are in use we abort the program
     if (is_all_devices_in_use == true)
     {
-        std::cout << "All devices are in use!\n" << std::flush;
+        std_cout << "All devices are in use!\n" << std::flush;
         abort();
     }
 
