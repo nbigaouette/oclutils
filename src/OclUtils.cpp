@@ -21,10 +21,10 @@
 #include <fcntl.h>
 #include <sys/file.h>
 
-#include <errno.h>
+#include <cerrno>
 #include <cstdio>
 #include <cstring>      // strlen()
-#include <stdlib.h>     // abort()
+#include <cstdlib>      // abort()
 #include <string>       // std::string
 #include <cstdarg>      // va_arg, va_list, etc.
 #include <cmath>
