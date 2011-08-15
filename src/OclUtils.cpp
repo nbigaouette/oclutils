@@ -22,7 +22,6 @@
 #include <sys/file.h>
 
 #include <cerrno>
-#include <cstdio>
 #include <cstring>      // strlen()
 #include <cstdlib>      // abort()
 #include <string>       // std::string
