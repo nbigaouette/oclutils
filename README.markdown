@@ -47,6 +47,16 @@ or static lib:
 $ g++ [...] /usr/lib/liboclutils.a [...]
 ```
 
+What's new
+-------------------------
+* v0.9 Locking has been re-written. Before, a single file "/tmp/gpu_usage.txt" would contain OpenCL devices used. This was prone to errors as if the
+program did not exist correctly, the line containing the used device would be kept in the file, preventing other programs from using the device. Instead,
+a file named with the device id, platform and name is opened, and a [flock()](http://linux.die.net/man/2/flock) is acquired on the file. Another process
+trying to acquire the same lock would fail. On program termination, crash or simply close(), the lock is released automatically. The file is unfortunately
+not deleted, but since it's in /tmp it shouldn't matter much.
+Note that this locking will NOT work over NFS! Please use another directory as temporary folder.
+
+
 License
 -------------------------
 
