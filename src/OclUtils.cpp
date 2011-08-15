@@ -22,7 +22,7 @@
 #include <sys/file.h>
 
 #include <errno.h>
-#include <stdio.h>
+#include <cstdio>
 #include <cstring>      // strlen()
 #include <stdlib.h>     // abort()
 #include <string>       // std::string
