@@ -25,10 +25,10 @@ IF (APPLE)
 ELSE (APPLE)
 
 	IF (WIN32)
-	
+
 	    FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h)
 	    FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp)
-	
+
 	    # The AMD SDK currently installs both x86 and x86_64 libraries
 	    # This is only a hack to find out architecture
 	    IF( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" )
@@ -37,13 +37,13 @@ ELSE (APPLE)
 	    	SET(OPENCL_LIB_DIR "$ENV{ATISTREAMSDKROOT}/lib/x86")
 	    ENDIF( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" )
 	    FIND_LIBRARY(OPENCL_LIBRARIES OpenCL.lib ${OPENCL_LIB_DIR})
-	    
+
 	    GET_FILENAME_COMPONENT(_OPENCL_INC_CAND ${OPENCL_LIB_DIR}/../../include ABSOLUTE)
-	    
+
 	    # On Win32 search relative to the library
 	    FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS "${_OPENCL_INC_CAND}")
 	    FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS "${_OPENCL_INC_CAND}")
-	
+
 	ELSE (WIN32)
 
             # Unix style platforms
