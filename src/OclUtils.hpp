@@ -37,9 +37,6 @@ const std::string OPENCL_PLATFORMS_AMD("amd");
 const std::string OPENCL_PLATFORMS_INTEL("intel");
 const std::string OPENCL_PLATFORMS_APPLE("apple");
 
-#define MAX_LOCAL_WORK_SIZE 256
-
-
 // *****************************************************************************
 #define OpenCL_Test_Success(err, fct_name)                          \
 if ((err) != CL_SUCCESS)                                            \
@@ -316,13 +313,13 @@ class OpenCL_Kernel
 {
     public:
 
-        OpenCL_Kernel(std::string _filename, bool _use_mt, cl_context _context, cl_device_id _device_id);
+        OpenCL_Kernel(std::string _filename, cl_context _context, cl_device_id _device_id);
         ~OpenCL_Kernel();
 
         void Build(std::string _kernel_name, std::string _compiler_options);
 
-        void Compute_Work_Size(int N);
-        void Compute_Work_Size(int N, int _p, int _q);
+        // By default global_y is one, local_x is MAX_WORK_SIZE and local_y is one.
+        void Compute_Work_Size(size_t _global_x, size_t _global_y, size_t _local_x, size_t _local_y);
 
         cl_kernel Get_Kernel() const;
 
@@ -330,12 +327,14 @@ class OpenCL_Kernel
         size_t *Get_Local_Work_Size() const;
 
         int Get_Dimension() const;
-        bool Uses_MT() const;
+
+        void Launch(cl_command_queue command_queue);
+
+        static int Get_Multiple(int n, int base);
 
     private:
 
         std::string filename;
-        bool use_mt;
         cl_context context;
         cl_device_id device_id;
 
@@ -361,8 +360,6 @@ class OpenCL_Kernel
 
         // Build runtime executable from a program
         void Build_Executable();
-
-        int Get_Multiple_Of_Work_Size(int n, int _p);
 };
 
 #endif // INC_OCLUTILS_hpp

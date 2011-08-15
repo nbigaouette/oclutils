@@ -925,13 +925,17 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
 
 // *****************************************************************************
 
-OpenCL_Kernel::OpenCL_Kernel(std::string _filename, bool _use_mt, cl_context _context, cl_device_id _device_id):
-                           filename(_filename), use_mt(_use_mt), context(_context), device_id(_device_id)
+OpenCL_Kernel::OpenCL_Kernel(std::string _filename, cl_context _context, cl_device_id _device_id):
+                           filename(_filename), context(_context), device_id(_device_id)
 {
     kernel           = NULL;
     program          = NULL;
-    global_work_size = NULL;
-    local_work_size  = NULL;
+
+    dimension = 2; // Always use two dimensions.
+
+    // Create array once
+    global_work_size = new size_t[dimension];
+    local_work_size  = new size_t[dimension];
 }
 
 // *****************************************************************************
@@ -971,55 +975,26 @@ void OpenCL_Kernel::Build(std::string _kernel_name, std::string _compiler_option
 }
 
 // *****************************************************************************
-void OpenCL_Kernel::Compute_Work_Size(int N)
+void OpenCL_Kernel::Compute_Work_Size(size_t _global_x, size_t _global_y, size_t _local_x, size_t _local_y)
 /**
- * When this method is used the local work size is choosed by OpenCL.
- * Thus, the global work size is set to N.
- * Don't use this function if using MT.
+ * @param _global_x: The global work size in dimension x.
+ * @param _global_y: The global work size in dimension y.
+ * @param _local_x : The local  work size in dimension x.
+ * @param _local_y : The local  work size in dimension y.
  */
 {
-    dimension = 1;
+    assert(_global_x >= _local_x);
+    assert(_global_y >= _local_y);
 
-    global_work_size = new size_t[dimension];
-    local_work_size = new size_t[dimension];
+    assert(_global_x % _local_x == 0);
+    assert(_global_y % _local_y == 0);
 
-    global_work_size[0] = N;
-    local_work_size = NULL;
-}
+    global_work_size[0] = _global_x;
+    global_work_size[1] = _global_y;
 
-// *****************************************************************************
-void OpenCL_Kernel::Compute_Work_Size(int N, int _p, int _q)
-/**
- * Use this method for a kernel who benefits from MT.
- */
-{
-    dimension = 2;
+    local_work_size[0] = _local_x;
+    local_work_size[1] = _local_y;
 
-    global_work_size = new size_t[dimension];
-    local_work_size = new size_t[dimension];
-
-    if (_p * _q > MAX_LOCAL_WORK_SIZE)
-    {
-        _p = MAX_LOCAL_WORK_SIZE / _q;
-    }
-    else if (_q == 1 && N < _p)
-    {
-        _p = N;
-    }
-
-    local_work_size[0] = _p;
-    local_work_size[1] = _q;
-
-    global_work_size[0] = Get_Multiple_Of_Work_Size(N, _p*_q);
-    global_work_size[1] = _q;
-
-    p = _p;
-    q = _q;
-
-    //std_cout << "Number of dimension of problem space: " << dimension << "\n";
-    //std_cout << "global_workGroupSize[" << 0 << "]: " << globalWorkSizes[id][0] << " \n";
-    //for(int d = 0 ; d < dimension ; d++)
-    //    "local_workGroupSize[" << d << "]: " << localWorkSizes[id][d] << "\n";
 }
 
 // *****************************************************************************
@@ -1046,10 +1021,33 @@ int OpenCL_Kernel::Get_Dimension() const
     return dimension;
 }
 
-// *****************************************************************************
-bool OpenCL_Kernel::Uses_MT() const
+void OpenCL_Kernel::Launch(cl_command_queue command_queue)
 {
-    return use_mt;
+    err = clEnqueueNDRangeKernel(command_queue, Get_Kernel(), Get_Dimension(), NULL,
+                                 Get_Global_Work_Size(), Get_Local_Work_Size(),
+                                 0, NULL, NULL);
+    OpenCL_Test_Success(err, "clEnqueueNDRangeKernel");
+}
+
+// *****************************************************************************
+int OpenCL_Kernel::Get_Multiple(int n, int base)
+{
+    int multipleOfWorkSize = 0;
+
+    if (n < base)
+    {
+        multipleOfWorkSize = base;
+    }
+    else if (n % base == 0)
+    {
+        multipleOfWorkSize = n;
+    }
+    else
+    {
+        multipleOfWorkSize = base*(int)std::floor(n/base) + base;
+    }
+
+    return multipleOfWorkSize;
 }
 
 // *****************************************************************************
@@ -1127,27 +1125,6 @@ void OpenCL_Kernel::Build_Executable()
     delete[] build_log;
 
     std_cout << "done.\n";
-}
-
-// *****************************************************************************
-int OpenCL_Kernel::Get_Multiple_Of_Work_Size(int n, int _p)
-{
-    int multipleOfWorkSize = 0;
-
-    if (n < _p)
-    {
-        multipleOfWorkSize = n;
-    }
-    else if (n % _p == 0)
-    {
-        multipleOfWorkSize = n;
-    }
-    else
-    {
-        multipleOfWorkSize = _p*std::floor(n/_p) + _p;
-    }
-
-    return multipleOfWorkSize;
 }
 
 // *****************************************************************************
