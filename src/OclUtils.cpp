@@ -21,7 +21,7 @@
 #include <fcntl.h>
 #include <sys/file.h>
 
-#include <cerrno>
+#include <cerrno>       // errno, EWOULDBLOCK
 #include <cstring>      // strlen()
 #include <cstdlib>      // abort()
 #include <string>       // std::string
