@@ -131,13 +131,13 @@ int Lock_File(const char *path)
  * @return      file handle if locked, or -1 if failed
  */
 {
-    std::cout << "Attempt to open and lock file " << path <<"\n";
+    std_cout << "Attempt to open and lock file " << path <<"\n";
 
     // Open file
     int f = open(path, O_CREAT | O_TRUNC, 0666);
     if (f == -1)
     {
-        std::cout << "Could not open lock file!\n" << std::flush;
+        std_cout << "Could not open lock file!\n" << std::flush;
         return -1; // Open failed
     }
 
@@ -156,12 +156,12 @@ int Lock_File(const char *path)
         if (errno == EWOULDBLOCK)
         {
             close(f);
-            std::cout << "Lock file is already locked!\n";
+            std_cout << "Lock file is already locked!\n";
             return -1; // File is locked
         }
         else
         {
-            std::cout << "File lock operation failed!\n";
+            std_cout << "File lock operation failed!\n";
             close(f);
             return -1; // Another error occurred
         }
@@ -175,7 +175,7 @@ void Unlock_File(int f)
  * Unlock file
  */
 {
-    std::cout << "Closing lock file!\n";
+    std_cout << "Closing lock file!\n";
     close(f); // Close file automatically unlocks file
 }
 
@@ -716,7 +716,7 @@ void OpenCL_device::Lock()
     lock_file = Lock_File(Get_Lock_Filename(id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
     if (lock_file == -1)
     {
-        std::cout << "An error occurred locking the file!\n" << std::flush;
+        std_cout << "An error occurred locking the file!\n" << std::flush;
         abort();
     }
     file_locked = true; // File is now locked
@@ -890,7 +890,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
     // When all devices are in use we abort the program
     if (is_all_devices_in_use == true)
     {
-        std::cout << "All devices are in use!\n" << std::flush;
+        std_cout << "All devices are in use!\n" << std::flush;
         abort();
     }
 
