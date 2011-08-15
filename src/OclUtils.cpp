@@ -79,7 +79,7 @@ void Print_N_Times(const std::string x, const int N, const bool newline = true);
 std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name);
 int Lock_File(const char *path);
-void UnlockFile(int f);
+void Unlock_File(int f);
 
 
 // *****************************************************************************
@@ -174,7 +174,7 @@ int Lock_File(const char *path)
 }
 
 // *****************************************************************************
-void UnlockFile(int f)
+void Unlock_File(int f)
 /**
  * Unlock file
  */
@@ -195,7 +195,7 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
     }
     else
     {
-        UnlockFile(check);  // Close file
+        Unlock_File(check);  // Close file
         return false;       // Device not in use
     }
 }
@@ -731,7 +731,7 @@ void OpenCL_device::Unlock()
 {
     if (file_locked == true)
     {
-        UnlockFile(lock_file);
+        Unlock_File(lock_file);
         file_locked = false;
     }
 }
