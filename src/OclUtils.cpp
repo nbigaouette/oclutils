@@ -23,6 +23,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <cstring>      // strlen()
 #include <stdlib.h>     // abort()
 #include <string>       // std::string
 #include <cstdarg>      // va_arg, va_list, etc.
