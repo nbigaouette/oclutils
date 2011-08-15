@@ -16,6 +16,12 @@
  https://github.com/nbigaouette/oclutils
 */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/file.h>
+
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>     // abort()
 #include <string>       // std::string
@@ -27,8 +33,82 @@
 
 #include "OclUtils.hpp"
 
-const char LOCK_FILE[] = "/tmp/gpu_usage.txt";
-#define string_base "Platform: %d  Device: %d (%s, %s)"
+// *****************************************************************************
+std::string get_lock_filename(const int device_id, const int platform_id_offset,
+                              const std::string &platform_name, const std::string &device_name)
+{
+    std::string f = "/tmp/OpenCL_"; // Beginning of lock filename
+    char t[4096];
+    sprintf(t, "Platform%d_Device%d__%s_%s", platform_id_offset, device_id, platform_name.c_str(), device_name.c_str()); //generate string filename
+    int len = strlen(t);
+    for (int i = 0; i < len; i++)
+    {
+        // Replace all non alphanumeric characters with underscore
+        if (!isalpha(t[i]) && !isdigit(t[i]))
+        {
+            t[i] = '_';
+        }
+    }
+    f += t;
+    f += ".lck"; // File suffix
+    return f;
+}
+
+// *****************************************************************************
+int LockFile(const char *path)
+/**
+ * Attempt to lock file, and check lock status on lock file
+ * @return      file handle if locked, or -1 if failed
+ */
+{
+    std::cout << "Attempt to open and lock file " << path <<"\n";
+
+    // Open file
+    int f = open(path, O_CREAT | O_TRUNC, 0666);
+    if (f == -1)
+    {
+        std::cout << "Could not open lock file!\n" << std::flush;
+        return -1; // Open failed
+    }
+
+    // Set file's permissions.
+    // Needed so that multi-user systems can share the lock file.
+    // WARNING: The call's return value is not tested. We know it would
+    //          fail if the file is owned by another process. So just try
+    //          to do it, but don't test it. Anyway, what is important
+    //          is the locking with flock().
+    fchmod(f, 0666);
+
+    // Try to lock file
+    int r = flock(f, LOCK_EX | LOCK_NB);
+    if (r == -1)
+    {
+        if (errno == EWOULDBLOCK)
+        {
+            close(f);
+            std::cout << "Lock file is already locked!\n";
+            return -1; // File is locked
+        }
+        else
+        {
+            std::cout << "File lock operation failed!\n";
+            close(f);
+            return -1; // Another error occurred
+        }
+    }
+    return f;
+}
+
+// *****************************************************************************
+void UnlockFile(int f)
+/**
+ * Unlock file
+ */
+{
+    std::cout << "Closing lock file!\n";
+    close(f); // Close file automatically unlocks file
+}
+
 
 // Quote something, usefull to quote a macro's value
 #ifndef _QUOTEME
@@ -67,10 +147,10 @@ const double GiB_to_B   = 1073741824.0;
 const double GiB_to_KiB = 1048576.0;
 const double GiB_to_MiB = 1024.0;
 
-// **************************************************************
+// *****************************************************************************
 void Print_N_Times(const std::string x, const int N, const bool newline = true);
 
-// **************************************************************
+// *****************************************************************************
 inline std::string Bytes_in_String(const uint64_t bytes)
 {
     std::ostringstream MyStream;
@@ -83,7 +163,7 @@ inline std::string Bytes_in_String(const uint64_t bytes)
     return (MyStream.str());
 }
 
-// **************************************************************
+// *****************************************************************************
 void Print_N_Times(const std::string x, const int N, const bool newline)
 {
     for (int i = 0 ; i < N ; i++)
@@ -99,30 +179,17 @@ void Print_N_Times(const std::string x, const int N, const bool newline)
 bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name)
 {
-    bool device_is_used = false;
+    int check = LockFile(get_lock_filename(device_id, platform_id_offset, platform_name, device_name).c_str());
 
-    std::ifstream file(LOCK_FILE, std::ios::in);
-
-    if (file)
+    if (check == -1)
     {
-        std::string line;
-        char string_to_find[4096];
-        //memset(string_to_find, 0, 4096);
-
-        while (std::getline(file, line))
-        {
-            sprintf(string_to_find, string_base, platform_id_offset, device_id, platform_name.c_str(), device_name.c_str());
-
-            if (line.find(string_to_find) != std::string::npos)
-            {
-                device_is_used = true;
-            }
-        }
-
-        file.close();
+        return true;        // Device is used
     }
-
-    return device_is_used;
+    else
+    {
+        UnlockFile(check);  // Close file
+        return false;       // Device not in use
+    }
 }
 
 // *****************************************************************************
@@ -381,7 +448,8 @@ OpenCL_device::OpenCL_device()
     device                      = NULL;
     context                     = NULL;
     device_is_in_use            = false;
-    is_lockable                = true;
+    is_lockable                 = true;
+    file_locked                 = false;
 }
 
 // *****************************************************************************
@@ -641,58 +709,22 @@ void OpenCL_device::Print() const
 // *****************************************************************************
 void OpenCL_device::Lock()
 {
-    std::ofstream file(LOCK_FILE, std::ios::out | std::ios::app);
-
-    if (file)
+    lock_file = LockFile(get_lock_filename(id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
+    if (lock_file == -1)
     {
-        char tmp_string[4096];
-        assert(parent_platform != NULL);
-        sprintf(tmp_string, string_base, parent_platform->Id_Offset(), id, parent_platform->Name().c_str(), name.c_str());
-        file << tmp_string << std::endl << std::flush;
-
-        file.close();
+        std::cout << "An error occurred locking the file!\n" << std::flush;
+        abort();
     }
+    file_locked = true; // File is now locked
 }
 
 // *****************************************************************************
 void OpenCL_device::Unlock()
 {
-    if (object_is_initialized and is_lockable)
+    if (file_locked == true)
     {
-        std::string file_content; // Write the data from the file.
-
-        std::ifstream file_read(LOCK_FILE, std::ios::in);
-
-        if (file_read)
-        {
-            std::string line;
-            char string_to_find[4096];
-            assert(parent_platform != NULL);
-            sprintf(string_to_find, string_base, parent_platform->Id_Offset(), id, parent_platform->Name().c_str(), name.c_str());
-
-            while (std::getline(file_read, line))
-            {
-                // Read every line except the one corresponding to the current device.
-                if (line.find(string_to_find) == std::string::npos)
-                {
-                    file_content += line + "\n"; // Add the lines to the string.
-                }
-            }
-
-            file_read.close();
-        }
-
-        // Write back the string to file (the current device being deleted).
-        std::ofstream file_write(LOCK_FILE, std::ios::out | std::ios::trunc);
-
-        if (file_write)
-        {
-            file_write << file_content;
-
-            file_write.close();
-        }
-
-        object_is_initialized = false;
+        UnlockFile(lock_file);
+        file_locked = false;
     }
 }
 
@@ -851,43 +883,11 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
 
     assert(it == device_list.end());
 
-    // When all devices are in use we ask the user if he would like
-    // his simulation to be forced.
+    // When all devices are in use we abort the program
     if (is_all_devices_in_use == true)
     {
-        bool correct_answer = false;
-
-        // Don't write to tmp. This would suppress lines created by other program running.
-        for (it = device_list.begin(); it != device_list.end() ; ++it)
-            it->Set_Lockable(false);
-
-        while (prefered_platform == platform->Key() and !correct_answer)
-        {
-            // Ask the user if he still wants to execute the program.
-            std_cout << "OpenCL: WARNING: It seem's that all OpenCL devices on prefered platform \"" << platform->Name() << "\" are in use!\n"
-                     << "                 If you are certain no other program is using the device(s), you can delete\n"
-                     << "                 the line(s) the platform's name in the file '" << LOCK_FILE << "'\n"
-                     << "                 Do you want to force the execution and continue? [y/n]\n";
-            std::string answer;
-            std::cin >> answer;
-
-            if (answer == "yes" || answer == "Y" || answer == "y" || answer == "oui" || answer == "O" || answer == "o")
-            {
-                correct_answer = true;
-                std_cout << "Proceeding... \n";
-            }
-            else if (answer == "no" || answer == "No" || answer == "N" || answer == "n" || answer == "non" || answer == "Non")
-            {
-                correct_answer = true;
-                std_cout << "Exiting... \n";
-                abort();
-            }
-            else
-            {
-                correct_answer = false;
-                std_cout << "You entered an invalid answer!\n";
-            }
-        }
+        std::cout << "All devices are in use!\n" << std::flush;
+        abort();
     }
 
     // For each device, store a pointer to its parent platform

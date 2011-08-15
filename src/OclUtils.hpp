@@ -208,6 +208,8 @@ class OpenCL_device
         // did not acquired one before. If the program detects that the device
         // was is used by another process, it won't try to lock or unlock the device.
         bool                            is_lockable;
+        bool                            file_locked;
+        int                             lock_file;
 
     public:
 
