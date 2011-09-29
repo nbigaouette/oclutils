@@ -333,10 +333,20 @@ void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
     else
         std_cout << "OpenCL: Initializing the " << nb_platforms << " available platforms...\n";
 
+    char tmp_string[4096];
+
+    for (unsigned int i = 0 ; i < nb_platforms ; i++)
+    {
+        cl_platform_id tmp_platform_id = tmp_platforms[i];
+
+        err = clGetPlatformInfo(tmp_platform_id, CL_PLATFORM_VENDOR, sizeof(tmp_string), &tmp_string, NULL);
+        OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VENDOR)");
+
+        std_cout << "        " << i+1 << "/" << nb_platforms << ") " << tmp_string << "\n";
+    }
+
     // This offset allows distinguishing in LOCK_FILE the devices that can appear in different platforms.
     int platform_id_offset = 0;
-
-    char tmp_string[4096];
 
     for (unsigned int i = 0 ; i < nb_platforms ; i++)
     {
