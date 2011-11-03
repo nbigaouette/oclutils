@@ -359,6 +359,7 @@ class OpenCL_platform
         OpenCL_device &                 Preferred_OpenCL()                   { return devices_list.Preferred_OpenCL(); }
         cl_device_id &                  Preferred_OpenCL_Device()            { return devices_list.Preferred_OpenCL_Device(); }
         cl_context &                    Preferred_OpenCL_Device_Context()    { return devices_list.Preferred_OpenCL_Device_Context(); }
+        OpenCL_platforms_list *         Platform_List() const               { return platform_list; }
         void                            Print_Preferred() const;
         std::string                     Key() const                         { return key; }
         std::string   const             Name() const                        { return name; }
