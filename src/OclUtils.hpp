@@ -152,7 +152,7 @@ std::string Integer_in_String_Binary(Integer n)
     // Starting from the LSB being index "0", the MSB is at index "msb_position"
     const Integer msb_position  = nb_bits_per_Integer - i_one;
     const Integer msb           = i_one << msb_position;
-    const Integer or_msb        = ~msb;
+    const Integer or_msb        = Integer(~msb);
 
     std::string integer_in_binary(nb_bits_per_Integer, ' ');
     Integer counter = 0;
