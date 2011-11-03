@@ -78,6 +78,36 @@ std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
 int Lock_File(const char *path);
 void Unlock_File(int f);
 
+void * calloc_and_check(uint64_t nb, size_t s, std::string msg = "");
+
+// **************************************************************
+void * calloc_and_check(uint64_t nb, size_t s, std::string msg)
+{
+    void *p = NULL;
+    const uint64_t nb_s = nb * s;
+    p = calloc(nb, s);
+    if (p == NULL)
+    {
+        std_cout << "ERROR!!!\n";
+        std_cout << "    Allocation of ";
+        std_cout << nb << " x " << s << " bytes = " << nb_s << " bytes\n";
+        std_cout << "                                               (";
+        std_cout
+            << nb_s * B_to_KiB << " KiB, "
+            << nb_s * B_to_KiB << " MiB, "
+            << nb_s * B_to_GiB << " GiB)\n"
+            << "    FAILED!!!\n";
+        if (msg != "")
+        {
+            std_cout << "Comment: " << msg << std::endl;
+        }
+        std_cout << "Aborting.\n" << std::flush;
+        abort();
+    }
+
+    return p;
+}
+
 
 // *****************************************************************************
 inline std::string Bytes_in_String(const uint64_t bytes)
