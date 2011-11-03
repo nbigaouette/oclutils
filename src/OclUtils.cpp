@@ -1221,5 +1221,613 @@ std::string OpenCL_Error_to_String(cl_int error)
     return (index >= 0 && index < errorCount) ? errorString[index] : "Unspecified Error";
 }
 
+// *****************************************************************************
+template <class T>
+OpenCL_Array<T>::OpenCL_Array()
+{
+    array_is_padded             = false;
+    N                           = 0;
+    sizeof_element              = 0;
+    new_array_size_bytes        = 0;
+    host_array                  = NULL;
+    nb_1024bits_blocks          = 0;
+    device_array                = NULL;
+    context                     = NULL;
+    command_queue               = NULL;
+}
+
+// *****************************************************************************
+template <class T>
+void OpenCL_Array<T>::Initialize(int _N, const size_t _sizeof_element,
+                                 T *&_host_array,
+                                 cl_context &_context, cl_mem_flags flags,
+                                 std::string _platform,
+                                 cl_command_queue &_command_queue,
+                                 cl_device_id &_device,
+                                 const bool _checksum_array)
+{
+    assert(_host_array != NULL);
+
+    N               = _N;
+    sizeof_element  = _sizeof_element;
+    context         = _context;
+    command_queue   = _command_queue;
+    device          = _device;
+    host_array      = _host_array;
+    platform        = _platform;
+    new_array_size_bytes = N * sizeof_element;
+
+    memset(host_checksum,   0, 64);
+    memset(device_checksum, 0, 64);
+
+#ifdef OpenCLSHA512Checksum
+    if (_checksum_array)
+    {
+        array_is_padded = true;
+
+        void * array = (void *) _host_array;
+        uint64_t new_array_size_bits = new_array_size_bytes*CHAR_BIT;
+        OpenCL_SHA512::Prepare_Array_for_Checksuming(&array, sizeof_element, new_array_size_bits);
+        new_array_size_bytes = new_array_size_bits / CHAR_BIT;
+        _host_array = (T *)array;
+        host_array  = (T *)array;
+
+        std::string kernel_source = reinterpret_cast<const char*>(kernel_SHA512_Checksum);
+        kernel_checksum.Initialize(kernel_source, context, device);
+
+
+        kernel_checksum.Append_Compiler_Option("-DYDEBUG");
+        // Include debugging symbols in kernel compilation
+#ifndef MACOSX
+        if (platform != OPENCL_PLATFORMS_NVIDIA)
+        {
+            kernel_checksum.Append_Compiler_Option("-g");
+        }
+#endif // #ifndef MACOSX
+
+        if      (platform == OPENCL_PLATFORMS_AMD)
+        {
+            kernel_checksum.Append_Compiler_Option("-DOPENCL_AMD");
+        }
+        else if (platform == OPENCL_PLATFORMS_INTEL)
+        {
+            kernel_checksum.Append_Compiler_Option("-DOPENCL_INTEL");
+        }
+        else if (platform == OPENCL_PLATFORMS_NVIDIA)
+        {
+            kernel_checksum.Append_Compiler_Option("-DOPENCL_NVIDIA");
+            // Verbose compilation? Does not do much... And it may break kernel compilation
+            // with invalid kernel name error.
+            kernel_checksum.Append_Compiler_Option("-cl-nv-verbose");
+        }
+        else if (platform == OPENCL_PLATFORMS_APPLE)
+        {
+            kernel_checksum.Append_Compiler_Option("-DOPENCL_APPLE");
+        }
+
+        kernel_checksum.Build("SHA512_Checksum");
+        kernel_checksum.Compute_Work_Size(1, 1, 1, 1);
+
+        // Allocate memory on device
+        device_array      = clCreateBuffer(context, flags,           new_array_size_bytes, NULL, &err); OpenCL_Test_Success(err, "clCreateBuffer()");
+        //cl_array_size_bit = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(int),         NULL, &err); OpenCL_Test_Success(err, "clCreateBuffer()");
+        cl_sha512sum      = clCreateBuffer(context, CL_MEM_READ_WRITE, buff_size_checksum, NULL, &err); OpenCL_Test_Success(err, "clCreateBuffer()");
+
+        // Set kernel arguments
+        err  = clSetKernelArg(kernel_checksum.Get_Kernel(), 0, sizeof(cl_mem), (void *) &device_array);
+        //err |= clSetKernelArg(kernel_checksum.Get_Kernel(), 1, sizeof(cl_mem), (void *) &cl_array_size_bit);
+        err |= clSetKernelArg(kernel_checksum.Get_Kernel(), 1, sizeof(int),    (void *) &new_array_size_bits);
+        err |= clSetKernelArg(kernel_checksum.Get_Kernel(), 2, sizeof(cl_mem), (void *) &cl_sha512sum);
+        OpenCL_Test_Success(err, "clSetKernelArg()");
+
+    }
+    else
+#endif // #ifdef OpenCLSHA512Checksum
+    {
+        // Allocate memory on the device
+        device_array = clCreateBuffer(context, flags, new_array_size_bytes, NULL, &err);
+        OpenCL_Test_Success(err, "clCreateBuffer()");
+    }
+
+    // Transfer data from host to device (cpu to gpu)
+    Host_to_Device();
+
+    if (_checksum_array)
+        Validate_Data();
+
+    err = clFinish(command_queue);
+    OpenCL_Test_Success(err, "clFinish");
+}
+
+// *****************************************************************************
+template <class T>
+void OpenCL_Array<T>::Set_as_Kernel_Argument(cl_kernel &kernel, const int order)
+{
+    err = clSetKernelArg(kernel, order, sizeof(cl_mem), &device_array);
+    OpenCL_Test_Success(err, "clSetKernelArg()");
+}
+
+// *****************************************************************************
+template <class T>
+void OpenCL_Array<T>::Release_Memory()
+{
+    if (device_array)
+        clReleaseMemObject(device_array);
+}
+
+// *****************************************************************************
+template <class T>
+std::string OpenCL_Array<T>::Host_Checksum()
+{
+    return OpenCL_SHA512::Checksum_to_String(host_checksum);
+}
+
+// *****************************************************************************
+template <class T>
+std::string OpenCL_Array<T>::Device_Checksum()
+{
+    return OpenCL_SHA512::Checksum_to_String(device_checksum);
+}
+
+// *****************************************************************************
+template <class T>
+void OpenCL_Array<T>::Validate_Data()
+{
+#ifdef OpenCLSHA512Checksum
+    /*
+    std_cout << "Array in binary:\n" << OpenCL_SHA512::String_Binary(host_array, new_array_size_bytes*CHAR_BIT) << "\n";
+    std_cout << "Array in hexa:\n"   << OpenCL_SHA512::String_Hexadecimal(host_array, new_array_size_bytes*CHAR_BIT) << "\n";
+    */
+
+    // Wait for queue to finish
+    err = clFinish(command_queue);
+    OpenCL_Test_Success(err, "clFinish()");
+
+    // Calculate checksum of host memory
+    OpenCL_SHA512::Calculate_Checksum(host_array, new_array_size_bytes*CHAR_BIT, host_checksum);
+
+    // Calculate checksum of device memory
+    kernel_checksum.Launch(command_queue);
+    // Wait for kernel to finish
+    err = clFinish(command_queue);
+    OpenCL_Test_Success(err, "clFinish()");
+
+    // Transfer back checksum
+    err = clEnqueueReadBuffer(command_queue, cl_sha512sum, CL_FALSE, 0, buff_size_checksum, device_checksum, 0, NULL, NULL);
+    OpenCL_Test_Success(err, "clEnqueueReadBuffer");
+    err = clFinish(command_queue);
+    OpenCL_Test_Success(err, "clFinish()");
+
+    /*
+    std_cout << "Host_Checksum()   = " << Host_Checksum() << "\n";
+    std_cout << "Device_Checksum() = " << Device_Checksum() << "\n";
+    */
+
+    if (Host_Checksum() != Device_Checksum())
+    {
+        std_cout << "ERROR: Checksums don't match!\n";
+        std_cout << "Host_Checksum()   = " << Host_Checksum() << "\n";
+        std_cout << "Device_Checksum() = " << Device_Checksum() << "\n";
+        std_cout << "Array in hexa:\n"   << OpenCL_SHA512::String_Hexadecimal(host_array, new_array_size_bytes*CHAR_BIT) << "\n";
+    }
+//     else
+//     {
+//         std_cout << "Checksums do match.\n";
+//         std_cout << "Host_Checksum()   = " << Host_Checksum() << "\n";
+//         std_cout << "Device_Checksum() = " << Device_Checksum() << "\n";
+//         std_cout << "Array in hexa:\n"   << OpenCL_SHA512::String_Hexadecimal(host_array, new_array_size_bytes*CHAR_BIT) << "\n";
+//     }
+    assert(Host_Checksum() == Device_Checksum());
+
+#endif // #ifdef OpenCLSHA512Checksum
+}
+
+// *****************************************************************************
+template <class T>
+void OpenCL_Array<T>::Host_to_Device()
+{
+    err = clEnqueueWriteBuffer(command_queue,       // Command queue
+                               device_array,        // Memory buffer to write to
+                               CL_TRUE,             // Non-Blocking read
+                               0,                   // Offset in the buffer object to read from
+                               new_array_size_bytes,// Size in bytes of data being read
+                               host_array,          // Pointer to buffer on device to store write data
+                               0,                   // Number of event in the event list
+                               NULL,                // List of events that needs to complete before this executes
+                               NULL);               // Event object to return on completion
+    OpenCL_Test_Success(err, "clEnqueueWriteBuffer()");
+}
+
+// *****************************************************************************
+template <class T>
+void OpenCL_Array<T>::Device_to_Host()
+{
+    assert(device_array != NULL);
+    err = clEnqueueReadBuffer(command_queue,        // Command queue
+                              device_array,         // Memory buffer to read from
+                              CL_FALSE,             // Non-Blocking read
+                              0,                    // Offset in the buffer object to read from
+                              new_array_size_bytes, // Size in bytes of data being read
+                              host_array,           // Pointer to buffer in RAM to store read data
+                              0,                    // Number of event in the event list
+                              NULL,                 // List of events that needs to complete before this executes
+                              NULL);                // Event object to return on completion
+    OpenCL_Test_Success(err, "clEnqueueReadBuffer()");
+}
+
+// *****************************************************************************
+namespace OpenCL_SHA512
+{
+    // *************************************************************************
+    void Prepare_Array_for_Checksuming(void **_array, const uint64_t sizeof_element,
+                                       uint64_t &array_size_bit)
+    /**
+     * Prepare array to be SHA512 checksumed.
+     * Will re-allocate memory for the array to next multiple of 1024 and add the
+     * necessary padding required by SHA512.
+     */
+    {
+        // Calculate how much padding is necessary for the SHA512 checksum
+        // See http://www.iwar.org.uk/comsec/resources/cipher/sha256-384-512.pdf
+        // | initial array | |                                  |                                   |
+        //                  ^ 1 bit      ^ padding bits (0)      ^ 128 bits (initial array length)
+
+        const uint64_t padding_bits         = (896 - (array_size_bit + 1)) % 1024;
+        const uint64_t new_array_size_bit   = array_size_bit + 1 + padding_bits + 128;
+        //const uint64_t new_array_size_bytes = new_array_size_bit / CHAR_BIT;
+
+        char *carray = *((char **)_array);
+        void * array = (void *) carray;
+
+        assert(new_array_size_bit % 1024 == 0);
+
+        // Allocate new array with padded 0s
+        const uint64_t N = array_size_bit / (sizeof_element * CHAR_BIT);
+        const uint64_t new_array_N = new_array_size_bit / 32; // 32-bit integers
+        uint32_t *new_array        = (uint32_t *) calloc_and_check(new_array_N, sizeof(uint32_t));
+
+        /*
+        std_cout << "Initial array: " << carray << "\n";
+        std_cout << "Initial array (binary):\n" << String_Binary(carray, array_size_bit) << "\n";
+        std_cout << "Initial array (hexadecimal):\n" << String_Hexadecimal(carray, array_size_bit) << "\n";
+        const uint64_t new_array_size       = new_array_size_bytes / sizeof_element;
+        std_cout << "N                  = " << N << "\n";
+        std_cout << "sizeof_element     = " << sizeof_element << "\n";
+        std_cout << "array_size_bytes   = " << array_size_bit / CHAR_BIT << "\n";
+        std_cout << "array_size_bit     = " << array_size_bit << "\n";
+        std_cout << "padding_bits       = " << padding_bits << "\n";
+        std_cout << "new_array_size_bit = " << new_array_size_bit << "\n";
+        std_cout << "new_array_size_bytes = " << new_array_size_bytes << "\n";
+        std_cout << "new_array_size     = " << new_array_size << "\n";
+        std_cout << "sizeof(uint32_t)   = " << sizeof(uint32_t) << "\n";
+        std_cout << "new_array_size_bit/32= " << new_array_size_bit/32 << "\n";
+        */
+
+        // Copy the original array to the new array
+        memcpy(new_array, array, array_size_bit/CHAR_BIT);
+
+        // Set next bit to 1 to start padding
+        // To do so, set the most significant bit of the array's next element to 1.
+        if      (sizeof_element*CHAR_BIT == 8)
+            ((uint8_t *)new_array)[N] = 0x80; // 8 bits (char)
+        else if (sizeof_element*CHAR_BIT == 16)
+            ((uint16_t *)new_array)[N] = 0x8000; // 16 bits
+        else if (sizeof_element*CHAR_BIT == 32)
+            ((uint32_t *)new_array)[N] = 0x80000000; // 32 bits (floats)
+        else if (sizeof_element*CHAR_BIT == 64)
+            ((uint64_t *)new_array)[N] = 0x8000000000000000; // 64 bits (double)
+        else
+        {
+            std_cout << "ERROR: sizeof(array) == " << sizeof_element << " unsupported! Aborting.\n" << std::flush;
+            abort();
+        }
+
+        // Because calloc_and_check() is used to allocate the new array, it is filled with 0.
+        // There is no need thus to set the padding to 0.
+
+        // Now set the last 128 bits of the array as being a (big-endian) 128-bits integer
+        // representing the original array size.
+        // NOTE: There is no "uint128_t" type, so we ignore the 64 most significant bit
+        //       of this value.
+        // WARNING: According to Section 2 of the standard (https://tools.ietf.org/html/rfc4634#section-2),
+        //          big-endian representation is used. This means that "the most significant bit
+        //          is shown in the left-most bit position". So the deciman "24" is represented as:
+        //          "00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+        //           00000000 00000000 00000000 00000000 00000000 00000000 00000000 00011000"
+        //          and not:
+        //          "00011000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+        //           00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000"
+
+        // Change endianess
+        // http://www.codeguru.com/forum/showthread.php?t=292902
+        const uint64_t bigendian_array_size_bit =
+                                 (array_size_bit >> 56)                       |
+                                ((array_size_bit << 40) & 0x00FF000000000000) |
+                                ((array_size_bit << 24) & 0x0000FF0000000000) |
+                                ((array_size_bit <<  8) & 0x000000FF00000000) |
+                                ((array_size_bit >>  8) & 0x00000000FF000000) |
+                                ((array_size_bit >> 24) & 0x0000000000FF0000) |
+                                ((array_size_bit >> 40) & 0x000000000000FF00) |
+                                 (array_size_bit << 56);
+        assert(new_array_N % 2 == 0);
+        ((uint64_t *)new_array)[new_array_N/2-1] = bigendian_array_size_bit;
+
+        /*
+        std_cout << "Padded array (binary):\n" << String_Binary(new_array, new_array_size_bit) << "\n";
+        std_cout << "Padded array (hexadecimal):\n" << String_Hexadecimal(new_array, new_array_size_bit) << "\n";
+        */
+
+        // Free the old array
+        free(carray);
+
+        *_array = new_array;
+        array_size_bit = new_array_size_bit;
+    }
+
+    // *************************************************************************
+    void Calculate_Checksum(const void *_array, uint64_t size_bits, uint8_t *sha512sum)
+    {
+        const uint8_t *array = (uint8_t *) _array;
+
+        uint64_t N = size_bits / 1024;
+        uint64_t H[8];
+
+        H[0] = 0x6A09E667F3BCC908ll;
+        H[1] = 0xBB67AE8584CAA73Bll;
+        H[2] = 0x3C6EF372FE94F82Bll;
+        H[3] = 0xA54FF53A5F1D36F1ll;
+        H[4] = 0x510E527FADE682D1ll;
+        H[5] = 0x9B05688C2B3E6C1Fll;
+        H[6] = 0x1F83D9ABFB41BD6Bll;
+        H[7] = 0x5BE0CD19137E2179ll;
+
+        static const uint64_t K[80] =
+        {
+            0x428A2F98D728AE22ll, 0x7137449123EF65CDll, 0xB5C0FBCFEC4D3B2Fll,
+            0xE9B5DBA58189DBBCll, 0x3956C25BF348B538ll, 0x59F111F1B605D019ll,
+            0x923F82A4AF194F9Bll, 0xAB1C5ED5DA6D8118ll, 0xD807AA98A3030242ll,
+            0x12835B0145706FBEll, 0x243185BE4EE4B28Cll, 0x550C7DC3D5FFB4E2ll,
+            0x72BE5D74F27B896Fll, 0x80DEB1FE3B1696B1ll, 0x9BDC06A725C71235ll,
+            0xC19BF174CF692694ll, 0xE49B69C19EF14AD2ll, 0xEFBE4786384F25E3ll,
+            0x0FC19DC68B8CD5B5ll, 0x240CA1CC77AC9C65ll, 0x2DE92C6F592B0275ll,
+            0x4A7484AA6EA6E483ll, 0x5CB0A9DCBD41FBD4ll, 0x76F988DA831153B5ll,
+            0x983E5152EE66DFABll, 0xA831C66D2DB43210ll, 0xB00327C898FB213Fll,
+            0xBF597FC7BEEF0EE4ll, 0xC6E00BF33DA88FC2ll, 0xD5A79147930AA725ll,
+            0x06CA6351E003826Fll, 0x142929670A0E6E70ll, 0x27B70A8546D22FFCll,
+            0x2E1B21385C26C926ll, 0x4D2C6DFC5AC42AEDll, 0x53380D139D95B3DFll,
+            0x650A73548BAF63DEll, 0x766A0ABB3C77B2A8ll, 0x81C2C92E47EDAEE6ll,
+            0x92722C851482353Bll, 0xA2BFE8A14CF10364ll, 0xA81A664BBC423001ll,
+            0xC24B8B70D0F89791ll, 0xC76C51A30654BE30ll, 0xD192E819D6EF5218ll,
+            0xD69906245565A910ll, 0xF40E35855771202All, 0x106AA07032BBD1B8ll,
+            0x19A4C116B8D2D0C8ll, 0x1E376C085141AB53ll, 0x2748774CDF8EEB99ll,
+            0x34B0BCB5E19B48A8ll, 0x391C0CB3C5C95A63ll, 0x4ED8AA4AE3418ACBll,
+            0x5B9CCA4F7763E373ll, 0x682E6FF3D6B2B8A3ll, 0x748F82EE5DEFB2FCll,
+            0x78A5636F43172F60ll, 0x84C87814A1F0AB72ll, 0x8CC702081A6439ECll,
+            0x90BEFFFA23631E28ll, 0xA4506CEBDE82BDE9ll, 0xBEF9A3F7B2C67915ll,
+            0xC67178F2E372532Bll, 0xCA273ECEEA26619Cll, 0xD186B8C721C0C207ll,
+            0xEADA7DD6CDE0EB1Ell, 0xF57D4F7FEE6ED178ll, 0x06F067AA72176FBAll,
+            0x0A637DC5A2C898A6ll, 0x113F9804BEF90DAEll, 0x1B710B35131C471Bll,
+            0x28DB77F523047D84ll, 0x32CAAB7B40C72493ll, 0x3C9EBE0A15C9BEBCll,
+            0x431D67C49C100D4Cll, 0x4CC5D4BECB3E42B6ll, 0x597F299CFC657E2All,
+            0x5FCB6FAB3AD6FAECll, 0x6C44198C4A475817ll
+        };
+
+        int t8 = 0;
+
+        for (uint64_t i = 0 ; i < N ; i++)
+        {
+            uint64_t W[80]; // Word sequence.
+
+            for (int t = 0 ; t < 16 ; t++, t8 += 8)
+                W[t] = ((uint64_t)(array[t8  ]) << 56) |
+                    ((uint64_t)(array[t8 + 1]) << 48) |
+                    ((uint64_t)(array[t8 + 2]) << 40) |
+                    ((uint64_t)(array[t8 + 3]) << 32) |
+                    ((uint64_t)(array[t8 + 4]) << 24) |
+                    ((uint64_t)(array[t8 + 5]) << 16) |
+                    ((uint64_t)(array[t8 + 6]) << 8) |
+                    ((uint64_t)(array[t8 + 7]));
+
+            for (int t = 16 ; t < 80 ; t++)
+                W[t] = SHA512_sigma1(W[t-2]) + W[t-7] + SHA512_sigma0(W[t-15]) + W[t-16];
+
+            uint64_t a = H[0];
+            uint64_t b = H[1];
+            uint64_t c = H[2];
+            uint64_t d = H[3];
+            uint64_t e = H[4];
+            uint64_t f = H[5];
+            uint64_t g = H[6];
+            uint64_t h = H[7];
+
+            for(int t = 0 ; t < 80 ; t++)
+            {
+                uint64_t T1 = h + SHA512_SIGMA1(e) + SHA_Ch(e,f,g) + K[t] + W[t];
+                uint64_t T2 = SHA512_SIGMA0(a) + SHA_Maj(a,b,c);
+
+                h = g;
+                g = f;
+                f = e;
+                e = d + T1;
+                d = c;
+                c = b;
+                b = a;
+                a = T1 + T2;
+            }
+
+            H[0] += a;
+            H[1] += b;
+            H[2] += c;
+            H[3] += d;
+            H[4] += e;
+            H[5] += f;
+            H[6] += g;
+            H[7] += h;
+        }
+
+        uint8_t message_digest[64];
+
+        for (int i = 0 ; i < 64 ; ++i)
+            message_digest[i] = (uint8_t)(H[i>>3] >> 8 * ( 7 - ( i % 8 ) ));
+
+        for(int i = 0 ; i < 64 ; i++)
+        {
+            sha512sum[i] = message_digest[i];
+        }
+    }
+
+    // *************************************************************************
+    void Print_Checksum(const uint8_t checksum[64])
+    {
+        for(int i = 0 ; i < 64 ; i++)
+            printf("%02x", checksum[i] & 0xff);
+        printf("\n");
+    }
+
+    // *************************************************************************
+    std::string Checksum_to_String(const uint8_t checksum[64])
+    {
+        std::string string_checksum("");
+        char two_char[3];
+        memset(two_char, 0, 3*sizeof(char));
+        for(int i = 0 ; i < 64 ; i++)
+        {
+            sprintf(two_char, "%02x", checksum[i] & 0xff);
+            string_checksum += two_char;
+        }
+
+        return string_checksum;
+    }
+
+    // *************************************************************************
+    std::string String_Hexadecimal(const void *array, uint64_t size_bits)
+    {
+        // 1 hexa == 4 bits
+        const uint64_t hexa_to_bit = 4;
+        assert(size_bits % CHAR_BIT == 0);
+        std::string array_in_hexa("");
+        //assert(size_bits % (CHAR_BIT * 2) == 0);
+        uint8_t *array_as_int = (uint8_t *) array;
+        char tmp[10];
+        // When printed, a single hexadecimal value shows up as two characters.
+        for (uint64_t i = 0 ; i < size_bits / (2*hexa_to_bit) ; i++)
+        {
+            sprintf(tmp, "%02x", array_as_int[i]);
+            array_in_hexa += tmp;
+            if ((i+1) % 4 == 0)
+                array_in_hexa += " ";
+            if ((i+1) % (4*8) == 0)
+                array_in_hexa += "\n";
+        }
+
+        return array_in_hexa;
+    }
+
+    // *************************************************************************
+    std::string String_Binary(const void *array, uint64_t size_bits)
+    {
+        // Print in chunk of 8 bits
+        assert(size_bits % 8 == 0);
+
+        std::string array_in_binary("");
+        const uint8_t *const array_8bit = (uint8_t *) array;
+        for (uint64_t i = 0 ; i < size_bits / 8 ; i++)
+        {
+            array_in_binary += Integer_in_String_Binary(array_8bit[i]);
+            array_in_binary += " ";
+            if ((i+1) % 8 == 0)
+                array_in_binary += "\n";
+        }
+
+        return array_in_binary;
+    }
+
+    // *************************************************************************
+    void Validation()
+    {
+        const int l = 1000;
+        char *char_array;
+        std::string precalculated_checksum, calculated_checksum;
+        uint64_t array_size_bit;
+        uint8_t checksum[64];
+
+        // *********************************************************************
+        // Examples from http://www.iwar.org.uk/comsec/resources/cipher/sha256-384-512.pdf
+        char_array = (char *) calloc_and_check(l, sizeof(char));
+        sprintf(char_array, "%s", "abc");
+        array_size_bit = strlen(char_array)*CHAR_BIT;
+        //std_cout << "Validation() String: " << char_array << "\n";
+        Prepare_Array_for_Checksuming((void **)&char_array, sizeof(char), array_size_bit);
+        precalculated_checksum = "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f";
+        Calculate_Checksum(char_array, array_size_bit, checksum);
+        //std_cout << "Validation() Pre-calculate checksum: " << precalculated_checksum << "\n";
+        //std_cout << "Validation() Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
+        assert(precalculated_checksum == Checksum_to_String(checksum));
+        free_me(char_array);
+
+        // *********************************************************************
+        // Examples from Wikipedia
+        // https://secure.wikimedia.org/wikipedia/en/wiki/Sha512#Examples_of_SHA-2_variants_.28SHA224.2C_SHA256.2C_SHA384_and_SHA512.29
+        char_array = (char *) calloc_and_check(l, sizeof(char));
+        sprintf(char_array, "%s", "The quick brown fox jumps over the lazy dog");
+        //std_cout << "Validation() String: " << char_array << "\n";
+        array_size_bit = strlen(char_array)*CHAR_BIT;
+        Prepare_Array_for_Checksuming((void **)&char_array, sizeof(char), array_size_bit);
+        precalculated_checksum = "07e547d9586f6a73f73fbac0435ed76951218fb7d0c8d788a309d785436bbb642e93a252a954f23912547d1e8a3b5ed6e1bfd7097821233fa0538f3db854fee6";
+        Calculate_Checksum(char_array, array_size_bit, checksum);
+        //std_cout << "Pre-calculate checksum: " << precalculated_checksum << "\n";
+        //std_cout << "Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
+        assert(precalculated_checksum == Checksum_to_String(checksum));
+        free_me(char_array);
+
+        char_array = (char *) calloc_and_check(l, sizeof(char));
+        sprintf(char_array, "%s", "The quick brown fox jumps over the lazy dog.");
+        //std_cout << "Validation() String: " << char_array << "\n";
+        array_size_bit = strlen(char_array)*CHAR_BIT;
+        Prepare_Array_for_Checksuming((void **)&char_array, sizeof(char), array_size_bit);
+        precalculated_checksum = "91ea1245f20d46ae9a037a989f54f1f790f0a47607eeb8a14d12890cea77a1bbc6c7ed9cf205e67b7f2b8fd4c7dfd3a7a8617e45f3c463d481c7e586c39ac1ed";
+        Calculate_Checksum(char_array, array_size_bit, checksum);
+        //std_cout << "Pre-calculate checksum: " << precalculated_checksum << "\n";
+        //std_cout << "Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
+        assert(precalculated_checksum == Checksum_to_String(checksum));
+        free_me(char_array);
+
+        // *********************************************************************
+        // Examples from http://csrc.nist.gov/publications/fips/fips180-2/fips180-2.pdf
+        // Example C.2
+        char_array = (char *) calloc_and_check(l, sizeof(char));
+        sprintf(char_array, "%s", "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu");
+        //std_cout << "Validation() String: " << char_array << "\n";
+        array_size_bit = strlen(char_array)*CHAR_BIT;
+        Prepare_Array_for_Checksuming((void **)&char_array, sizeof(char), array_size_bit);
+        precalculated_checksum = "8e959b75dae313da8cf4f72814fc143f8f7779c6eb9f7fa17299aeadb6889018501d289e4900f7e4331b99dec4b5433ac7d329eeb6dd26545e96e55b874be909";
+        Calculate_Checksum(char_array, array_size_bit, checksum);
+        //std_cout << "Pre-calculate checksum: " << precalculated_checksum << "\n";
+        //std_cout << "Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
+        assert(precalculated_checksum == Checksum_to_String(checksum));
+        free_me(char_array);
+
+        // Example C.3
+        char_array = (char *) calloc_and_check(1000100, sizeof(char));
+        //sprintf(char_array, "%s", "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu");
+        for (int i = 0 ; i < 1000000 ; i++)
+            char_array[i] = 'a';
+        //std_cout << "Validation() String: " << char_array << "\n";
+        array_size_bit = strlen(char_array)*CHAR_BIT;
+        Prepare_Array_for_Checksuming((void **)&char_array, sizeof(char), array_size_bit);
+        precalculated_checksum = "e718483d0ce769644e2e42c7bc15b4638e1f98b13b2044285632a803afa973ebde0ff244877ea60a4cb0432ce577c31beb009c5c2c49aa2e4eadb217ad8cc09b";
+        Calculate_Checksum(char_array, array_size_bit, checksum);
+        //std_cout << "Pre-calculate checksum: " << precalculated_checksum << "\n";
+        //std_cout << "Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
+        assert(precalculated_checksum == Checksum_to_String(checksum));
+        free_me(char_array);
+    }
+}
+
+template class OpenCL_Array<float>;
+// template class OpenCL_Array<double>;
+template class OpenCL_Array<int>;
+template class OpenCL_Array<char>;
+
 
 // ********** End of file ******************************************************
