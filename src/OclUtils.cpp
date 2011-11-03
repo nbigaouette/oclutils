@@ -911,7 +911,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
 
     std::list<OpenCL_device>::iterator it = device_list.begin();
 
-    bool is_all_devices_in_use = true; // We want to know if all devices are in use.
+    are_all_devices_in_use = true; // We want to know if all devices are in use.
 
     // Add CPUs to list
     if (nb_cpu >= 1)
@@ -926,7 +926,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
-                is_all_devices_in_use = false;
+                are_all_devices_in_use = false;
 
         }
         delete[] tmp_devices;
@@ -944,7 +944,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
-                is_all_devices_in_use = false;
+                are_all_devices_in_use = false;
         }
         delete[] tmp_devices;
     }
@@ -952,7 +952,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
     assert(it == device_list.end());
 
     // When all devices are in use we abort the program
-    if (is_all_devices_in_use == true)
+    if (are_all_devices_in_use == true)
     {
         std_cout << "All devices are in use!\n" << std::flush;
         abort();

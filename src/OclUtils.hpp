@@ -319,6 +319,7 @@ class OpenCL_devices_list
         cl_uint                         nb_cpu;
         cl_uint                         nb_gpu;
         int                             err;
+        bool                            are_all_devices_in_use;
 
     public:
 
