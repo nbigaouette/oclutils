@@ -956,7 +956,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
     // When all devices are in use we abort the program
     if (are_all_devices_in_use == true)
     {
-        std_cout << "All devices are in use!\n" << std::flush;
+        std_cout << "All devices on platform '" << _platform.Name() << "' are in use!\n" << std::flush;
         abort();
     }
 
