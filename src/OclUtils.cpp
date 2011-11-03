@@ -76,6 +76,7 @@ std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name);
 int Lock_File(const char *path);
 void Unlock_File(int f);
+void Wait(const double duration_sec);
 
 void * calloc_and_check(uint64_t nb, size_t s, std::string msg = "");
 
@@ -207,6 +208,21 @@ void Unlock_File(int f)
 {
     std_cout << "OpenCL: Closing lock file!\n";
     close(f); // Close file automatically unlocks file
+}
+
+// *****************************************************************************
+void Wait(const double duration_sec)
+{
+    double delay = 0.0;
+    timeval initial, now;
+    gettimeofday(&initial, NULL);
+    while (delay <= duration_sec)
+    {
+        gettimeofday(&now, NULL);
+        // Transform time into double delay
+        delay = double(now.tv_sec - initial.tv_sec) + 1.0e-6*double(now.tv_usec - initial.tv_usec);
+        //printf("Delay = %.6f   max = %.6f\n", delay, duration_sec);
+    }
 }
 
 // *****************************************************************************
@@ -677,8 +693,33 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
 // *****************************************************************************
 cl_int OpenCL_device::Set_Context()
 {
-    cl_int err;
-    context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+    cl_int err = CL_SUCCESS+1;
+    pid_t pid = getpid();
+    const int max_retry = 5;
+    srand(pid * (unsigned int)time(NULL));
+    for (int i = 0 ; i < max_retry ; i++)
+    {
+        // Try to set an OpenCL context on the device
+        context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+
+        // If it succeeds, exist the loop
+        if (err == CL_SUCCESS)
+            break;
+
+        // If it it did not succeeds, sleep for a random
+        // time (between 1 and 10 seconds) and retry
+        const double delay = ((double(rand()) / double(RAND_MAX)) * 9.0) + 1.0;
+        char delay_string[64];
+        sprintf(delay_string, "%.4f", delay);
+        std_cout
+            << "\nOpenCL: WARNING: Failed to set an OpenCL context on the device.\n"
+            << "                 Waiting " << delay_string << " seconds before retrying (" << i+1 << "/" << max_retry << ")...\n" << std::flush;
+        Wait(delay);
+        std_cout << "                 Done waiting.";
+        if (i+1 < max_retry)
+            std_cout << " Retrying.";
+        std_cout << "\n";
+    }
     return err;
 }
 
