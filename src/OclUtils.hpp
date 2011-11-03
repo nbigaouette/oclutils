@@ -217,6 +217,7 @@ class OpenCL_device
 
         OpenCL_device();
         ~OpenCL_device();
+        void Destructor();
 
         const OpenCL_platform *         Get_Parent_Platform()       { return parent_platform;   }
         std::string                     Get_Name() const            { return name;              }

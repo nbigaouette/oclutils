@@ -469,6 +469,12 @@ OpenCL_device::OpenCL_device()
 // *****************************************************************************
 OpenCL_device::~OpenCL_device()
 {
+    Destructor();
+}
+
+// *****************************************************************************
+void OpenCL_device::Destructor()
+{
     if (context)
         clReleaseContext(context);
 
