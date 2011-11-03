@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <climits>
 
 #include <CL/cl.h>
 

@@ -26,7 +26,6 @@
 #include <cmath>
 #include <algorithm>    // std::ostringstream
 #include <sstream>
-#include <climits>
 
 #include "OclUtils.hpp"
 
