@@ -1143,11 +1143,25 @@ void OpenCL_Kernel::Load_Program_From_File()
     // Program Setup
     int pl;
     size_t program_length;
-    std_cout << "Loading OpenCL program from \"" << filename << "\"...\n";
+    char* cSourceCL;
 
-    // Loads the contents of the file at the given path
-    char* cSourceCL = read_opencl_kernel(filename, &pl);
-    program_length = (size_t) pl;
+    // Test of file exists
+    std::ifstream input_file(filename.c_str());
+    if (input_file.is_open())
+    {
+        std_cout << "Loading OpenCL program from \"" << filename << "\"...\n";
+
+        // Loads the contents of the file at the given path
+        cSourceCL = read_opencl_kernel(filename, &pl);
+        program_length = (size_t) pl;
+
+        input_file.close();
+    }
+    else
+    {
+        cSourceCL = (char *)filename.c_str();
+        program_length = filename.size();
+    }
 
     // create the program
     program = clCreateProgramWithSource(context, 1, (const char **) &cSourceCL, &program_length, &err);
