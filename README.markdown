@@ -19,6 +19,13 @@ $ cd build
 $ cmake ../ -DCMAKE_INSTALL_PREFIX="/usr"
 $ make
 ```
+If cmake fails because it can't find the OpenCL headers or library (because they are
+installed some non-standard place), define the environment variables OpenCL_INCPATH
+and OpenCL_LIBPATH. For example:
+``` bash
+$ OpenCL_INCPATH=/opt/cuda/4.0/include OpenCL_LIBPATH=/usr/lib64/nvidia cmake ../ -DCMAKE_INSTALL_PREFIX="/usr"
+$ make
+```
 
 Then to install:
 
