@@ -1770,7 +1770,7 @@ namespace OpenCL_SHA512
         const uint8_t *const array_8bit = (uint8_t *) array;
         for (uint64_t i = 0 ; i < size_bits / 8 ; i++)
         {
-            array_in_binary += Integer_in_String_Binary(array_8bit[i]);
+            array_in_binary += OclUtils::Integer_in_String_Binary(array_8bit[i]);
             array_in_binary += " ";
             if ((i+1) % 8 == 0)
                 array_in_binary += "\n";
@@ -1800,7 +1800,7 @@ namespace OpenCL_SHA512
         //std_cout << "Validation() Pre-calculate checksum: " << precalculated_checksum << "\n";
         //std_cout << "Validation() Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
         assert(precalculated_checksum == Checksum_to_String(checksum));
-        free_me(char_array);
+        OclUtils::free_me(char_array);
 
         // *********************************************************************
         // Examples from Wikipedia
@@ -1815,7 +1815,7 @@ namespace OpenCL_SHA512
         //std_cout << "Pre-calculate checksum: " << precalculated_checksum << "\n";
         //std_cout << "Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
         assert(precalculated_checksum == Checksum_to_String(checksum));
-        free_me(char_array);
+        OclUtils::free_me(char_array);
 
         char_array = (char *) calloc_and_check(l, sizeof(char));
         sprintf(char_array, "%s", "The quick brown fox jumps over the lazy dog.");
@@ -1827,7 +1827,7 @@ namespace OpenCL_SHA512
         //std_cout << "Pre-calculate checksum: " << precalculated_checksum << "\n";
         //std_cout << "Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
         assert(precalculated_checksum == Checksum_to_String(checksum));
-        free_me(char_array);
+        OclUtils::free_me(char_array);
 
         // *********************************************************************
         // Examples from http://csrc.nist.gov/publications/fips/fips180-2/fips180-2.pdf
@@ -1842,7 +1842,7 @@ namespace OpenCL_SHA512
         //std_cout << "Pre-calculate checksum: " << precalculated_checksum << "\n";
         //std_cout << "Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
         assert(precalculated_checksum == Checksum_to_String(checksum));
-        free_me(char_array);
+        OclUtils::free_me(char_array);
 
         // Example C.3
         char_array = (char *) calloc_and_check(1000100, sizeof(char));
@@ -1857,12 +1857,12 @@ namespace OpenCL_SHA512
         //std_cout << "Pre-calculate checksum: " << precalculated_checksum << "\n";
         //std_cout << "Calculate checksum:     " << Checksum_to_String(checksum) << "\n";
         assert(precalculated_checksum == Checksum_to_String(checksum));
-        free_me(char_array);
+        OclUtils::free_me(char_array);
     }
 }
 
 template class OpenCL_Array<float>;
-// template class OpenCL_Array<double>;
+template class OpenCL_Array<double>;
 template class OpenCL_Array<int>;
 template class OpenCL_Array<char>;
 

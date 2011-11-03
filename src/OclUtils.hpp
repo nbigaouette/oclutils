@@ -123,6 +123,75 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
 // *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length);
 
+// **************************************************************
+
+namespace OclUtils {
+template <class Integer>
+std::string Integer_in_String_Binary(Integer n)
+/**
+ * Prints binary representation of an integer if any size.
+ * Inspired by http://www.exploringbinary.com/displaying-the-raw-fields-of-a-floating-point-number/
+ * WARNING: In C/C++, logical right shift of SIGNED integers is compiler dependant. GCC keeps the
+ *          sign bit intact (instead of putting a 0).
+ *          So ">>" is an arithmetic shift when the integer is signed. Unsigned are not
+ *          affected (arithmetic and logical shifts are the same for unsigned integers).
+ *          See http://en.wikipedia.org/wiki/Bitwise_operation#Arithmetic_shift
+ */
+{
+                                        // Example 32 bits integers, converted from
+                                        // http://www.binaryconvert.com/convert_unsigned_int.html
+    const Integer i_zero    =  Integer(0);  // 00000000 00000000 00000000 00000000
+    //const Integer i_ones    = ~i_zero;      // 11111111 11111111 11111111 11111111
+    const Integer i_one     =  Integer(1);  // 00000000 00000000 00000000 00000001
+    //const Integer i_two     =  Integer(2);  // 00000000 00000000 00000000 00000010
+    //const Integer i_eigth   =  Integer(8);  // 00000000 00000000 00000000 00001000
+    const Integer nb_bits_per_byte    = CHAR_BIT; // Normaly, it is 8, but could be different.
+    const Integer nb_bits_per_Integer = sizeof(n)*nb_bits_per_byte;
+
+    // Starting from the LSB being index "0", the MSB is at index "msb_position"
+    const Integer msb_position  = nb_bits_per_Integer - i_one;
+    const Integer msb           = i_one << msb_position;
+    const Integer or_msb        = ~msb;
+
+    std::string integer_in_binary(nb_bits_per_Integer, ' ');
+    Integer counter = 0;
+
+    // Note that right shifting a signed integer migth keep the sign bit intact
+    // (instead of setting it to 0) because C/C++ is implementation dependant
+    // regarding right shift applied to negative signed integers. GCC will do
+    // an "arithmetic right shift", meaning dividing the integer by 2. This will
+    // keep the number negative (if it was). Because of this, the mask can get
+    // screwed. If the Integer type is signed, first right shifting of the
+    // mask of one (having an initial value of "msb" == 10000... and thus a
+    // negative value) will keep the sign bit (leading to mask == 11000...) but
+    // what we want is just to move the mask's bit, not keep the integer
+    // reprentation "valid" (we want mask == 01000...). To fix that, after
+    // right shifting the mask by one, we "AND" it (using "&") with "or_msb"
+    // (or_msb == 01111...) to make sure we forget the sign bit.
+    for (Integer mask = msb ; mask != i_zero ; mask = ((mask >> i_one) & or_msb ))
+    {
+        // If "n"'s bit at position of the mask is 0, print 0, else print 1.
+        if ((mask & n) == i_zero) integer_in_binary[counter++] = '0';
+        else                      integer_in_binary[counter++] = '1';
+    }
+
+    return integer_in_binary;
+}
+
+// **************************************************************
+template <class Pointer>
+void free_me(Pointer &p)
+{
+    if (p != NULL)
+    {
+        // Free memory
+        free(p);
+    }
+    p = NULL;
+}
+
+};
+
 // *****************************************************************************
 class OpenCL_device
 {
