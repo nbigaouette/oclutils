@@ -301,6 +301,16 @@ void OpenCL_platform::Initialize(const std::string _key, int _id_offset, cl_plat
 }
 
 // *****************************************************************************
+void OpenCL_platform::Print_Preferred() const
+{
+    Print_N_Times("-", 109);
+    std_cout << "OpenCL: Platform and device to be used:\n";
+    std_cout << "OpenCL: Platform's name:             " << Name() << "\n";
+    std_cout << "OpenCL: Platform's best device:      " << devices_list.preferred_device->Get_Name() << " (id = "
+                                                        << devices_list.preferred_device->Get_ID()   << ")\n";
+    Print_N_Times("-", 109);
+}
+// *****************************************************************************
 void OpenCL_platform::Lock_Best_Device()
 {
     if (Preferred_OpenCL().Is_Lockable())
@@ -441,14 +451,22 @@ void OpenCL_platforms_list::Print() const
         it->second.Print();
     }
 
-    Print_N_Times("-", 109);
-    it = platforms.find(preferred_platform);
-    assert(it != platforms.end());
-    assert(it->second.devices_list.preferred_device != NULL);
-    std_cout << "OpenCL: Preferred platform's name:          " << it->second.Name() << "\n";
-    std_cout << "OpenCL: Preferred platform's best device:   " << it->second.devices_list.preferred_device->Get_Name() << "\n";
+    Print_Preferred();
+}
 
-    Print_N_Times("-", 109);
+// *****************************************************************************
+void OpenCL_platforms_list::Print_Preferred() const
+{
+    std::map<std::string,OpenCL_platform>::const_iterator it;
+    it = platforms.find(preferred_platform);
+    if (it == platforms.end())
+    {
+        std_cout << "ERROR: Cannot find platform '" << preferred_platform << "'. Aborting.\n" << std::flush;
+        abort();
+    }
+    assert(it->second.devices_list.preferred_device != NULL);
+
+    it->second.Print_Preferred();
 }
 
 // *****************************************************************************
