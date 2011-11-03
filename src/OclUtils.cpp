@@ -849,10 +849,8 @@ OpenCL_device & OpenCL_devices_list::Preferred_OpenCL()
         << "Make sure you call OpenCL_platforms.platforms[<WANTED PLATFORM>] with a valid (i.e. created) platform!\n" << std::flush;
         abort();
     }
-    else
-    {
-        return *preferred_device;
-    }
+
+    return *preferred_device;
 }
 
 // *****************************************************************************
