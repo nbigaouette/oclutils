@@ -999,6 +999,7 @@ OpenCL_Kernel::OpenCL_Kernel(std::string _filename, cl_context _context, cl_devi
 {
     kernel           = NULL;
     program          = NULL;
+    compiler_options= "";
 
     dimension = 2; // Always use two dimensions.
 
@@ -1023,9 +1024,8 @@ OpenCL_Kernel::~OpenCL_Kernel()
 }
 
 // *****************************************************************************
-void OpenCL_Kernel::Build(std::string _kernel_name, std::string _compiler_options)
+void OpenCL_Kernel::Build(std::string _kernel_name)
 {
-    compiler_options = _compiler_options;
     kernel_name      = _kernel_name;
 
     // **********************************************************
@@ -1090,6 +1090,15 @@ int OpenCL_Kernel::Get_Dimension() const
     return dimension;
 }
 
+// *****************************************************************************
+void OpenCL_Kernel::Append_Compiler_Option(const std::string option)
+{
+    compiler_options += option;
+    if (option[option.size()-1] != ' ')
+        compiler_options += " ";
+}
+
+// *****************************************************************************
 void OpenCL_Kernel::Launch(cl_command_queue command_queue)
 {
     err = clEnqueueNDRangeKernel(command_queue, Get_Kernel(), Get_Dimension(), NULL,
@@ -1145,18 +1154,7 @@ void OpenCL_Kernel::Build_Executable()
  */
 {
     std_cout << "Building the program..." << std::flush;
-
-#ifdef YDEBUG
-    // Include debugging symbols in kernel compilation
-#ifndef MACOSX
-    compiler_options += "-g ";
-#endif // #ifndef MACOSX
-#endif // #ifdef YDEBUG
-    // Verbose compilation? Does not do much... And it may break kernel compilation
-    // with invalid kernel name error.
-    //compiler_options += "-cl-nv-verbose";
-
-    std_cout << "\nOpenCL Compiler Options: " << compiler_options.c_str() << "\n" << std::flush;
+    std_cout << "\nOpenCL Compiler Options: " << compiler_options << "\n" << std::flush;
 
     err = clBuildProgram(program, 0, NULL, compiler_options.c_str(), NULL, NULL);
 

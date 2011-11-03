@@ -390,7 +390,7 @@ class OpenCL_Kernel
         OpenCL_Kernel(std::string _filename, cl_context _context, cl_device_id _device_id);
         ~OpenCL_Kernel();
 
-        void Build(std::string _kernel_name, std::string _compiler_options);
+        void Build(std::string _kernel_name);
 
         // By default global_y is one, local_x is MAX_WORK_SIZE and local_y is one.
         void Compute_Work_Size(size_t _global_x, size_t _global_y, size_t _local_x, size_t _local_y);
@@ -401,6 +401,7 @@ class OpenCL_Kernel
         size_t *Get_Local_Work_Size() const;
 
         int Get_Dimension() const;
+        void Append_Compiler_Option(const std::string option);
 
         void Launch(cl_command_queue command_queue);
 
