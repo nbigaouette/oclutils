@@ -303,9 +303,9 @@ void OpenCL_platform::Initialize(const std::string _key, int _id_offset, cl_plat
 // *****************************************************************************
 void OpenCL_platform::Lock_Best_Device()
 {
-    if (Prefered_OpenCL().Is_Lockable())
+    if (Preferred_OpenCL().Is_Lockable())
     {
-        Prefered_OpenCL().Lock();
+        Preferred_OpenCL().Lock();
     }
 }
 
@@ -330,9 +330,9 @@ void OpenCL_platform::Print() const
 }
 
 // *****************************************************************************
-void OpenCL_platforms_list::Initialize(const std::string &_prefered_platform)
+void OpenCL_platforms_list::Initialize(const std::string &_preferred_platform)
 {
-    preferred_platform = _prefered_platform;
+    preferred_platform = _preferred_platform;
 
     cl_int err;
     cl_uint nb_platforms;
@@ -445,8 +445,8 @@ void OpenCL_platforms_list::Print() const
     it = platforms.find(preferred_platform);
     assert(it != platforms.end());
     assert(it->second.devices_list.preferred_device != NULL);
-    std_cout << "OpenCL: Prefered platform's name:          " << it->second.Name() << "\n";
-    std_cout << "OpenCL: Prefered platform's best device:   " << it->second.devices_list.preferred_device->Get_Name() << "\n";
+    std_cout << "OpenCL: Preferred platform's name:          " << it->second.Name() << "\n";
+    std_cout << "OpenCL: Preferred platform's best device:   " << it->second.devices_list.preferred_device->Get_Name() << "\n";
 
     Print_N_Times("-", 109);
 }
@@ -821,7 +821,7 @@ OpenCL_devices_list::~OpenCL_devices_list()
 }
 
 // *****************************************************************************
-OpenCL_device & OpenCL_devices_list::Prefered_OpenCL()
+OpenCL_device & OpenCL_devices_list::Preferred_OpenCL()
 {
     if (preferred_device == NULL)
     {
@@ -860,7 +860,7 @@ void OpenCL_devices_list::Print() const
 
 // *****************************************************************************
 void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
-                                     const std::string &prefered_platform)
+                                     const std::string &preferred_platform)
 {
     std_cout << "OpenCL: Initialize platform \"" << _platform.Name() << "\"'s device(s)\n";
 
@@ -1038,7 +1038,7 @@ void OpenCL_Kernel::Build(std::string _kernel_name)
 
     // **********************************************************
     // Get the maximum work group size
-    //err = clGetKernelWorkGroupInfo(kernel_md, list.Prefered_OpenCL_Device(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &maxWorkSize, NULL);
+    //err = clGetKernelWorkGroupInfo(kernel_md, list.Preferred_OpenCL_Device(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &maxWorkSize, NULL);
     //std_cout << "Maximum kernel work group size: " << maxWorkSize << "\n";
     //OpenCL_Test_Success(err, "clGetKernelWorkGroupInfo");
 }
