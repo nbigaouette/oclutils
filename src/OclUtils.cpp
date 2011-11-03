@@ -975,6 +975,25 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
 }
 
 // *****************************************************************************
+OpenCL_Kernel::OpenCL_Kernel()
+{
+    filename        = "";
+    context         = NULL;
+    device_id       = NULL;
+    compiler_options= "";
+    kernel_name     = "";
+    dimension       = 0;
+    p               = 0;
+    q               = 0;
+    program         = NULL;
+    kernel          = NULL;
+    global_work_size= NULL;
+    local_work_size = NULL;
+    err             = 0;
+    event           = NULL;
+}
+
+// *****************************************************************************
 
 OpenCL_Kernel::OpenCL_Kernel(std::string _filename, cl_context _context, cl_device_id _device_id):
                            filename(_filename), context(_context), device_id(_device_id)

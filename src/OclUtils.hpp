@@ -385,6 +385,7 @@ class OpenCL_Kernel
 {
     public:
 
+        OpenCL_Kernel();
         OpenCL_Kernel(std::string _filename, cl_context _context, cl_device_id _device_id);
         ~OpenCL_Kernel();
 
