@@ -1099,7 +1099,7 @@ void OpenCL_Kernel::Append_Compiler_Option(const std::string option)
 }
 
 // *****************************************************************************
-void OpenCL_Kernel::Launch(cl_command_queue command_queue)
+void OpenCL_Kernel::Launch(const cl_command_queue &command_queue)
 {
     err = clEnqueueNDRangeKernel(command_queue, Get_Kernel(), Get_Dimension(), NULL,
                                  Get_Global_Work_Size(), Get_Local_Work_Size(),

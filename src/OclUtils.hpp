@@ -403,7 +403,7 @@ class OpenCL_Kernel
         int Get_Dimension() const;
         void Append_Compiler_Option(const std::string option);
 
-        void Launch(cl_command_queue command_queue);
+        void Launch(const cl_command_queue &command_queue);
 
         static int Get_Multiple(int n, int base);
 
