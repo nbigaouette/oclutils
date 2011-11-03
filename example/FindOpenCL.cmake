@@ -2,12 +2,17 @@
 # This module tries to find an OpenCL implementation on your system. It supports
 # AMD / ATI, Apple and NVIDIA implementations, but shoudl work, too.
 #
+# To set manually the paths, define these environment variables:
+# OpenCL_INCPATH    - Include path (e.g. OpenCL_INCPATH=/opt/cuda/4.0/cuda/include)
+# OpenCL_LIBPATH    - Library path (e.h. OpenCL_LIBPATH=/usr/lib64/nvidia)
+#
 # Once done this will define
 #  OPENCL_FOUND        - system has OpenCL
 #  OPENCL_INCLUDE_DIRS  - the OpenCL include directory
 #  OPENCL_LIBRARIES    - link these to use OpenCL
 #
 # WIN32 should work, but is untested
+
 
 FIND_PACKAGE( PackageHandleStandardArgs )
 
@@ -48,7 +53,7 @@ ELSE (APPLE)
 
             # Unix style platforms
             FIND_LIBRARY(OPENCL_LIBRARIES OpenCL
-              ENV LD_LIBRARY_PATH
+              PATHS LD_LIBRARY_PATH ENV OpenCL_LIBPATH
             )
 
             GET_FILENAME_COMPONENT(OPENCL_LIB_DIR ${OPENCL_LIBRARIES} PATH)
@@ -57,8 +62,8 @@ ELSE (APPLE)
             # The AMD SDK currently does not place its headers
             # in /usr/include, therefore also search relative
             # to the library
-            FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS ${_OPENCL_INC_CAND} "/usr/local/cuda/include")
-            FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ${_OPENCL_INC_CAND} "/usr/local/cuda/include")
+            FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS ${_OPENCL_INC_CAND} "/usr/local/cuda/include" ENV OpenCL_INCPATH)
+            FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ${_OPENCL_INC_CAND} "/usr/local/cuda/include" ENV OpenCL_INCPATH)
 
 	ENDIF (WIN32)
 
