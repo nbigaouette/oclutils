@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     // Try to find the best OpenCL device on the wanted platform,
     // then lock it for exclusive usage, and print informations.
 
-    // Initialize the list of platforms. The argument is the prefered platform.
+    // Initialize the list of platforms. The argument is the preferred platform.
     // Values (std::string) can be:
     //      "amd"       AMD Accelerated Parallel Processing (APP), aka "AMD Stream SDK"
     //                  Support ATI GPU and x86/x86_64 CPU
@@ -60,11 +60,11 @@ int main(int argc, char *argv[])
     // Print All information possible on the platforms and their devices.
     platforms_list.Print();
 
-    // Create a command queue on "platform"'s prefered device.
+    // Create a command queue on "platform"'s preferred device.
     cl_int err;
     cl_command_queue command_queue = clCreateCommandQueue(
-        platforms_list[platform].Prefered_OpenCL_Device_Context(),  // OpenCL context
-        platforms_list[platform].Prefered_OpenCL_Device(),          // OpenCL device id
+        platforms_list[platform].Preferred_OpenCL_Device_Context(),  // OpenCL context
+        platforms_list[platform].Preferred_OpenCL_Device(),          // OpenCL device id
         0, &err);
 
     return EXIT_SUCCESS;

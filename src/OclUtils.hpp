@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <climits>
 
 #include <CL/cl.h>
 
@@ -123,12 +124,81 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
 // *****************************************************************************
 char *read_opencl_kernel(const std::string filename, int *length);
 
+// **************************************************************
+
+namespace OclUtils {
+template <class Integer>
+std::string Integer_in_String_Binary(Integer n)
+/**
+ * Prints binary representation of an integer if any size.
+ * Inspired by http://www.exploringbinary.com/displaying-the-raw-fields-of-a-floating-point-number/
+ * WARNING: In C/C++, logical right shift of SIGNED integers is compiler dependant. GCC keeps the
+ *          sign bit intact (instead of putting a 0).
+ *          So ">>" is an arithmetic shift when the integer is signed. Unsigned are not
+ *          affected (arithmetic and logical shifts are the same for unsigned integers).
+ *          See http://en.wikipedia.org/wiki/Bitwise_operation#Arithmetic_shift
+ */
+{
+                                        // Example 32 bits integers, converted from
+                                        // http://www.binaryconvert.com/convert_unsigned_int.html
+    const Integer i_zero    =  Integer(0);  // 00000000 00000000 00000000 00000000
+    //const Integer i_ones    = ~i_zero;      // 11111111 11111111 11111111 11111111
+    const Integer i_one     =  Integer(1);  // 00000000 00000000 00000000 00000001
+    //const Integer i_two     =  Integer(2);  // 00000000 00000000 00000000 00000010
+    //const Integer i_eigth   =  Integer(8);  // 00000000 00000000 00000000 00001000
+    const Integer nb_bits_per_byte    = CHAR_BIT; // Normaly, it is 8, but could be different.
+    const Integer nb_bits_per_Integer = sizeof(n)*nb_bits_per_byte;
+
+    // Starting from the LSB being index "0", the MSB is at index "msb_position"
+    const Integer msb_position  = nb_bits_per_Integer - i_one;
+    const Integer msb           = i_one << msb_position;
+    const Integer or_msb        = Integer(~msb);
+
+    std::string integer_in_binary(nb_bits_per_Integer, ' ');
+    Integer counter = 0;
+
+    // Note that right shifting a signed integer migth keep the sign bit intact
+    // (instead of setting it to 0) because C/C++ is implementation dependant
+    // regarding right shift applied to negative signed integers. GCC will do
+    // an "arithmetic right shift", meaning dividing the integer by 2. This will
+    // keep the number negative (if it was). Because of this, the mask can get
+    // screwed. If the Integer type is signed, first right shifting of the
+    // mask of one (having an initial value of "msb" == 10000... and thus a
+    // negative value) will keep the sign bit (leading to mask == 11000...) but
+    // what we want is just to move the mask's bit, not keep the integer
+    // reprentation "valid" (we want mask == 01000...). To fix that, after
+    // right shifting the mask by one, we "AND" it (using "&") with "or_msb"
+    // (or_msb == 01111...) to make sure we forget the sign bit.
+    for (Integer mask = msb ; mask != i_zero ; mask = ((mask >> i_one) & or_msb ))
+    {
+        // If "n"'s bit at position of the mask is 0, print 0, else print 1.
+        if ((mask & n) == i_zero) integer_in_binary[counter++] = '0';
+        else                      integer_in_binary[counter++] = '1';
+    }
+
+    return integer_in_binary;
+}
+
+// **************************************************************
+template <class Pointer>
+void free_me(Pointer &p)
+{
+    if (p != NULL)
+    {
+        // Free memory
+        free(p);
+    }
+    p = NULL;
+}
+
+};
+
 // *****************************************************************************
 class OpenCL_device
 {
     private:
         bool                            object_is_initialized;
-        int                             id;
+        int                             device_id;
         cl_device_id                    device;
         cl_context                      context;
         bool                            device_is_gpu;
@@ -217,11 +287,12 @@ class OpenCL_device
 
         OpenCL_device();
         ~OpenCL_device();
+        void Destructor();
 
         const OpenCL_platform *         Get_Parent_Platform()       { return parent_platform;   }
         std::string                     Get_Name() const            { return name;              }
         cl_uint                         Get_Compute_Units() const   { return max_compute_units; }
-        int                             Get_ID() const              { return id;                }
+        int                             Get_ID() const              { return device_id;         }
         cl_device_id &                  Get_Device()                { return device;            }
         cl_context &                    Get_Context()               { return context;           }
         bool                            Is_In_Use()                 { return device_is_in_use;  }
@@ -229,7 +300,8 @@ class OpenCL_device
         void                            Set_Lockable(const bool _is_lockable) { is_lockable = _is_lockable; }
 
         void                            Set_Information(const int _id, cl_device_id _device, const int platform_id_offset,
-                                                        const std::string &platform_name, const bool _device_is_gpu);
+                                                        const std::string &platform_name, const bool _device_is_gpu,
+                                                        const OpenCL_platform * const _parent_platform);
 
         cl_int                          Set_Context();
         void                            Print() const;
@@ -248,6 +320,7 @@ class OpenCL_devices_list
         cl_uint                         nb_cpu;
         cl_uint                         nb_gpu;
         int                             err;
+        bool                            are_all_devices_in_use;
 
     public:
 
@@ -256,13 +329,14 @@ class OpenCL_devices_list
         OpenCL_devices_list();
         ~OpenCL_devices_list();
 
-        OpenCL_device &                 Prefered_OpenCL();
-        cl_device_id &                  Prefered_OpenCL_Device()         { return Prefered_OpenCL().Get_Device(); }
-        cl_context &                    Prefered_OpenCL_Device_Context() { return Prefered_OpenCL().Get_Context(); }
+        void                            Set_Preferred_OpenCL(const int _preferred_device = -1);
+        OpenCL_device &                 Preferred_OpenCL();
+        cl_device_id &                  Preferred_OpenCL_Device()         { return Preferred_OpenCL().Get_Device(); }
+        cl_context &                    Preferred_OpenCL_Device_Context() { return Preferred_OpenCL().Get_Context(); }
         int                             nb_devices()                     { return nb_cpu + nb_gpu; }
         void                            Print() const;
         void                            Initialize(const OpenCL_platform &_platform,
-                                                   const std::string &prefered_platform);
+                                                   const std::string &preferred_platform);
 
 };
 
@@ -284,10 +358,12 @@ class OpenCL_platform
         OpenCL_platform();
 
         void                            Initialize(std::string _key, int id_offset, cl_platform_id _id,
-                                                   OpenCL_platforms_list *_platform_list, const std::string prefered_platform);
-        OpenCL_device &                 Prefered_OpenCL()                   { return devices_list.Prefered_OpenCL(); }
-        cl_device_id &                  Prefered_OpenCL_Device()            { return devices_list.Prefered_OpenCL_Device(); }
-        cl_context &                    Prefered_OpenCL_Device_Context()    { return devices_list.Prefered_OpenCL_Device_Context(); }
+                                                   OpenCL_platforms_list *_platform_list, const std::string preferred_platform);
+        OpenCL_device &                 Preferred_OpenCL()                   { return devices_list.Preferred_OpenCL(); }
+        cl_device_id &                  Preferred_OpenCL_Device()            { return devices_list.Preferred_OpenCL_Device(); }
+        cl_context &                    Preferred_OpenCL_Device_Context()    { return devices_list.Preferred_OpenCL_Device_Context(); }
+        OpenCL_platforms_list *         Platform_List() const               { return platform_list; }
+        void                            Print_Preferred() const;
         std::string                     Key() const                         { return key; }
         std::string   const             Name() const                        { return name; }
         cl_platform_id                  Id() const                          { return id; }
@@ -302,12 +378,16 @@ class OpenCL_platforms_list
     private:
         std::map<std::string,OpenCL_platform>   platforms;
         std::string                     preferred_platform;
+        bool                            use_locking;
     public:
-        void                            Initialize(const std::string &_prefered_platform);
+        void                            Initialize(const std::string &_preferred_platform, const bool _use_locking = true);
         void                            Print() const;
+        void                            Print_Preferred() const;
         std::string                     Get_Running_Platform()              { return preferred_platform; }
+        bool                            Use_Locking() const                 { return use_locking; }
 
         OpenCL_platform & operator[](const std::string key);
+        void                            Set_Preferred_OpenCL(const int _preferred_device = -1);
 };
 
 // **************************************************************
@@ -315,10 +395,14 @@ class OpenCL_Kernel
 {
     public:
 
-        OpenCL_Kernel(std::string _filename, cl_context _context, cl_device_id _device_id);
+        OpenCL_Kernel();
+        OpenCL_Kernel(std::string _filename, const cl_context &_context,
+                      const cl_device_id &_device_id);
         ~OpenCL_Kernel();
+        void Initialize(std::string _filename, const cl_context &_context,
+                        const cl_device_id &_device_id);
 
-        void Build(std::string _kernel_name, std::string _compiler_options);
+        void Build(std::string _kernel_name);
 
         // By default global_y is one, local_x is MAX_WORK_SIZE and local_y is one.
         void Compute_Work_Size(size_t _global_x, size_t _global_y, size_t _local_x, size_t _local_y);
@@ -329,8 +413,9 @@ class OpenCL_Kernel
         size_t *Get_Local_Work_Size() const;
 
         int Get_Dimension() const;
+        void Append_Compiler_Option(const std::string option);
 
-        void Launch(cl_command_queue command_queue);
+        void Launch(const cl_command_queue &command_queue);
 
         static int Get_Multiple(int n, int base);
 
@@ -361,8 +446,98 @@ class OpenCL_Kernel
         void Load_Program_From_File();
 
         // Build runtime executable from a program
-        void Build_Executable();
+        void Build_Executable(const bool verbose = true);
 };
+
+
+// *****************************************************************************
+template <class T>
+class OpenCL_Array
+{
+private:
+    bool array_is_padded;               // Will the array need to be padded for checksumming?
+    int N;                              // Number of elements in array
+    size_t sizeof_element;              // Size of each array elements
+    uint64_t new_array_size_bytes;      // Size (bytes) of new padded array
+    T     *host_array;                  // Pointer to start of host array, INCLUDIǸG padding
+    uint64_t nb_1024bits_blocks;        // Number of 1024 bits blocks in padded array
+    std::string platform;               // OpenCL platform
+    cl_context context;                 // OpenCL context
+    cl_command_queue command_queue;     // OpenCL command queue
+    cl_device_id device;                // OpenCL device
+    cl_int err;                         // Error code
+
+    uint8_t host_checksum[64];          // SHA512 checksum on host memory (512 bits)
+    uint8_t device_checksum[64];        // SHA512 checksum on device memory (512 bits)
+    static const int buff_size_checksum = sizeof(uint8_t) * 64;
+
+    OpenCL_Kernel kernel_checksum;      // Kernel for checksum calculation
+
+    // Allocated memory on device
+    cl_mem device_array;                // Memory of device
+    cl_mem cl_array_size_bit;
+    cl_mem cl_sha512sum;
+
+public:
+    OpenCL_Array();
+    void Initialize(int _N, const size_t _sizeof_element,
+                    T *&host_array,
+                    cl_context &_context, cl_mem_flags flags,
+                    std::string _platform,
+                    cl_command_queue &_command_queue,
+                    cl_device_id &_device,
+                    const bool _checksum_array);
+    void Release_Memory();
+    void Host_to_Device();
+    void Device_to_Host();
+    std::string Host_Checksum();
+    std::string Device_Checksum();
+    void Validate_Data();
+
+    inline cl_mem * Get_Device_Array() { return &device_array; }
+    inline T *      Get_Host_Pointer() { return  host_array;   }
+    void Set_as_Kernel_Argument(cl_kernel &kernel, const int order);
+};
+
+// *****************************************************************************
+namespace OpenCL_SHA512
+{
+    // Following code comes from http://tools.ietf.org/html/rfc4634.
+    /*
+    * These definitions are potentially faster equivalents for the ones
+    * used in FIPS-180-2, section 4.1.3.
+    *   ((x & y) ^ (~x & z)) becomes
+    *   ((x & (y ^ z)) ^ z)
+    */
+    #define SHA_Ch(x,y,z)        (((x) & (y)) ^ ((~(x)) & (z)))
+
+
+    /*
+    *   ((x & y) ^ (x & z) ^ (y & z)) becomes
+    *   ((x & (y | z)) | (y & z))
+    */
+    #define SHA_Maj(x,y,z)       (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
+
+    /* Define the SHA shift, rotate left and rotate right macro */
+    #define SHA512_SHR(bits,word)  (((uint64_t)(word)) >> (bits))
+    #define SHA512_ROTR(bits,word) ((((uint64_t)(word)) >> (bits)) | (((uint64_t)(word)) << (64-(bits))))
+
+    /* Define the SHA SIGMA and sigma macros */
+    #define SHA512_SIGMA0(word)     (SHA512_ROTR(28,word) ^ SHA512_ROTR(34,word) ^ SHA512_ROTR(39,word))
+    #define SHA512_SIGMA1(word)     (SHA512_ROTR(14,word) ^ SHA512_ROTR(18,word) ^ SHA512_ROTR(41,word))
+    #define SHA512_sigma0(word)     (SHA512_ROTR( 1,word) ^ SHA512_ROTR( 8,word) ^ SHA512_SHR( 7,word))
+    #define SHA512_sigma1(word)     (SHA512_ROTR(19,word) ^ SHA512_ROTR(61,word) ^ SHA512_SHR( 6,word))
+
+    void Prepare_Array_for_Checksuming(void **array, const uint64_t sizeof_element,
+                                       uint64_t &array_size_bit);
+    void Calculate_Checksum(const void *_message, uint64_t length, uint8_t *_message_digest);
+    void Print_Checksum(const uint8_t checksum[64]);
+    std::string Checksum_to_String(const uint8_t checksum[64]);
+    std::string String_Hexadecimal(const void *array, uint64_t size_bits);
+    std::string String_Binary(const void *array, uint64_t size_bits);
+
+    void Validation();
+}
 
 #endif // INC_OCLUTILS_hpp
 

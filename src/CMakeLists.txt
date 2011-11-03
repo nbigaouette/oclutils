@@ -7,6 +7,9 @@ set(SRCS OclUtils.cpp)
 
 add_definitions(-std=c++98)
 
+# Uncomment to use SHA512 checksumming support on data
+# add_definitions(-DOpenCLSHA512Checksum)
+
 # Required to find the FindOpenCL.cmake file
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 find_package( OpenCL REQUIRED )
