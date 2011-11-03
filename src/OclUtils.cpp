@@ -1021,12 +1021,12 @@ OpenCL_Kernel::OpenCL_Kernel(std::string _filename, const cl_context &_context,
 void OpenCL_Kernel::Initialize(std::string _filename, const cl_context &_context,
                                const cl_device_id &_device_id)
 {
-    filename         = _filename;
-    context          = _context;
-    device_id        = _device_id;
-    kernel           = NULL;
-    program          = NULL;
-    compiler_options = "";
+    filename        = _filename;
+    context         = _context;
+    device_id       = _device_id;
+    kernel          = NULL;
+    program         = NULL;
+    compiler_options= "";
 
     dimension = 2; // Always use two dimensions.
 
