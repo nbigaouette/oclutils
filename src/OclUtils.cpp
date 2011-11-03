@@ -993,13 +993,22 @@ OpenCL_Kernel::OpenCL_Kernel()
 }
 
 // *****************************************************************************
-
-OpenCL_Kernel::OpenCL_Kernel(std::string _filename, cl_context _context, cl_device_id _device_id):
-                           filename(_filename), context(_context), device_id(_device_id)
+OpenCL_Kernel::OpenCL_Kernel(std::string _filename, const cl_context &_context,
+                             const cl_device_id &_device_id)
 {
+    Initialize(_filename, _context, _device_id);
+}
+
+// *****************************************************************************
+void OpenCL_Kernel::Initialize(std::string _filename, const cl_context &_context,
+                               const cl_device_id &_device_id)
+{
+    filename         = _filename;
+    context          = _context;
+    device_id        = _device_id;
     kernel           = NULL;
     program          = NULL;
-    compiler_options= "";
+    compiler_options = "";
 
     dimension = 2; // Always use two dimensions.
 
