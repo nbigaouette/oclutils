@@ -329,6 +329,7 @@ class OpenCL_devices_list
         OpenCL_devices_list();
         ~OpenCL_devices_list();
 
+        void                            Set_Preferred_OpenCL(const int _preferred_device = -1);
         OpenCL_device &                 Preferred_OpenCL();
         cl_device_id &                  Preferred_OpenCL_Device()         { return Preferred_OpenCL().Get_Device(); }
         cl_context &                    Preferred_OpenCL_Device_Context() { return Preferred_OpenCL().Get_Context(); }
@@ -377,13 +378,16 @@ class OpenCL_platforms_list
     private:
         std::map<std::string,OpenCL_platform>   platforms;
         std::string                     preferred_platform;
+        bool                            use_locking;
     public:
-        void                            Initialize(const std::string &_preferred_platform);
+        void                            Initialize(const std::string &_preferred_platform, const bool _use_locking = true);
         void                            Print() const;
         void                            Print_Preferred() const;
         std::string                     Get_Running_Platform()              { return preferred_platform; }
+        bool                            Use_Locking() const                 { return use_locking; }
 
         OpenCL_platform & operator[](const std::string key);
+        void                            Set_Preferred_OpenCL(const int _preferred_device = -1);
 };
 
 // **************************************************************

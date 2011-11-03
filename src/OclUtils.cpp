@@ -27,6 +27,8 @@
 #include <algorithm>    // std::ostringstream
 #include <sstream>
 
+#include <sys/time.h> // timeval
+
 #include "OclUtils.hpp"
 
 
@@ -74,8 +76,8 @@ const double GiB_to_MiB = 1024.0;
 void Print_N_Times(const std::string x, const int N, const bool newline = true);
 std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
                               const std::string &platform_name, const std::string &device_name);
-int Lock_File(const char *path);
-void Unlock_File(int f);
+int Lock_File(const char *path, const bool quiet = false);
+void Unlock_File(int f, const bool quiet = false);
 void Wait(const double duration_sec);
 
 void * calloc_and_check(uint64_t nb, size_t s, std::string msg = "");
@@ -141,8 +143,8 @@ std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
     std::string f = "/tmp/OpenCL_"; // Beginning of lock filename
     char t[4096];
     sprintf(t, "Platform%d_Device%d__%s_%s", platform_id_offset, device_id, platform_name.c_str(), device_name.c_str()); //generate string filename
-    int len = strlen(t);
-    for (int i = 0; i < len; i++)
+    unsigned int len = (unsigned int) strlen(t);
+    for (unsigned int i = 0; i < len; i++)
     {
         // Replace all non alphanumeric characters with underscore
         if (!isalpha(t[i]) && !isdigit(t[i]))
@@ -156,19 +158,21 @@ std::string Get_Lock_Filename(const int device_id, const int platform_id_offset,
 }
 
 // *****************************************************************************
-int Lock_File(const char *path)
+int Lock_File(const char *path, const bool quiet)
 /**
  * Attempt to lock file, and check lock status on lock file
  * @return      file handle if locked, or -1 if failed
  */
 {
-    std_cout << "OpenCL: Attempt to open and lock file " << path <<"\n";
+    if (not quiet)
+        std_cout << "OpenCL: Attempt to acquire lock on file " << path << "..." << std::flush;
 
     // Open file
     int f = open(path, O_CREAT | O_TRUNC, 0666);
     if (f == -1)
     {
-        std_cout << "OpenCL: Could not open lock file!\n" << std::flush;
+        if (not quiet)
+            std_cout << "Could not open lock file!\n" << std::flush;
         return -1; // Open failed
     }
 
@@ -180,33 +184,67 @@ int Lock_File(const char *path)
     //          is the locking with flock().
     fchmod(f, 0666);
 
-    // Try to lock file
-    int r = flock(f, LOCK_EX | LOCK_NB);
-    if (r == -1)
+    // Aquire the lock. Since the locking might fail (because another process is checking the lock too)
+    // we try a maximum of 5 times, with a random delay  between 1 and 10 seconds between tries.
+    pid_t pid = getpid();
+    const int max_retry = 5;
+    srand(pid * (unsigned int)time(NULL));
+    int err;
+    for (int i = 0 ; i < max_retry ; i++)
+    {
+        // Try to acquire lock
+        err = flock(f, LOCK_EX | LOCK_NB);
+
+        // If it succeeds, exist the loop
+        if (err != -1)
+            break;
+
+        // If it it did not succeeds, sleep for a random
+        // time (between 1 and 10 seconds) and retry
+        const double delay = ((double(rand()) / double(RAND_MAX)) * 9.0) + 1.0;
+        char delay_string[64];
+        sprintf(delay_string, "%.4f", delay);
+        std_cout
+            << "\nOpenCL: WARNING: Failed to acquire a lock on file '" << path << "'.\n"
+            << "                 Waiting " << delay_string << " seconds before retrying (" << i+1 << "/" << max_retry << ")...\n" << std::flush;
+        Wait(delay);
+        std_cout << "                 Done waiting.";
+        if (i+1 < max_retry)
+            std_cout << " Retrying.";
+        std_cout << "\n";
+    }
+
+    if (err == -1)
     {
         if (errno == EWOULDBLOCK)
         {
             close(f);
-            std_cout << "OpenCL: Lock file is already locked!\n";
+            if (not quiet)
+                std_cout << "Lock file is already locked!\n";
             return -1; // File is locked
         }
         else
         {
-            std_cout << "OpenCL: File lock operation failed!\n";
+            std_cout << "File lock operation failed!\n";
             close(f);
             return -1; // Another error occurred
         }
     }
+
+    if (not quiet)
+        std_cout << "Success!\n" << std::flush;
+
     return f;
 }
 
 // *****************************************************************************
-void Unlock_File(int f)
+void Unlock_File(int f, const bool quiet)
 /**
  * Unlock file
  */
 {
-    std_cout << "OpenCL: Closing lock file!\n";
+    if (not quiet)
+        std_cout << "Closing lock file.\n";
     close(f); // Close file automatically unlocks file
 }
 
@@ -233,12 +271,12 @@ bool Verify_if_Device_is_Used(const int device_id, const int platform_id_offset,
 
     if (check == -1)
     {
-        return true;        // Device is used
+        return true;                // Device is used
     }
     else
     {
-        Unlock_File(check);  // Close file
-        return false;       // Device not in use
+        Unlock_File(check, true);   // Close file, quiet == true
+        return false;               // Device not in use
     }
 }
 
@@ -356,9 +394,14 @@ void OpenCL_platform::Print() const
 }
 
 // *****************************************************************************
-void OpenCL_platforms_list::Initialize(const std::string &_preferred_platform)
+void OpenCL_platforms_list::Initialize(const std::string &_preferred_platform, const bool _use_locking)
 {
     preferred_platform = _preferred_platform;
+    use_locking = _use_locking;
+    if (use_locking)
+        std_cout << "OpenCL: File locking mechanism enabled. Will problably fail if run under a queuing system.\n" << std::flush;
+    else
+        std_cout << "OpenCL: File locking mechanism disabled. Must be disabled when using queuing system.\n" << std::flush;
 
     cl_int err;
     cl_uint nb_platforms;
@@ -391,6 +434,7 @@ void OpenCL_platforms_list::Initialize(const std::string &_preferred_platform)
 
     char tmp_string[4096];
 
+    // Print the platform list first
     for (unsigned int i = 0 ; i < nb_platforms ; i++)
     {
         cl_platform_id tmp_platform_id = tmp_platforms[i];
@@ -398,12 +442,13 @@ void OpenCL_platforms_list::Initialize(const std::string &_preferred_platform)
         err = clGetPlatformInfo(tmp_platform_id, CL_PLATFORM_VENDOR, sizeof(tmp_string), &tmp_string, NULL);
         OpenCL_Test_Success(err, "clGetPlatformInfo (CL_PLATFORM_VENDOR)");
 
-        std_cout << "        " << i+1 << "/" << nb_platforms << ") " << tmp_string << "\n";
+        std_cout << "        (" << i+1 << "/" << nb_platforms << ") " << tmp_string << "\n";
     }
 
     // This offset allows distinguishing in LOCK_FILE the devices that can appear in different platforms.
     int platform_id_offset = 0;
 
+    // Add every platforms to the map
     for (unsigned int i = 0 ; i < nb_platforms ; i++)
     {
         cl_platform_id tmp_platform_id = tmp_platforms[i];
@@ -437,7 +482,6 @@ void OpenCL_platforms_list::Initialize(const std::string &_preferred_platform)
 
     delete[] tmp_platforms;
 
-
     /*
     // Debugging: Add dummy platform
     {
@@ -455,6 +499,9 @@ void OpenCL_platforms_list::Initialize(const std::string &_preferred_platform)
     {
         preferred_platform = platforms.begin()->first;
     }
+
+    // Initialize the best device on the preferred platform.
+    platforms[preferred_platform].devices_list.Set_Preferred_OpenCL();
 }
 
 // *****************************************************************************
@@ -512,6 +559,12 @@ OpenCL_platform & OpenCL_platforms_list::operator[](const std::string key)
         }
     }
     return it->second;
+}
+
+// *****************************************************************************
+void OpenCL_platforms_list::Set_Preferred_OpenCL(const int _preferred_device)
+{
+    platforms[preferred_platform].devices_list.Set_Preferred_OpenCL(_preferred_device);
 }
 
 // *****************************************************************************
@@ -687,7 +740,18 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
     if (single_fp_config & CL_FP_FMA)
         single_fp_config_string += "CL_FP_FMA, ";
 
-    device_is_in_use = Verify_if_Device_is_Used(device_id, platform_id_offset, platform_name, name);
+    assert(parent_platform                  != NULL);
+    assert(parent_platform->Platform_List() != NULL);
+    if (parent_platform->Platform_List()->Use_Locking())
+    {
+        device_is_in_use = Verify_if_Device_is_Used(device_id, platform_id_offset, platform_name, name);
+        is_lockable = true;
+    }
+    else
+    {
+        device_is_in_use = false;
+        is_lockable = false;
+    }
 }
 
 // *****************************************************************************
@@ -999,37 +1063,72 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
         abort();
     }
 
-    // For each device, store a pointer to its parent platform
-    for (it = device_list.begin() ; it != device_list.end() ; ++it)
-        it->parent_platform = &_platform;
-
-    // Sort the list. The order is defined by "OpenCL_device::operator<"
-    device_list.sort();
-
-    // Initialize context on a device
     preferred_device = NULL;    // The preferred device is unknown for now.
-    for (it = device_list.begin() ; it != device_list.end() ; ++it)
-    {
-        std_cout << "OpenCL: Trying to set an context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
-        if (it->Set_Context() == CL_SUCCESS)
-        {
-            std_cout << " Success!\n";
-            preferred_device = &(*it);
 
-            break;
-        }
-        else
+    is_initialized = true;
+}
+
+// *****************************************************************************
+void OpenCL_devices_list::Set_Preferred_OpenCL(const int _preferred_device)
+{
+    std::list<OpenCL_device>::iterator it = device_list.begin();
+    if (_preferred_device == -1)
+    {
+        // Sort the list. The order is defined by "OpenCL_device::operator<"
+        device_list.sort();
+
+        // Initialize context on a device
+        for (it = device_list.begin() ; it != device_list.end() ; ++it)
         {
-            std_cout << " Failed. Maybe next one will work?\n";
+            std_cout << "OpenCL: Trying to set a context on " << it->Get_Name() << " (id = " << it->Get_ID() << ")...";
+            if (it->Set_Context() == CL_SUCCESS)
+            {
+                std_cout << " Success!\n";
+                preferred_device = &(*it);
+
+                break;
+            }
+            else
+            {
+                std_cout << " Failed. Maybe next one will work?\n";
+            }
         }
     }
+    else
+    {
+        if (_preferred_device >= int(device_list.size()))
+        {
+            std_cout << "OpenCL: ERROR: the device requested is out of range. Exiting.\n";
+            abort();
+        }
+
+        // Release any allocated context
+        for (it = device_list.begin() ; it != device_list.end() ; ++it)
+        {
+            it->Destructor();
+        }
+
+        for (it = device_list.begin() ; it != device_list.end() ; ++it)
+        {
+            if (_preferred_device == it->Get_ID())
+            {
+                std_cout << "OpenCL: Found preferred device (" << it->Get_Parent_Platform()->Name() << ", " << it->Get_Name() << ", id = " << it->Get_ID() << "). Trying to set an context on it...\n";
+                if (it->Set_Context() == CL_SUCCESS)
+                {
+                    std_cout << " Success!\n";
+                    preferred_device = &(*it);
+
+                    break;
+                }
+            }
+        }
+    }
+
     if (preferred_device == NULL)
     {
         std_cout << "ERROR: Cannot set an OpenCL context on any of the available devices!\nExiting" << std::flush;
         abort();
     }
-
-    is_initialized = true;
 }
 
 // *****************************************************************************
