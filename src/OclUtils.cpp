@@ -486,7 +486,7 @@ OpenCL_device::OpenCL_device()
     object_is_initialized       = false;
     parent_platform             = NULL;
     name                        = "";
-    id                          = -1;
+    device_id                   = -1;
     device_is_gpu               = false;
     max_compute_units           = 0;
     device                      = NULL;
@@ -518,7 +518,7 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
                                     const bool _device_is_gpu)
 {
     object_is_initialized = true;
-    id              = _id;
+    device_id       = _id;
     device          = _device;
     device_is_gpu   = _device_is_gpu;
 
@@ -651,7 +651,7 @@ void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
     if (single_fp_config & CL_FP_FMA)
         single_fp_config_string += "CL_FP_FMA, ";
 
-    device_is_in_use = Verify_if_Device_is_Used(id, platform_id_offset, platform_name, name);
+    device_is_in_use = Verify_if_Device_is_Used(device_id, platform_id_offset, platform_name, name);
 }
 
 // *****************************************************************************
@@ -669,7 +669,7 @@ void OpenCL_device::Print() const
 
     std_cout
         << "    name: " << name << "\n"
-        << "        id:                             " << id << "\n"
+        << "        id:                             " << device_id << "\n"
         << "        parent platform:                " << (parent_platform != NULL ? parent_platform->Name() : "") << "\n"
         << "        device_is_used:                 " << (device_is_in_use ? "yes" : "no ") << "\n"
         << "        max_compute_unit:               " << max_compute_units << "\n"
@@ -759,7 +759,7 @@ void OpenCL_device::Print() const
 // *****************************************************************************
 void OpenCL_device::Lock()
 {
-    lock_file = Lock_File(Get_Lock_Filename(id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
+    lock_file = Lock_File(Get_Lock_Filename(device_id, parent_platform->Id_Offset(), parent_platform->Name(), name).c_str());
     if (lock_file == -1)
     {
         std_cout << "An error occurred locking the file!\n" << std::flush;

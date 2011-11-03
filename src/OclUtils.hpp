@@ -198,7 +198,7 @@ class OpenCL_device
 {
     private:
         bool                            object_is_initialized;
-        int                             id;
+        int                             device_id;
         cl_device_id                    device;
         cl_context                      context;
         bool                            device_is_gpu;
@@ -292,7 +292,7 @@ class OpenCL_device
         const OpenCL_platform *         Get_Parent_Platform()       { return parent_platform;   }
         std::string                     Get_Name() const            { return name;              }
         cl_uint                         Get_Compute_Units() const   { return max_compute_units; }
-        int                             Get_ID() const              { return id;                }
+        int                             Get_ID() const              { return device_id;         }
         cl_device_id &                  Get_Device()                { return device;            }
         cl_context &                    Get_Context()               { return context;           }
         bool                            Is_In_Use()                 { return device_is_in_use;  }
