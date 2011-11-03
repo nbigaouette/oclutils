@@ -434,7 +434,7 @@ class OpenCL_Kernel
         void Load_Program_From_File();
 
         // Build runtime executable from a program
-        void Build_Executable();
+        void Build_Executable(const bool verbose = true);
 };
 
 

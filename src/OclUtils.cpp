@@ -1144,17 +1144,20 @@ void OpenCL_Kernel::Load_Program_From_File()
     program = clCreateProgramWithSource(context, 1, (const char **) &cSourceCL, &program_length, &err);
     OpenCL_Test_Success(err, "clCreateProgramWithSource");
 
-    Build_Executable();
+    Build_Executable(true);
 }
 
 // *****************************************************************************
-void OpenCL_Kernel::Build_Executable()
+void OpenCL_Kernel::Build_Executable(const bool verbose)
 /**
  * Build the program executable
  */
 {
-    std_cout << "Building the program..." << std::flush;
-    std_cout << "\nOpenCL Compiler Options: " << compiler_options << "\n" << std::flush;
+    if (verbose)
+    {
+        std_cout << "Building the program..." << std::flush;
+        std_cout << "\nOpenCL Compiler Options: " << compiler_options << "\n" << std::flush;
+    }
 
     err = clBuildProgram(program, 0, NULL, compiler_options.c_str(), NULL, NULL);
 
@@ -1165,7 +1168,8 @@ void OpenCL_Kernel::Build_Executable()
     err = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
     build_log[ret_val_size] = '\0';
     OpenCL_Test_Success(err, "1. clGetProgramBuildInfo");
-    std_cout << "OpenCL kernels file compilation log: \n" << build_log << "\n";
+    if (verbose)
+        std_cout << "OpenCL kernels file compilation log: \n" << build_log << "\n";
 
     if (err != CL_SUCCESS)
     {
@@ -1191,7 +1195,8 @@ void OpenCL_Kernel::Build_Executable()
 
     delete[] build_log;
 
-    std_cout << "done.\n";
+    if (verbose)
+        std_cout << "done.\n";
 }
 
 // *****************************************************************************
