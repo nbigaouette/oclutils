@@ -533,12 +533,14 @@ void OpenCL_device::Destructor()
 void OpenCL_device::Set_Information(const int _id, cl_device_id _device,
                                     const int platform_id_offset,
                                     const std::string &platform_name,
-                                    const bool _device_is_gpu)
+                                    const bool _device_is_gpu,
+                                    const OpenCL_platform * const _parent_platform                                   )
 {
     object_is_initialized = true;
     device_id       = _id;
     device          = _device;
     device_is_gpu   = _device_is_gpu;
+    parent_platform = _parent_platform;
 
     char tmp_string[4096];
 
@@ -922,7 +924,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
 
         for (unsigned int i = 0 ; i < nb_cpu ; ++i, ++it)
         {
-            it->Set_Information(i, tmp_devices[i], _platform.Id_Offset(), platform->Name().c_str(), false); // device_is_gpu == false
+            it->Set_Information(i, tmp_devices[i], _platform.Id_Offset(), platform->Name().c_str(), false, &_platform); // device_is_gpu == false
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
@@ -940,7 +942,7 @@ void OpenCL_devices_list::Initialize(const OpenCL_platform &_platform,
         OpenCL_Test_Success(err, "clGetDeviceIDs()");
         for (unsigned int i = 0 ; i < nb_gpu ; ++i, ++it)
         {
-            it->Set_Information(nb_cpu+i, tmp_devices[i], _platform.Id_Offset(), platform->Name().c_str(), true); // device_is_gpu == true
+            it->Set_Information(nb_cpu+i, tmp_devices[i], _platform.Id_Offset(), platform->Name().c_str(), true, &_platform); // device_is_gpu == true
 
             // When one device is not in use... One device is not in use!
             if (!it->Is_In_Use())
