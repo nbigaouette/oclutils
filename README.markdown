@@ -102,34 +102,40 @@ If there was an AMD/ATI video card in it, the AMD APP would show it too:
 $ ./example/OclUtilsExample
 -------------------------------------------------------------------------------------------------------------
 OpenCL: Getting a list of platform(s)... done.
-OpenCL: Initializing the 2 available platforms...
-        1/2) NVIDIA Corporation
-        2/2) Advanced Micro Devices, Inc.
+OpenCL: Initializing the 3 available platforms...
+        1/3) Intel(R) Corporation
+        2/3) NVIDIA Corporation
+        3/3) Advanced Micro Devices, Inc.
+OpenCL: Initialize platform "Intel(R) OpenCL"'s device(s)
+OpenCL: WARNING: Can't find a usable GPU!
+OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform0_Device0__Intel_R__OpenCL_Quad_Core_AMD_Opteron_tm__Processor_2389.lck
+OpenCL: Closing lock file!
+OpenCL: Trying to set an context on Quad-Core AMD Opteron(tm) Processor 2389 (id = 0)... Success!
 OpenCL: Initialize platform "NVIDIA CUDA"'s device(s)
 OpenCL: WARNING: Can't find a usable CPU!
-OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform0_Device0__NVIDIA_CUDA_GeForce_GTX_580.lck
+OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform1_Device0__NVIDIA_CUDA_GeForce_GTX_580.lck
 OpenCL: Closing lock file!
-OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform0_Device1__NVIDIA_CUDA_GeForce_210.lck
+OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform1_Device1__NVIDIA_CUDA_GeForce_210.lck
 OpenCL: Closing lock file!
-OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform0_Device2__NVIDIA_CUDA_GeForce_GTX_580.lck
+OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform1_Device2__NVIDIA_CUDA_GeForce_GTX_580.lck
 OpenCL: Closing lock file!
 OpenCL: Trying to set an context on GeForce GTX 580 (id = 0)... Success!
 OpenCL: Initialize platform "AMD Accelerated Parallel Processing"'s device(s)
 OpenCL: WARNING: Can't find a usable GPU!
-OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform1_Device0__AMD_Accelerated_Parallel_Processing_Quad_Core_AMD_Opteron_tm__Processor_2389.lck
+OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform2_Device0__AMD_Accelerated_Parallel_Processing_Quad_Core_AMD_Opteron_tm__Processor_2389.lck
 OpenCL: Closing lock file!
 OpenCL: Trying to set an context on Quad-Core AMD Opteron(tm) Processor 2389 (id = 0)... Success!
-OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform1_Device0__AMD_Accelerated_Parallel_Processing_Quad_Core_AMD_Opteron_tm__Processor_2389.lck
+OpenCL: Attempt to open and lock file /tmp/OpenCL_Platform2_Device0__AMD_Accelerated_Parallel_Processing_Quad_Core_AMD_Opteron_tm__Processor_2389.lck
 OpenCL: Available platforms:
     Platform information:
         vendor:     Advanced Micro Devices, Inc.
         name:       AMD Accelerated Parallel Processing
         version:    OpenCL 1.1 AMD-APP-SDK-v2.5 (684.213)
         extensions: cl_khr_icd cl_amd_event_callback cl_amd_offline_devices
-        id:         0x7f34ab4f1060
+        id:         0x7fac0ba92060
         profile:    FULL_PROFILE
         key:        amd
-        list:       0x7fffc64cb480
+        list:       0x7fffc31c5d40
     Available OpenCL devices on platform:
     ---------------------------------------------------------------------------------------------------------
     name: Quad-Core AMD Opteron(tm) Processor 2389
@@ -170,7 +176,7 @@ OpenCL: Available platforms:
         max_write_image_args:           8
         mem_base_addr_align:            1024
         min_data_type_align_size:       128 bytes (0.125 KiB, 0.00012207 MiB, 1.19209e-07 GiB)
-        platform:                       0x7f34ab4f1060
+        platform:                       0x7fac0ba92060
         preferred_vector_width_char:    16
         preferred_vector_width_short:   8
         preferred_vector_width_int:     4
@@ -196,14 +202,88 @@ OpenCL: Available platforms:
         0.   Quad-Core AMD Opteron(tm) Processor 2389 (id = 0)
         *****************************************************************************************************
     Platform information:
+        vendor:     Intel(R) Corporation
+        name:       Intel(R) OpenCL
+        version:    OpenCL 1.1 LINUX
+        extensions: cl_khr_fp64 cl_khr_global_int32_base_atomics cl_khr_global_int32_extended_atomics cl_khr_local_int32_base_atomics cl_khr_local_int32_extended_atomics cl_khr_gl_sharing cl_khr_byte_addressable_store cl_intel_printf cl_ext_device_fission cl_khr_icd
+        id:         0x1a14720
+        profile:    FULL_PROFILE
+        key:        intel
+        list:       0x7fffc31c5d40
+    Available OpenCL devices on platform:
+    ---------------------------------------------------------------------------------------------------------
+    name: Quad-Core AMD Opteron(tm) Processor 2389
+        id:                             0
+        parent platform:                Intel(R) OpenCL
+        device_is_used:                 no
+        max_compute_unit:               8
+        device is GPU?                  no
+        address_bits:                   64
+        available:                      yes
+        compiler_available:             yes
+        endian_little:                  yes
+        error_correction_support:       no
+        execution_capabilities:         3
+        global_mem_cache_size:          524288 bytes (512 KiB, 0.5 MiB, 0.000488281 GiB)
+        global_mem_cache_type:          2
+        global_mem_cacheline_size:      64 bytes (0.0625 KiB, 6.10352e-05 MiB, 5.96046e-08 GiB)
+        global_mem_size:                16863936512 bytes (1.64687e+07 KiB, 16082.7 MiB, 15.7058 GiB)
+        image_support:                  yes
+        image2d_max_height:             8192
+        image2d_max_width:              8192
+        image3d_max_depth:              2048
+        image3d_max_height:             2048
+        image3d_max_width:              2048
+        local_mem_size:                 32768 bytes (32 KiB, 0.03125 MiB, 3.05176e-05 GiB)
+        local_mem_type:                 2
+        max_clock_frequency:            0 MHz
+        max_compute_units:              8
+        max_constant_args:              128
+        max_constant_buffer_size:       131072 bytes (128 KiB, 0.125 MiB, 0.00012207 GiB)
+        max_mem_alloc_size:             4215984128 bytes (4.11717e+06 KiB, 4020.68 MiB, 3.92644 GiB)
+        max_parameter_size:             1024 bytes (1 KiB, 0.000976562 MiB, 9.53674e-07 GiB)
+        max_read_image_args:            128
+        max_samplers:                   128
+        max_work_group_size:            1024 bytes (1 KiB, 0.000976562 MiB, 9.53674e-07 GiB)
+        max_work_item_dimensions:       3
+        max_work_item_sizes:            (1024, 1024, 1024)
+        max_write_image_args:           128
+        mem_base_addr_align:            1024
+        min_data_type_align_size:       128 bytes (0.125 KiB, 0.00012207 MiB, 1.19209e-07 GiB)
+        platform:                       0x1a14720
+        preferred_vector_width_char:    16
+        preferred_vector_width_short:   8
+        preferred_vector_width_int:     4
+        preferred_vector_width_long:    2
+        preferred_vector_width_float:   4
+        preferred_vector_width_double:  2
+        profiling_timer_resolution:     344827 ns
+        queue_properties:               CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, CL_QUEUE_PROFILING_ENABLE,  (3)
+        single_fp_config:               CL_FP_DENORM, CL_FP_INF_NAN, CL_FP_ROUND_TO_NEAREST,  (7)
+        type:                           CL_DEVICE_TYPE_CPU (2)
+        vendor_id:                      32902
+        extensions:                     cl_khr_fp64 cl_khr_global_int32_base_atomics cl_khr_global_int32_extended_atomics cl_khr_local_int32_base_atomics cl_khr_local_int32_extended_atomics cl_khr_gl_sharing cl_khr_byte_addressable_store cl_intel_printf cl_ext_device_fission
+        profile:                        FULL_PROFILE
+        vendor:                         Intel(R) Corporation
+        version:                        OpenCL 1.1
+        driver_version:                 1.1
+        GPU is NOT from NVidia
+        Available memory (global):   16863936512 bytes (1.64687e+07 KiB, 16082.7 MiB, 15.7058 GiB)
+        Available memory (local):    32768 bytes (32 KiB, 0.03125 MiB, 3.05176e-05 GiB)
+        Available memory (constant): 131072 bytes (128 KiB, 0.125 MiB, 0.00012207 GiB)
+        *****************************************************************************************************
+        Order of preference for OpenCL devices for this platform:
+        0.   Quad-Core AMD Opteron(tm) Processor 2389 (id = 0)
+        *****************************************************************************************************
+    Platform information:
         vendor:     NVIDIA Corporation
         name:       NVIDIA CUDA
         version:    OpenCL 1.1 CUDA 4.1.1
         extensions: cl_khr_byte_addressable_store cl_khr_icd cl_khr_gl_sharing cl_nv_compiler_options cl_nv_device_attribute_query cl_nv_pragma_unroll
-        id:         0x20357c0
+        id:         0x483c990
         profile:    FULL_PROFILE
         key:        nvidia
-        list:       0x7fffc64cb480
+        list:       0x7fffc31c5d40
     Available OpenCL devices on platform:
     ---------------------------------------------------------------------------------------------------------
     name: GeForce GTX 580
@@ -244,7 +324,7 @@ OpenCL: Available platforms:
         max_write_image_args:           8
         mem_base_addr_align:            4096
         min_data_type_align_size:       128 bytes (0.125 KiB, 0.00012207 MiB, 1.19209e-07 GiB)
-        platform:                       0x20357c0
+        platform:                       0x483c990
         preferred_vector_width_char:    1
         preferred_vector_width_short:   1
         preferred_vector_width_int:     1
@@ -311,7 +391,7 @@ OpenCL: Available platforms:
         max_write_image_args:           8
         mem_base_addr_align:            4096
         min_data_type_align_size:       128 bytes (0.125 KiB, 0.00012207 MiB, 1.19209e-07 GiB)
-        platform:                       0x20357c0
+        platform:                       0x483c990
         preferred_vector_width_char:    1
         preferred_vector_width_short:   1
         preferred_vector_width_int:     1
@@ -378,7 +458,7 @@ OpenCL: Available platforms:
         max_write_image_args:           8
         mem_base_addr_align:            2048
         min_data_type_align_size:       128 bytes (0.125 KiB, 0.00012207 MiB, 1.19209e-07 GiB)
-        platform:                       0x20357c0
+        platform:                       0x483c990
         preferred_vector_width_char:    1
         preferred_vector_width_short:   1
         preferred_vector_width_int:     1
