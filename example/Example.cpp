@@ -70,6 +70,11 @@ int main(int argc, char *argv[])
         platforms_list[platform].Preferred_OpenCL_Device(),          // OpenCL device id
         0, &err);
 
+    // Pause
+    std::string answer;
+    std::cout << "Press enter to exit example. The OpenCL device will be released.\n";
+    getline(std::cin, answer);
+
     return EXIT_SUCCESS;
 }
 
