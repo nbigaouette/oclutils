@@ -43,6 +43,9 @@ int main(int argc, char *argv[])
     //      "apple"     Apple OpenCL (only on MacOSX)
     //      "-1"        Default value. This will take the first
     //                  platform available, in alphabetical order.
+    // By default, the library will use lock files to prevent multiple
+    // programs from using a single devices. If you want to prevent
+    // that, append "false" to Initialize()'s arguments.
     platforms_list.Initialize("-1");
 
     // By passing "-1", to Initialize(), the first platform in the list
