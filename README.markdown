@@ -95,7 +95,7 @@ This code is distributed under the terms of the [GNU General Public License v3 (
 Example
 -------------------------
 Here's the output of the example code on a machine with the three (AMD APP, NVIDIA CUDA and Intel OpenCL) SDK
-installed. Both AMD and Intel's SDK expose the CPU, while the NVIDIA only expose the video card (GT 220).
+installed. Both AMD and Intel's SDK expose the CPU, while the NVIDIA SDK only expose the video cards (two GTX 580, one GT 220).
 If there was an AMD/ATI video card in it, the AMD APP would show it too:
 
 ```
