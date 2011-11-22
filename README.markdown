@@ -55,6 +55,26 @@ or static lib:
 $ g++ [...] /usr/lib/liboclutils.a [...]
 ```
 
+Usage
+-------------------------
+Take a look at example/Example.cpp for how to use. It should be quite straightforward:
+
+``` C++
+#include <OclUtils.hpp>
+int main(int argc, char *argv[])
+{
+    OpenCL_platforms_list platforms_list;
+    platforms_list.Initialize("nvidia", true);
+    const std::string platform = platforms_list.Get_Running_Platform();
+    platforms_list[platform].Lock_Best_Device();
+    platforms_list.Print();
+    return EXIT_SUCCESS;
+}
+```
+
+With a single device present, running a second instance of the example will abort. Try it!
+
+
 What's new
 -------------------------
 * v1.0 Library will try 5 times to acquire context and locks with random delay. Useful if first try fails.
