@@ -399,9 +399,9 @@ void OpenCL_platforms_list::Initialize(const std::string &_preferred_platform, c
     preferred_platform = _preferred_platform;
     use_locking = _use_locking;
     if (use_locking)
-        std_cout << "OpenCL: File locking mechanism enabled. Will problably fail if run under a queuing system.\n" << std::flush;
+        std_cout << "OpenCL: File locking mechanism enabled. Will probably fail if run under a queueing system.\n" << std::flush;
     else
-        std_cout << "OpenCL: File locking mechanism disabled. Must be disabled when using queuing system.\n" << std::flush;
+        std_cout << "OpenCL: File locking mechanism disabled. Must be disabled when using queueing system.\n" << std::flush;
 
     cl_int err;
     cl_uint nb_platforms;
