@@ -26,6 +26,7 @@
 #include <cmath>
 #include <algorithm>    // std::ostringstream
 #include <sstream>
+#include <unistd.h>     // getpid()
 
 #include <sys/time.h> // timeval
 
